@@ -158,7 +158,7 @@ The solution follows a **Clean Architecture** pattern with clear separation of c
 
 ## 📁 Project Structure
 
-### **ITI.Gymunity.FP.Domain** 
+### **Gymunity.Domain** 
 Core business logic and domain models
 ```
 ├── Models/
@@ -174,7 +174,7 @@ Core business logic and domain models
 └── IUnitOfWork.cs         (Transaction management)
 ```
 
-### **ITI.Gymunity.FP.Infrastructure**
+### **Gymunity.Infrastructure**
 Data persistence and external service implementation
 ```
 ├── _Data/
@@ -203,7 +203,7 @@ Data persistence and external service implementation
 └── Dependancy Injection/          (DI configuration)
 ```
 
-### **ITI.Gymunity.FP.Application**
+### **Gymunity.Application**
 Business logic, orchestration, and data transfer objects
 ```
 ├── Services/
@@ -244,7 +244,7 @@ Business logic, orchestration, and data transfer objects
 └── Dependancy Injection/          (Service registration)
 ```
 
-### **ITI.Gymunity.FP.APIs**
+### **Gymunity.APIs**
 RESTful API endpoints and real-time hubs
 ```
 ├── Areas/
@@ -297,7 +297,7 @@ RESTful API endpoints and real-time hubs
 └── Program.cs                    (App configuration & startup)
 ```
 
-### **ITI.Gymunity.FP.Admin.MVC**
+### **Gymunity.Admin.MVC**
 Admin dashboard built with Razor Pages
 ```
 ├── Controllers/
@@ -373,12 +373,12 @@ Admin dashboard built with Razor Pages
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/MohamedElsharif22/ITI.Gymunity.FP.Solution.git
-   cd ITI.Gymunity.FP.Solution
+   git clone [https://github.com/AlagappanMk24/Gymunity].git
+   cd Gymunity
    ```
 
 2. **Configure Database Connection**
-   - Update `appsettings.json` in `ITI.Gymunity.FP.APIs` project:
+   - Update `appsettings.json` in `Gymunity.APIs` project:
    ```json
    {
      "ConnectionStrings": {
@@ -421,7 +421,7 @@ Admin dashboard built with Razor Pages
 
 6. **Apply Database Migrations**
    ```bash
-   cd ITI.Gymunity.FP.Infrastructure
+   cd Gymunity.Infrastructure
    dotnet ef database update
    ```
 
@@ -430,7 +430,7 @@ Admin dashboard built with Razor Pages
 
 8. **Run the APIs**
    ```bash
-   cd ITI.Gymunity.FP.APIs
+   cd Gymunity.APIs
    dotnet run
    ```
    - API will be available at `https://localhost:5001`
@@ -438,7 +438,7 @@ Admin dashboard built with Razor Pages
 
 9. **Run the Admin Dashboard**
    ```bash
-   cd ITI.Gymunity.FP.Admin.MVC
+   cd Gymunity.Admin.MVC
    dotnet run
    ```
    - Admin will be available at `https://localhost:5002`
