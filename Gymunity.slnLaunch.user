@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "Gymunity.APIs\\Gymunity.APIs.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Gymunity.Admin.MVC\\Gymunity.Admin.MVC.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

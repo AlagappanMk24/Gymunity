@@ -1,0 +1,875 @@
+@using Gymunity.Admin.MVC.ViewModels.Dashboard
+@model DashboardOverviewViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5); }
+    }
+
+    .animate-slide-in-up {
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .stat-card:hover {
+        box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+        border-color: #D1D5DB;
+        transform: translateY(-2px);
+    }
+
+    .stat-card-primary {
+        border-left: 4px solid #3B82F6;
+    }
+
+    .stat-card-success {
+        border-left: 4px solid #22C55E;
+    }
+
+    .stat-card-warning {
+        border-left: 4px solid #F59E0B;
+    }
+
+    .stat-card-danger {
+        border-left: 4px solid #EF4444;
+    }
+
+    .icon-container {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover .icon-container {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 1rem;
+        border: 1px solid #E5E7EB;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .chart-container:hover {
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        border-color: #D1D5DB;
+    }
+
+    .chart-header {
+        border-bottom: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        background: linear-gradient(to right, #F9FAFB, #FFFFFF);
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: bold;
+        color: #111827;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        color: #374151;
+        border-radius: 0.75rem;
+        transition: all 0.2s ease;
+        background-color: rgba(59, 130, 246, 0.03);
+    }
+
+    .quick-action-btn:hover {
+        background-color: #F0F4FF;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        color: #2563EB;
+    }
+
+    .activity-item {
+        padding: 1rem;
+        display: flex;
+        gap: 1rem;
+        transition: background-color 0.2s ease;
+    }
+
+    .activity-item:hover {
+        background-color: #F9FAFB;
+    }
+
+    .activity-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .activity-item:hover .activity-icon {
+        transform: scale(1.1);
+    }
+
+    .trainer-card {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .trainer-card:hover {
+        background: linear-gradient(to right, #F0F4FF, transparent);
+        border-color: #BFE7FF;
+    }
+
+    .rating-badge {
+        padding: 0.25rem 0.75rem;
+        background: linear-gradient(to right, #F0FDF4, #F0FDF4);
+        color: #15803D;
+        font-size: 0.75rem;
+        font-weight: bold;
+        border-radius: 0.5rem;
+        border: 1px solid #BBF7D0;
+        transition: all 0.2s ease;
+    }
+
+    .rating-badge:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-color: #86EFAC;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        animation: slideInUp 0.5s ease-out;
+    }
+
+    @@media (max-width: 768px) {
+        .stat-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .secondary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        animation: slideInUp 0.5s ease-out;
+        animation-delay: 0.1s;
+    }
+
+    .chart-grid {
+        display: grid;
+        gap: 1.5rem;
+        animation: slideInUp 0.5s ease-out;
+        animation-delay: 0.2s;
+    }
+
+    @@media (min-width: 1024px) {
+        .chart-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .chart-grid .lg-col-span-2 {
+            grid-column: span 2;
+        }
+    }
+
+    .additional-charts {
+        display: grid;
+        gap: 1.5rem;
+        animation: slideInUp 0.5s ease-out;
+        animation-delay: 0.3s;
+    }
+
+    @@media (min-width: 1024px) {
+        .additional-charts {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .activity-grid {
+        display: grid;
+        gap: 1.5rem;
+        animation: slideInUp 0.5s ease-out;
+        animation-delay: 0.4s;
+    }
+
+    @@media (min-width: 1024px) {
+        .activity-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .stat-value {
+        font-size: 2.25rem;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: bold;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-subtitle {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+</style>
+
+<div style="min-height: 100vh; background: linear-gradient(to bottom right, #F9FAFB, #FFFFFF, #F9FAFB);">
+    <!-- Page Header -->
+        <div style="display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+                <div>
+                    <h1 style="font-size: 2.25rem; font-weight: bold; background: linear-gradient(to right, #2563EB, #1E40AF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                        Dashboard
+                    </h1>
+                    <p style="color: #4B5563; margin-top: 0.5rem; font-weight: 500;">
+                        Welcome back, <span style="background: linear-gradient(to right, #2563EB, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-weight: bold;">@User.Identity?.Name</span>
+                    </p>
+                </div>
+                <button type="button" id="refreshBtn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(to right, #2563EB, #1D4ED8); color: white; border-radius: 0.75rem; box-shadow: 0 10px 15px rgba(37, 99, 235, 0.3); transition: all 0.3s ease; font-weight: 600; border: none; cursor: pointer;" title="Refresh data">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Refresh Dashboard</span>
+                </button>
+            </div>
+        </div>
+    @* <div class="page-header" style="position: sticky; top: 0; z-index: 10; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(229, 231, 235, 0.5);">
+    </div> *@
+
+    <div style="display: flex; flex-direction: column; gap: 2rem; padding: 1.5rem;">
+        <!-- Primary Statistics Grid -->
+        <div class="stat-grid">
+            @if (Model?.StatisticsCards != null)
+            {
+                @foreach (var card in Model.StatisticsCards)
+                {
+                    var cardClass = card.ColorClass == "primary" ? "stat-card-primary" : card.ColorClass == "success" ? "stat-card-success" : "stat-card-primary";
+                    var iconBgClass = card.ColorClass == "primary" ? "background: linear-gradient(to bottom right, #EFF6FF, #F0F4FF); color: #2563EB;" : card.ColorClass == "success" ? "background: linear-gradient(to bottom right, #F0FDF4, #F0FDF4); color: #16A34A;" : "background: linear-gradient(to bottom right, #F3F4F6, #F0F0F0); color: #4B5563;";
+                    var valueColorClass = card.ColorClass == "primary" ? "color: #2563EB;" : card.ColorClass == "success" ? "color: #16A34A;" : "color: #111827;";
+
+                    <div class="stat-card @cardClass">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="flex-grow: 1;">
+                                <p class="stat-label">@card.Title</p>
+                                <h3 class="stat-value" style="@valueColorClass">@card.Value</h3>
+                                <p class="stat-subtitle" style="@(card.IsTrendPositive ? "color: #059669;" : "color: #DC2626;")">
+                                    <i class="fas @(card.IsTrendPositive ? "fa-arrow-up" : "fa-arrow-down")"></i>
+                                    @card.Subtitle
+                                </p>
+                            </div>
+                            <div class="icon-container" style="@iconBgClass">
+                                <i class="@card.IconClass"></i>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Alert Statistics Grid -->
+        <div class="secondary-grid">
+            <!-- Pending Reviews Card -->
+            <div class="stat-card stat-card-danger">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex-grow: 1;">
+                        <p class="stat-label">Pending Reviews</p>
+                        <h3 class="stat-value" style="color: #DC2626;">@(Model?.PendingReviews ?? 0)</h3>
+                        <p style="font-size: 0.875rem; margin-top: 0.75rem;">
+                            <a href="/admin/reviews" style="color: #DC2626; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; transition: gap 0.2s;">
+                                View all <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </p>
+                    </div>
+                    <div class="icon-container" style="background: linear-gradient(to bottom right, #FEE2E2, #FEF2F2); color: #DC2626;">
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unverified Trainers Card -->
+            <div class="stat-card stat-card-warning">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex-grow: 1;">
+                        <p class="stat-label">Unverified Trainers</p>
+                        <h3 class="stat-value" style="color: #B45309;">@(Model?.UnverifiedTrainers ?? 0)</h3>
+                        <p style="font-size: 0.875rem; margin-top: 0.75rem;">
+                            <a href="/admin/trainers" style="color: #B45309; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; transition: gap 0.2s;">
+                                View all <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </p>
+                    </div>
+                    <div class="icon-container" style="background: linear-gradient(to bottom right, #FEFCE8, #FFFBEB); color: #B45309;">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Failed Payments Card -->
+            <div class="stat-card stat-card-danger">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex-grow: 1;">
+                        <p class="stat-label">Failed Payments</p>
+                        <h3 class="stat-value" style="color: #DC2626;">@(Model?.FailedPayments ?? 0)</h3>
+                        <p style="font-size: 0.875rem; margin-top: 0.75rem;">
+                            <a href="/admin/payments" style="color: #DC2626; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem; transition: gap 0.2s;">
+                                View all <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </p>
+                    </div>
+                    <div class="icon-container" style="background: linear-gradient(to bottom right, #FEE2E2, #FEF2F2); color: #DC2626;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health Card -->
+            <div class="stat-card stat-card-success">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex-grow: 1;">
+                        <p class="stat-label">System Health</p>
+                        <h3 class="stat-value" style="color: #16A34A;">@(Model?.SystemHealth ?? 98)%</h3>
+                        <p style="font-size: 0.875rem; color: #16A34A; margin-top: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 0.25rem;">
+                            <i class="fas fa-check-circle"></i> All systems optimal
+                        </p>
+                    </div>
+                    <div class="icon-container" style="background: linear-gradient(to bottom right, #DCFCE7, #F0FDF4); color: #16A34A;">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="chart-grid">
+            <!-- Revenue Chart -->
+            <div style="grid-column: span 2;" class="chart-container">
+                <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h5 class="chart-title">Revenue Overview</h5>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <label style="display: inline-flex; align-items: center;">
+                            <input type="radio" name="chartRange" value="7" style="width: 1rem; height: 1rem;" data-chart="revenue">
+                            <span style="margin-left: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #4B5563; cursor: pointer;">7 Days</span>
+                        </label>
+                        <label style="display: inline-flex; align-items: center;">
+                            <input type="radio" name="chartRange" value="30" checked style="width: 1rem; height: 1rem;" data-chart="revenue">
+                            <span style="margin-left: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #4B5563; cursor: pointer;">30 Days</span>
+                        </label>
+                        <label style="display: inline-flex; align-items: center;">
+                            <input type="radio" name="chartRange" value="90" style="width: 1rem; height: 1rem;" data-chart="revenue">
+                            <span style="margin-left: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #4B5563; cursor: pointer;">90 Days</span>
+                        </label>
+                    </div>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="height: 320px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Trainers -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">🏆 Top Trainers</h5>
+                </div>
+                <div style="border-top: 1px solid #F3F4F6; max-height: 384px; overflow-y: auto;">
+                    @if (Model?.TopTrainers != null && Model.TopTrainers.Any())
+                    {
+                        @foreach (var trainer in Model.TopTrainers)
+                        {
+                            <div class="trainer-card">
+                                <div>
+                                    <h6 style="font-weight: bold; color: #111827;">@trainer.Name</h6>
+                                    <small style="color: #6B7280; font-size: 0.875rem;">
+                                        <i class="fas fa-users text-blue-600" style="color: #2563EB; margin-right: 0.25rem;"></i>@trainer.ClientCount clients
+                                        <span style="margin: 0 0.25rem;">•</span>
+                                        <i class="fas fa-briefcase" style="color: #16A34A; margin-right: 0.25rem;"></i>@trainer.YearsExperience yrs
+                                    </small>
+                                </div>
+                                <span class="rating-badge">
+                                    <i class="fas fa-star" style="color: #EAB308;"></i> @trainer.Rating.ToString("0.0")
+                                </span>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Charts Row -->
+        <div class="additional-charts">
+            <!-- Subscription Status Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">📊 Subscription Status</h5>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="height: 256px;">
+                        <canvas id="subscriptionStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Status Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">💳 Payment Status</h5>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="height: 256px;">
+                        <canvas id="paymentStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity & Performance Row -->
+        <div class="activity-grid">
+            <!-- Recent Activity -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h5 class="chart-title">⚡ Recent Activity</h5>
+                </div>
+                <div style="border-top: 1px solid #F3F4F6; max-height: 384px; overflow-y: auto;">
+                    @if (Model?.RecentActivities != null && Model.RecentActivities.Any())
+                    {
+                        @foreach (var activity in Model.RecentActivities.Take(5))
+                        {
+                            var bgColor = activity.ColorClass == "success" ? "background: linear-gradient(to bottom right, #DCFCE7, #F0FDF4); color: #16A34A;" :
+                                         activity.ColorClass == "primary" ? "background: linear-gradient(to bottom right, #EFF6FF, #F0F4FF); color: #2563EB;" :
+                                         activity.ColorClass == "warning" ? "background: linear-gradient(to bottom right, #FEFCE8, #FFFBEB); color: #B45309;" :
+                                         activity.ColorClass == "danger" ? "background: linear-gradient(to bottom right, #FEE2E2, #FEF2F2); color: #DC2626;" : "background: linear-gradient(to bottom right, #F3F4F6, #F0F0F0); color: #4B5563;";
+
+                            <div class="activity-item">
+                                <div class="activity-icon" style="@bgColor">
+                                    <i class="@activity.IconClass" style="font-size: 1.125rem;"></i>
+                                </div>
+                                <div style="flex-grow: 1;">
+                                    <h6 style="font-weight: bold; color: #111827;">@activity.Title</h6>
+                                    <p style="font-size: 0.875rem; color: #4B5563; margin-top: 0.25rem;">@activity.Description</p>
+                                    <small style="color: #9CA3AF; font-size: 0.75rem; margin-top: 0.5rem; display: block;">
+                                        <i class="fas fa-clock" style="margin-right: 0.25rem;"></i>@activity.Timestamp.ToString("ddd, MMM d, yyyy h:mm tt")
+                                    </small>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- User Distribution & Quick Actions -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- User Distribution -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h5 class="chart-title">👥 User Distribution</h5>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div style="height: 192px;">
+                            <canvas id="userDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h5 class="chart-title">⚙️ Quick Actions</h5>
+                    </div>
+                    <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="/admin/users" class="quick-action-btn">
+                            <i class="fas fa-users" style="color: #2563EB; width: 1.25rem; text-align: center;"></i>
+                            <span style="font-weight: 600;">Manage Users</span>
+                            <i class="fas fa-arrow-right" style="color: #9CA3AF; margin-left: auto;"></i>
+                        </a>
+                        <a href="/admin/reviews" class="quick-action-btn">
+                            <i class="fas fa-star" style="color: #EAB308; width: 1.25rem; text-align: center;"></i>
+                            <span style="font-weight: 600;">Approve Reviews <span style="color: #DC2626; font-weight: bold;">(@(Model?.PendingReviews ?? 0))</span></span>
+                            <i class="fas fa-arrow-right" style="color: #9CA3AF; margin-left: auto;"></i>
+                        </a>
+                        <a href="/admin/trainers" class="quick-action-btn">
+                            <i class="fas fa-user-check" style="color: #16A34A; width: 1.25rem; text-align: center;"></i>
+                            <span style="font-weight: 600;">Verify Trainers <span style="color: #B45309; font-weight: bold;">(@(Model?.UnverifiedTrainers ?? 0))</span></span>
+                            <i class="fas fa-arrow-right" style="color: #9CA3AF; margin-left: auto;"></i>
+                        </a>
+                        <a href="/admin/payments" class="quick-action-btn">
+                            <i class="fas fa-credit-card" style="color: #A855F7; width: 1.25rem; text-align: center;"></i>
+                            <span style="font-weight: 600;">View Payments</span>
+                            <i class="fas fa-arrow-right" style="color: #9CA3AF; margin-left: auto;"></i>
+                        </a>
+                        <a href="/admin/analytics" class="quick-action-btn">
+                            <i class="fas fa-chart-bar" style="color: #6366F1; width: 1.25rem; text-align: center;"></i>
+                            <span style="font-weight: 600;">View Analytics</span>
+                            <i class="fas fa-arrow-right" style="color: #9CA3AF; margin-left: auto;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Global chart instances
+        let revenueChart = null;
+        let subscriptionStatusChart = null;
+        let paymentStatusChart = null;
+        let userDistributionChart = null;
+
+        // Initialize Revenue Chart
+        async function initRevenueChart(days = 30) {
+            try {
+                const response = await fetch(`/admin/dashboard/chart-data/revenue?days=${days}`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('revenueChart');
+                if (!ctx) return;
+
+                if (revenueChart) {
+                    revenueChart.destroy();
+                }
+
+                const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(37, 99, 235, 0.3)');
+                gradient.addColorStop(1, 'rgba(37, 99, 235, 0.01)');
+
+                revenueChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Revenue (EGP)',
+                            data: data.data,
+                            borderColor: '#2563EB',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#2563EB',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointShadowBlur: 10,
+                            pointShadowOffsetX: 0,
+                            pointShadowOffsetY: 4,
+                            pointShadowColor: 'rgba(37, 99, 235, 0.3)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 16,
+                                    font: { size: 13, weight: 'bold' },
+                                    color: '#6B7280',
+                                    usePointStyle: true
+                                }
+                            },
+                            filler: {
+                                propagate: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#E5E7EB', drawTicks: false, drawBorder: false },
+                                ticks: {
+                                    color: '#6B7280',
+                                    font: { size: 12, weight: '500' },
+                                    callback: function (value) {
+                                        return 'EGP ' + value.toLocaleString();
+                                    },
+                                    padding: 12
+                                }
+                            },
+                            x: {
+                                grid: { display: false, drawBorder: false },
+                                ticks: { 
+                                    color: '#6B7280', 
+                                    font: { size: 12, weight: '500' },
+                                    padding: 12
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading revenue chart:', error);
+            }
+        }
+
+        // Initialize Subscription Status Chart
+        async function initSubscriptionStatusChart() {
+            try {
+                const response = await fetch('/admin/dashboard/chart-data/subscription-status');
+                const data = await response.json();
+
+                const ctx = document.getElementById('subscriptionStatusChart');
+                if (!ctx) return;
+
+                if (subscriptionStatusChart) {
+                    subscriptionStatusChart.destroy();
+                }
+
+                subscriptionStatusChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: [
+                                'rgba(34, 197, 94, 0.85)',
+                                'rgba(245, 158, 11, 0.85)',
+                                'rgba(239, 68, 68, 0.85)'
+                            ],
+                            borderColor: ['#22C55E', '#F59E0B', '#EF4444'],
+                            borderWidth: 2,
+                            hoverBorderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 16,
+                                    font: { size: 13, weight: 'bold' },
+                                    color: '#6B7280',
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading subscription status chart:', error);
+            }
+        }
+
+        // Initialize Payment Status Chart
+        async function initPaymentStatusChart() {
+            try {
+                const response = await fetch('/admin/dashboard/chart-data/payments');
+                const data = await response.json();
+
+                const ctx = document.getElementById('paymentStatusChart');
+                if (!ctx) return;
+
+                if (paymentStatusChart) {
+                    paymentStatusChart.destroy();
+                }
+
+                paymentStatusChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: [
+                                'rgba(34, 197, 94, 0.85)',
+                                'rgba(239, 68, 68, 0.85)',
+                                'rgba(245, 158, 11, 0.85)'
+                            ],
+                            borderColor: ['#22C55E', '#EF4444', '#F59E0B'],
+                            borderWidth: 2,
+                            hoverBorderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 16,
+                                    font: { size: 13, weight: 'bold' },
+                                    color: '#6B7280',
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading payment status chart:', error);
+            }
+        }
+
+        // Initialize User Distribution Chart
+        async function initUserDistributionChart() {
+            try {
+                const response = await fetch('/admin/dashboard/chart-data/users');
+                const data = await response.json();
+
+                const ctx = document.getElementById('userDistributionChart');
+                if (!ctx) return;
+
+                if (userDistributionChart) {
+                    userDistributionChart.destroy();
+                }
+
+                userDistributionChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: [
+                                'rgba(37, 99, 235, 0.85)',
+                                'rgba(34, 197, 94, 0.85)',
+                                'rgba(239, 68, 68, 0.85)'
+                            ],
+                            borderColor: ['#2563EB', '#22C55E', '#EF4444'],
+                            borderWidth: 2,
+                            hoverBorderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 16,
+                                    font: { size: 13, weight: 'bold' },
+                                    color: '#6B7280',
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading user distribution chart:', error);
+            }
+        }
+
+        // Initialize all charts on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add loading animation
+            const cards = document.querySelectorAll('.stat-card, .chart-container');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease-out';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+
+            initRevenueChart(30);
+            initSubscriptionStatusChart();
+            initPaymentStatusChart();
+            initUserDistributionChart();
+
+            // Chart range selector
+            document.querySelectorAll('input[name="chartRange"]').forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.dataset.chart === 'revenue') {
+                        initRevenueChart(parseInt(this.value));
+                    }
+                });
+            });
+
+            // Enhanced Refresh button
+            document.getElementById('refreshBtn').addEventListener('click', function () {
+                const btn = this;
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+                btn.disabled = true;
+
+                // Reload all charts
+                setTimeout(() => {
+                    initRevenueChart(30);
+                    initSubscriptionStatusChart();
+                    initPaymentStatusChart();
+                    initUserDistributionChart();
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }, 1500);
+            });
+        });
+    </script>
+}

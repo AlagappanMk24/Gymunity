@@ -1,0 +1,303 @@
+﻿@{
+    ViewData["Title"] = "Admin Login - Gymunity";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome 6.4 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @@keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-slideUp {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .animate-scaleIn {
+            animation: scaleIn 0.6s ease-out 0.2s both;
+        }
+
+        .animate-slideDown {
+            animation: slideDown 0.3s ease;
+        }
+
+        .animate-spin-custom {
+            animation: spin 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body class="w-full h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 flex items-center justify-center p-5 overflow-x-hidden">
+    <div class="flex items-center justify-center w-full h-screen px-5">
+        <div class="w-full max-w-sm bg-white rounded-xl shadow-2xl overflow-hidden animate-slideUp">
+            <!-- Login Header -->
+            <div class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-8 py-12 text-center">
+                <div class="text-5xl mb-4 animate-scaleIn">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <h1 class="text-3xl font-bold mb-2 tracking-tight">Gymunity Admin</h1>
+                <p class="text-base font-normal opacity-95">Secure Admin Portal</p>
+            </div>
+
+            <!-- Login Body -->
+            <div class="px-8 py-11">
+                <!-- Error Messages -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    @foreach (var modelState in ViewData.ModelState.Values)
+                    {
+                        @foreach (var error in modelState.Errors)
+                        {
+                            <div class="flex items-start gap-3 p-3.5 mb-6 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm animate-slideDown">
+                                <i class="fas fa-exclamation-circle mt-0.5 flex-shrink-0"></i>
+                                <span>@error.ErrorMessage</span>
+                            </div>
+                        }
+                    }
+                }
+
+                <!-- Login Form -->
+                <form method="post" id="loginForm" asp-action="Login" asp-controller="Auth">
+                    <!-- Email/Username Field -->
+                    <div class="mb-6">
+                        <label for="emailOrUserName" class="block font-semibold text-gray-900 text-sm mb-2.5 flex items-center gap-2">
+                            <i class="fas fa-user"></i>
+                            Email or Username
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                class="w-full px-4 py-3.5 pl-12 text-sm font-normal bg-gray-50 border-2 border-gray-200 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 placeholder-gray-400"
+                                id="emailOrUserName"
+                                name="EmailOrUserName"
+                                placeholder="Enter your email or username"
+                                required
+                                autocomplete="username"
+                                autofocus />
+                            <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-6">
+                        <label for="password" class="block font-semibold text-gray-900 text-sm mb-2.5 flex items-center gap-2">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                class="w-full px-4 py-3.5 pl-12 pr-12 text-sm font-normal bg-gray-50 border-2 border-gray-200 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 placeholder-gray-400"
+                                id="password"
+                                name="Password"
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password" />
+                            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none"></i>
+                            <button 
+                                type="button" 
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 px-1.5 py-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded transition duration-300 ease-in-out"
+                                onclick="togglePasswordVisibility()"
+                                tabindex="-1"
+                                aria-label="Toggle password visibility">
+                                <i class="fas fa-eye text-base" id="passwordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit" 
+                        class="w-full py-3.5 px-6 mt-2 text-base font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg transition duration-300 ease-in-out hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-65 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                        id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Sign In</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Login Footer -->
+            <div class="text-center px-8 py-5 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
+                <p>
+                    <i class="fas fa-shield-alt"></i>
+                    Secure login required for admin access
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" id="loadingOverlay">
+        <div class="w-12 h-12 border-4 border-white/25 border-t-white rounded-full animate-spin-custom"></div>
+    </div>
+
+    <!-- Font Awesome JS (for icons) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <!-- Login Scripts -->
+    <script>
+        // Password visibility toggle
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.getElementById('passwordIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Form submission handling
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const emailOrUserName = document.getElementById('emailOrUserName').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Validation
+            if (!emailOrUserName) {
+                e.preventDefault();
+                showValidationError('Please enter your email or username');
+                return;
+            }
+
+            if (!password) {
+                e.preventDefault();
+                showValidationError('Please enter your password');
+                return;
+            }
+
+            // Show loading state
+            const loginBtn = document.getElementById('loginBtn');
+            const originalContent = loginBtn.innerHTML;
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="inline-flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i>Signing in...</span>';
+            
+            // Show loading overlay
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+
+            // Reset after 10 seconds (safety timeout)
+            setTimeout(() => {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalContent;
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('loadingOverlay').classList.remove('flex');
+            }, 10000);
+        });
+
+        // Real-time input validation
+        document.getElementById('emailOrUserName').addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('border-red-500');
+            }
+        });
+
+        document.getElementById('password').addEventListener('input', function() {
+            if (this.value) {
+                this.classList.remove('border-red-500');
+            }
+        });
+
+        // Enter key to submit
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').submit();
+            }
+        });
+
+        // Show validation error
+        function showValidationError(message) {
+            const alertHtml = `
+                <div class="flex items-start gap-3 p-3.5 mb-6 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm animate-slideDown">
+                    <i class="fas fa-exclamation-circle mt-0.5 flex-shrink-0"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            const loginBody = document.querySelector('div[class*="py-11"]');
+            const existingAlert = loginBody.querySelector('[class*="bg-red-50"]');
+            
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            loginBody.insertAdjacentHTML('afterbegin', alertHtml);
+        }
+
+        // Auto-focus and select effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus on first input
+            document.getElementById('emailOrUserName').focus();
+
+            // Prevent auto-fill issues
+            window.addEventListener('load', function() {
+                document.getElementById('emailOrUserName').value = '';
+                document.getElementById('password').value = '';
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                // Clear fields on Escape (optional)
+                // document.getElementById('loginForm').reset();
+            }
+        });
+    </script>
+</body>
+</html>

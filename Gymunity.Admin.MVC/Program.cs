@@ -1,4 +1,7 @@
-﻿namespace Gymunity.Admin.MVC
+﻿using Gymunity.Admin.MVC.Services;
+using Gymunity.Infrastructure.DI;
+
+namespace Gymunity.Admin.MVC
 {
     public class Program
     {
@@ -31,6 +34,10 @@
                     config.Cookie.Name = "Gymunity.Admin.Cookie";
                     config.LoginPath = "/Auth/Login";
                 });
+            builder.Services.AddDbContextServices(builder.Configuration);
+            builder.Services.AddInfrastructureServices();
+            // Add Dashboard Service
+            builder.Services.AddScoped<DashboardStatisticsService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
