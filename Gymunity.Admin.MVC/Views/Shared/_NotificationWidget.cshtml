@@ -1,0 +1,755 @@
+@using Microsoft.AspNetCore.Http
+@inject IConfiguration Configuration
+
+<!-- Notification Widget Toast Container -->
+<div id="notificationToastContainer" class="fixed bottom-6 right-6 space-y-3 max-w-sm z-50"></div>
+
+<!-- Real-Time Notification Chat Widget -->
+<div class="relative">
+    <!-- Notification Bell Button -->
+    <button id="notificationBellBtn" 
+            class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" 
+            type="button"
+            title="Notifications">
+        <i class="fas fa-bell text-lg"></i>
+        <span id="notificationBadge" 
+              class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold hidden animate-pulse">
+            0
+        </span>
+    </button>
+
+    <!-- Notification Dropdown Panel -->
+    <div id="notificationPanel" 
+         class="absolute right-0 top-12 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 hidden z-50 flex flex-col max-h-96">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 sticky top-0">
+            <div>
+                <h3 class="font-semibold text-gray-900">Notifications</h3>
+                <p class="text-xs text-gray-600 mt-1">
+                    <span id="unreadCountText">0</span> unread
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" 
+                        id="markAllReadBtn"
+                        class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition hidden"
+                        onclick="markAllNotificationsAsRead()"
+                        title="Mark all as read">
+                    Mark all read
+                </button>
+                <button type="button" 
+                        class="text-gray-400 hover:text-gray-600 transition" 
+                        onclick="closeNotificationPanel()">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Content Area with Scroll -->
+        <div id="notificationsList" class="overflow-y-auto flex-1 divide-y divide-gray-100">
+            <!-- Notifications will be inserted here -->
+            <div class="p-8 text-center text-gray-500">
+                <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
+                <p class="text-sm">No notifications yet</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-3 border-t border-gray-200 bg-gray-50 sticky bottom-0">
+            <a href="/admin/notifications" 
+               class="block w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-50 py-2 rounded transition">
+                View all notifications
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Sound (Optional) -->
+<audio id="notificationSound" style="display:none;">
+    <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==" type="audio/wav">
+</audio>
+
+<script>
+    // Configuration
+    const BASE_API_URL = '@Configuration["BaseApiUrl"]';
+    const ADMIN_NOTIFICATIONS_HUB = BASE_API_URL + '/hubs/admin-notifications';
+
+    // State
+    let notificationConnection = null;
+    let unreadCount = 0;
+    let notifications = [];
+    const MAX_NOTIFICATIONS_IN_PANEL = 10;
+
+    // Initialize notification widget
+    function initNotificationWidget() {
+        const bellBtn = document.getElementById('notificationBellBtn');
+        if (bellBtn) {
+            bellBtn.addEventListener('click', toggleNotificationPanel);
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('notificationPanel');
+            const btn = document.getElementById('notificationBellBtn');
+            if (panel && btn && !panel.contains(event.target) && !btn.contains(event.target)) {
+                closeNotificationPanel();
+            }
+        });
+
+        // Initialize SignalR connection
+        connectToNotificationHub();
+    }
+
+    // Connect to SignalR Hub
+    function connectToNotificationHub() {
+        // Check if SignalR library is loaded
+        if (typeof signalR === 'undefined') {
+            console.error('SignalR library not loaded');
+            setTimeout(connectToNotificationHub, 2000); // Retry after 2 seconds
+            return;
+        }
+
+        notificationConnection = new signalR.HubConnectionBuilder()
+            .withUrl(ADMIN_NOTIFICATIONS_HUB, {
+                accessTokenFactory: () => getAuthToken()
+            })
+            .withAutomaticReconnect([0, 1000, 5000, 10000, 20000])
+            .build();
+
+        // Connection event handlers
+        notificationConnection.onreconnecting((error) => {
+            console.warn('SignalR reconnecting...', error);
+            updateConnectionStatus(false);
+        });
+
+        notificationConnection.onreconnected((connectionId) => {
+            console.log('SignalR reconnected', connectionId);
+            updateConnectionStatus(true);
+        });
+
+        notificationConnection.onclose((error) => {
+            console.error('SignalR connection closed', error);
+            updateConnectionStatus(false);
+            // Attempt to reconnect after 5 seconds
+            setTimeout(connectToNotificationHub, 5000);
+        });
+
+        // Listen for incoming notifications
+        notificationConnection.on('ReceiveNotification', onNotificationReceived);
+        
+        // Listen for critical alerts
+        notificationConnection.on('ReceiveCriticalAlert', onCriticalAlertReceived);
+        
+        // Listen for notification count updates
+        notificationConnection.on('UpdateNotificationCount', onNotificationCountUpdated);
+        
+        // Listen for action required events
+        notificationConnection.on('ActionRequired', onActionRequired);
+
+        // Start the connection
+        notificationConnection.start()
+            .then(() => {
+                console.log('Successfully connected to notification hub');
+                updateConnectionStatus(true);
+            })
+            .catch(err => {
+                console.error('Error connecting to notification hub:', err);
+                updateConnectionStatus(false);
+                // Retry connection
+                setTimeout(connectToNotificationHub, 5000);
+            });
+    }
+
+    // Handle incoming notification
+    function onNotificationReceived(data) {
+        console.log('Notification received:', data);
+        
+        // Add to notifications array
+        const notification = {
+            id: data.Id || Date.now(),
+            title: data.Title || 'Notification',
+            message: data.Message || '',
+            type: data.Type || 'SystemNotification',
+            relatedEntityId: data.RelatedEntityId,
+            createdAt: data.CreatedAt || new Date().toISOString(),
+            isRead: data.IsRead || false
+        };
+
+        notifications.unshift(notification);
+        if (!notification.isRead) {
+            unreadCount++;
+        }
+
+        // Play sound
+        playNotificationSound();
+
+        // Show toast
+        showNotificationToast(notification);
+
+        // Update badge
+        updateNotificationBadge();
+
+        // Keep only recent notifications in panel
+        if (notifications.length > MAX_NOTIFICATIONS_IN_PANEL) {
+            notifications.pop();
+        }
+
+        // Update the panel if open
+        refreshNotificationsList();
+    }
+
+    // Handle critical alerts
+    function onCriticalAlertReceived(data) {
+        console.warn('Critical alert received:', data);
+        
+        // Show critical alert toast with special styling
+        showCriticalAlertToast(data);
+        
+        // Also play a more prominent notification
+        playNotificationSound();
+    }
+
+    // Handle notification count updates
+    function onNotificationCountUpdated(count) {
+        unreadCount = count;
+        updateNotificationBadge();
+        refreshNotificationsList();
+    }
+
+    // Handle action required notifications
+    function onActionRequired(data) {
+        console.log('Action required:', data);
+        
+        // Create a special action notification
+        const notification = {
+            id: Date.now(),
+            title: 'Action Required: ' + data.Action,
+            message: 'Target: ' + data.TargetEntity,
+            type: 'ActionRequired',
+            relatedEntityId: data.RelatedEntityId,
+            createdAt: data.Timestamp || new Date().toISOString(),
+            isRead: false
+        };
+
+        notifications.unshift(notification);
+        unreadCount++;
+
+        playNotificationSound();
+        showNotificationToast(notification);
+        updateNotificationBadge();
+        refreshNotificationsList();
+    }
+
+    // Show notification toast
+    function showNotificationToast(notification) {
+        const container = document.getElementById('notificationToastContainer');
+        if (!container) return;
+
+        const toastId = 'toast-' + notification.id;
+        const toast = document.createElement('div');
+        toast.id = toastId;
+        toast.className = getToastClass(notification.type);
+        
+        const timeString = formatTime(new Date(notification.createdAt));
+        
+        toast.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-${getNotificationIcon(notification.type)} text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-sm">${escapeHtml(notification.title)}</p>
+                    <p class="text-xs mt-1 opacity-90">${escapeHtml(notification.message)}</p>
+                    <p class="text-xs mt-2 opacity-75">${timeString}</p>
+                </div>
+                <button type="button" class="flex-shrink-0 text-lg opacity-50 hover:opacity-100 transition" onclick="document.getElementById('${toastId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto remove after 6 seconds
+        setTimeout(() => {
+            if (document.getElementById(toastId)) {
+                document.getElementById(toastId).remove();
+            }
+        }, 6000);
+    }
+
+    // Show critical alert toast
+    function showCriticalAlertToast(data) {
+        const container = document.getElementById('notificationToastContainer');
+        if (!container) return;
+
+        const toastId = 'critical-toast-' + Date.now();
+        const toast = document.createElement('div');
+        toast.id = toastId;
+        toast.className = `
+            p-4 rounded-lg shadow-lg border-l-4 border-red-600 
+            bg-red-50 text-red-900 animate-bounce-in
+            backdrop-blur-sm
+        `;
+        
+        toast.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-lg text-red-600"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">${escapeHtml(data.Title || 'Security Alert')}</p>
+                    <p class="text-xs mt-1">${escapeHtml(data.Message || '')}</p>
+                    <p class="text-xs mt-2 text-red-700"><strong>Severity:</strong> ${escapeHtml(data.Severity || 'warning')}</p>
+                </div>
+                <button type="button" class="flex-shrink-0 text-lg" onclick="document.getElementById('${toastId}').remove()">
+                    <i class="fas fa-times text-red-600"></i>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Critical alerts stay longer (10 seconds)
+        setTimeout(() => {
+            if (document.getElementById(toastId)) {
+                document.getElementById(toastId).remove();
+            }
+        }, 10000);
+    }
+
+    // Update notification badge
+    function updateNotificationBadge() {
+        const badge = document.getElementById('notificationBadge');
+        const unreadCountText = document.getElementById('unreadCountText');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+        
+        if (badge && unreadCountText) {
+            unreadCountText.textContent = unreadCount;
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.classList.remove('hidden');
+                if (markAllReadBtn) {
+                    markAllReadBtn.classList.remove('hidden');
+                }
+            } else {
+                badge.classList.add('hidden');
+                if (markAllReadBtn) {
+                    markAllReadBtn.classList.add('hidden');
+                }
+            }
+        }
+    }
+
+    // Refresh notifications list
+    function refreshNotificationsList() {
+        const listContainer = document.getElementById('notificationsList');
+        if (!listContainer) return;
+
+        if (notifications.length === 0) {
+            listContainer.innerHTML = `
+                <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
+                    <p class="text-sm">No notifications yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        listContainer.innerHTML = '';
+
+        notifications.forEach((notification, index) => {
+            const notifEl = createNotificationElement(notification);
+            listContainer.appendChild(notifEl);
+        });
+    }
+
+    // Create notification element
+    function createNotificationElement(notification) {
+        const div = document.createElement('div');
+        const isUnread = !notification.isRead;
+        
+        div.className = `
+            p-4 hover:bg-gray-50 transition cursor-pointer group
+            ${isUnread ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-white'}
+        `;
+        
+        const timeString = formatTime(new Date(notification.createdAt));
+        const iconClass = getNotificationIcon(notification.type);
+        const iconColor = getIconColor(notification.type);
+        const bgColor = getBgColor(notification.type);
+
+        div.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0 w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center">
+                    <i class="fas fa-${iconClass} ${iconColor}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex-1">
+                            <p class="font-semibold text-sm text-gray-900">${escapeHtml(notification.title)}</p>
+                            ${isUnread ? '<span class="inline-block ml-2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full font-medium">New</span>' : ''}
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">${escapeHtml(notification.message)}</p>
+                    <p class="text-xs text-gray-400 mt-2">${timeString}</p>
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    ${isUnread ? `<button type="button" 
+                            class="p-1 text-blue-500 hover:text-blue-600 transition"
+                            onclick="event.stopPropagation(); markNotificationAsRead(${notification.id})"
+                            title="Mark as read">
+                            <i class="fas fa-check text-sm"></i>
+                        </button>` : ''}
+                    <button type="button" 
+                            class="p-1 text-gray-400 hover:text-gray-600 transition"
+                            onclick="event.stopPropagation(); removeNotification('${notification.id}')"
+                            title="Remove">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        div.addEventListener('click', () => {
+            if (notification.relatedEntityId && !isUnread) {
+                navigateToNotificationTarget(notification.type, notification.relatedEntityId);
+            }
+        });
+
+        return div;
+    }
+
+    // Mark notification as read
+    function markNotificationAsRead(notificationId) {
+        const notification = notifications.find(n => n.id == notificationId);
+        if (notification && !notification.isRead) {
+            notification.isRead = true;
+            unreadCount = Math.max(0, unreadCount - 1);
+            updateNotificationBadge();
+            refreshNotificationsList();
+
+            // Call backend API to mark as read
+            fetch('/admin/notifications/mark-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ notificationId: notificationId })
+            })
+            .catch(err => console.error('Error marking notification as read:', err));
+        }
+    }
+
+    // Mark all notifications as read
+    function markAllNotificationsAsRead() {
+        // Mark all unread notifications as read
+        notifications.forEach(n => {
+            if (!n.isRead) {
+                n.isRead = true;
+            }
+        });
+        
+        unreadCount = 0;
+        updateNotificationBadge();
+        refreshNotificationsList();
+
+        // Call backend API to mark all as read
+        fetch('/admin/notifications/mark-all-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .catch(err => console.error('Error marking all notifications as read:', err));
+    }
+
+    // Remove notification
+    function removeNotification(notificationId) {
+        notifications = notifications.filter(n => n.id != notificationId);
+        refreshNotificationsList();
+    }
+
+    // Toggle notification panel
+    function toggleNotificationPanel() {
+        const panel = document.getElementById('notificationPanel');
+        if (panel) {
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                // Refresh list when opening
+                refreshNotificationsList();
+            }
+        }
+    }
+
+    // Close notification panel
+    function closeNotificationPanel() {
+        const panel = document.getElementById('notificationPanel');
+        if (panel) {
+            panel.classList.add('hidden');
+        }
+    }
+
+    // Get toast CSS classes based on notification type
+    function getToastClass(type) {
+        const baseClass = 'p-4 rounded-lg shadow-lg border-l-4 animate-slide-in-right';
+        
+        switch (type) {
+            case 'NewPayment':
+                return `${baseClass} border-l-green-500 bg-green-50 text-green-900`;
+            case 'PaymentFailure':
+                return `${baseClass} border-l-red-500 bg-red-50 text-red-900`;
+            case 'NewClientRegistration':
+                return `${baseClass} border-l-blue-500 bg-blue-50 text-blue-900`;
+            case 'NewTrainerRegistration':
+                return `${baseClass} border-l-purple-500 bg-purple-50 text-purple-900`;
+            case 'NewSubscription':
+                return `${baseClass} border-l-green-500 bg-green-50 text-green-900`;
+            case 'ReviewFlaggedForModeration':
+                return `${baseClass} border-l-orange-500 bg-orange-50 text-orange-900`;
+            case 'AccountSuspended':
+                return `${baseClass} border-l-red-500 bg-red-50 text-red-900`;
+            case 'SecurityIssueDetected':
+                return `${baseClass} border-l-red-600 bg-red-50 text-red-900`;
+            default:
+                return `${baseClass} border-l-gray-500 bg-gray-50 text-gray-900`;
+        }
+    }
+
+    // Get notification icon
+    function getNotificationIcon(type) {
+        switch (type) {
+            case 'NewPayment':
+                return 'money-bill';
+            case 'PaymentFailure':
+                return 'times-circle';
+            case 'NewClientRegistration':
+                return 'user-plus';
+            case 'NewTrainerRegistration':
+                return 'user-tie';
+            case 'NewSubscription':
+                return 'check-circle';
+            case 'ReviewFlaggedForModeration':
+                return 'flag';
+            case 'AccountSuspended':
+                return 'lock';
+            case 'SecurityIssueDetected':
+                return 'exclamation-triangle';
+            case 'ActionRequired':
+                return 'tasks';
+            default:
+                return 'bell';
+        }
+    }
+
+    // Get icon color class
+    function getIconColor(type) {
+        switch (type) {
+            case 'NewPayment':
+            case 'NewSubscription':
+                return 'text-green-600';
+            case 'PaymentFailure':
+            case 'AccountSuspended':
+            case 'SecurityIssueDetected':
+                return 'text-red-600';
+            case 'NewClientRegistration':
+            case 'NewTrainerRegistration':
+                return 'text-blue-600';
+            case 'ReviewFlaggedForModeration':
+                return 'text-orange-600';
+            default:
+                return 'text-gray-600';
+        }
+    }
+
+    // Get background color class
+    function getBgColor(type) {
+        switch (type) {
+            case 'NewPayment':
+            case 'NewSubscription':
+                return 'bg-green-100';
+            case 'PaymentFailure':
+            case 'AccountSuspended':
+            case 'SecurityIssueDetected':
+                return 'bg-red-100';
+            case 'NewClientRegistration':
+            case 'NewTrainerRegistration':
+                return 'bg-blue-100';
+            case 'ReviewFlaggedForModeration':
+                return 'bg-orange-100';
+            default:
+                return 'bg-gray-100';
+        }
+    }
+
+    // Format time
+    function formatTime(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+
+        return date.toLocaleDateString();
+    }
+
+    // Play notification sound
+    function playNotificationSound() {
+        const audio = document.getElementById('notificationSound');
+        if (audio && Notification.permission === 'granted') {
+            try {
+                audio.play().catch(() => {
+                    // Silent fail - browser may not allow autoplay
+                });
+            } catch (e) {
+                console.log('Could not play notification sound');
+            }
+        }
+    }
+
+    // Update connection status indicator
+    function updateConnectionStatus(connected) {
+        // You can add a visual indicator here
+        console.log('Connection status:', connected ? 'connected' : 'disconnected');
+    }
+
+    // Navigate to notification target
+    function navigateToNotificationTarget(type, entityId) {
+        const routes = {
+            'NewPayment': `/admin/payments/${entityId}`,
+            'PaymentFailure': `/admin/payments/${entityId}`,
+            'NewClientRegistration': `/admin/clients/${entityId}`,
+            'NewTrainerRegistration': `/admin/trainers/${entityId}`,
+            'NewSubscription': `/admin/subscriptions/${entityId}`,
+            'ReviewFlaggedForModeration': `/admin/reviews/${entityId}`,
+            'AccountSuspended': `/admin/users/${entityId}`,
+            'RefundProcessed': `/admin/payments/${entityId}`
+        };
+
+        const route = routes[type];
+        if (route) {
+            window.location.href = route;
+        }
+    }
+
+    // Get authentication token
+    function getAuthToken() {
+        // Try to get token from localStorage or sessionStorage
+        let token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        
+        if (!token) {
+            // Try to extract from cookie if using cookie-based auth
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                if (cookie.includes('jwt') || cookie.includes('auth')) {
+                    token = cookie.split('=')[1];
+                    break;
+                }
+            }
+        }
+
+        return token || '';
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Request notification permission
+    function requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    // Initialize when document is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        initNotificationWidget();
+        requestNotificationPermission();
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (notificationConnection && notificationConnection.state === signalR.HubConnectionState.Connected) {
+            notificationConnection.stop().catch(err => console.error('Error stopping connection:', err));
+        }
+    });
+</script>
+
+<style>
+    @@keyframes slide-in-right {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes bounce-in {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .animate-slide-in-right {
+        animation: slide-in-right 0.3s ease-out;
+    }
+
+    .animate-bounce-in {
+        animation: bounce-in 0.5s ease-out;
+    }
+
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    /* Ensure notification panel scrollbar is styled */
+    #notificationsList::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #notificationsList::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    #notificationsList::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+    #notificationsList::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+</style>

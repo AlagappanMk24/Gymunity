@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Gymunity Admin</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome 6.4 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Admin Custom CSS -->
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    
+    <!-- SignalR Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <div class="flex h-screen bg-gray-50">
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar" class="fixed top-0 left-0 w-72 h-screen bg-white border-r border-gray-200 overflow-y-auto transition-all duration-300 z-50 shadow-sm lg:shadow-none lg:relative lg:z-auto sidebar-menu">
+            <!-- Sidebar Header -->
+            <div class="border-b border-gray-200 p-6">
+                <div class="flex flex-col gap-1">
+                    <h5 class="text-lg font-bold text-blue-600 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fas fa-dumbbell"></i>
+                        <span>Gymunity</span>
+                    </h5>
+                    <small class="text-gray-500 text-xs">Admin Panel</small>
+                </div>
+                <button class="hidden lg:hidden absolute right-4 top-6 text-gray-600 hover:text-gray-900 transition sidebar-toggle-mobile" type="button">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Sidebar Navigation Items -->
+            <ul class="flex flex-col gap-1 p-3">
+                <!-- Dashboard -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Dashboard" asp-action="Index">
+                        <i class="nav-icon fas fa-chart-line w-5 text-center"></i>
+                        <span class="nav-text flex-1">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- Users Management Section -->
+                <li class="mt-4 mb-2 px-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">User Management</p>
+                </li>
+
+                <!-- Clients -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Clients" asp-action="Index">
+                        <i class="nav-icon fas fa-users w-5 text-center"></i>
+                        <span class="nav-text flex-1">Clients</span>
+                    </a>
+                </li>
+
+                <!-- Trainers -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Trainers" asp-action="Index">
+                        <i class="nav-icon fas fa-dumbbell w-5 text-center"></i>
+                        <span class="nav-text flex-1">Trainers</span>
+                        <span class="badge hidden px-2 py-1 text-xs font-semibold bg-orange-500 text-white rounded-full" id="trainerBadge">0</span>
+                    </a>
+                </li>
+
+                <!-- Content Management Section |
+                <li class="mt-4 mb-2 px-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Content Management</p>
+                </li>
+
+                <!-- Reviews -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Reviews" asp-action="Index">
+                        <i class="nav-icon fas fa-star w-5 text-center"></i>
+                        <span class="nav-text flex-1">Reviews</span>
+                        <span class="badge hidden px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded-full" id="reviewBadge">0</span>
+                    </a>
+                </li>
+
+                <!-- Programs -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Programs" asp-action="Index">
+                        <i class="nav-icon fas fa-list-check w-5 text-center"></i>
+                        <span class="nav-text flex-1">Programs</span>
+                    </a>
+                </li>
+
+                <!-- Business Management Section -->
+                <li class="mt-4 mb-2 px-4">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Business Management</p>
+                </li>
+
+                <!-- Subscriptions -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Subscriptions" asp-action="Index">
+                        <i class="nav-icon fas fa-credit-card w-5 text-center"></i>
+                        <span class="nav-text flex-1">Subscriptions</span>
+                    </a>
+                </li>
+
+                <!-- Payments -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Payments" asp-action="Index">
+                        <i class="nav-icon fas fa-money-bill-wave w-5 text-center"></i>
+                        <span class="nav-text flex-1">Payments</span>
+                        <span class="badge hidden px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded-full" id="paymentBadge">0</span>
+                    </a>
+                </li>
+
+                <!-- Analytics -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Analytics" asp-action="Index">
+                        <i class="nav-icon fas fa-chart-bar w-5 text-center"></i>
+                        <span class="nav-text flex-1">Analytics</span>
+                    </a>
+                </li>
+
+                <!-- System Section -->
+                <li class="my-2 border-t border-gray-200"></li>
+
+                <!-- Notifications -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600" 
+                       asp-area="" asp-controller="Notifications" asp-action="Index">
+                        <i class="nav-icon fas fa-bell w-5 text-center"></i>
+                        <span class="nav-text flex-1">Notifications</span>
+                    </a>
+                </li>
+
+                
+            </ul>
+                
+
+            <!-- Sidebar Footer -->
+            <div class="absolute bottom-0 w-full border-t border-gray-200 bg-white p-3">
+                <a class="nav-link flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition" 
+                   asp-area="" asp-controller="Auth" asp-action="Logout">
+                    <i class="nav-icon fas fa-sign-out-alt w-5 text-center"></i>
+                    <span class="nav-text flex-1">Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col lg:ml-0 transition-all duration-300 sidebar-content">
+            <!-- Top Navigation Bar -->
+            <nav class="sticky top-0 z-40 h-auto bg-white border-b border-gray-200 shadow-sm">
+                <div class="h-full px-4 md:px-6">
+                    <div class="flex items-center justify-between h-16 gap-4">
+                        <!-- Left Side: Menu Toggle & Breadcrumb -->
+                        <div class="flex items-center gap-4 flex-1">
+                            <button class="hidden lg:hidden sidebar-toggle-btn p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" id="sidebarToggle" type="button">
+                                <i class="fas fa-bars text-lg"></i>
+                            </button>
+
+                            <nav aria-label="breadcrumb" class="hidden md:block">
+                                <ol class="flex items-center gap-2 text-sm">
+                                    <li><a href="/admin/dashboard" class="text-blue-600 hover:text-blue-700">Dashboard</a></li>
+                                    @if (ViewBag.BreadcrumbItems != null)
+                                    {
+                                        @foreach (var item in ViewBag.BreadcrumbItems)
+                                        {
+                                            <li class="text-gray-400">/</li>
+                                            <li class="text-gray-600">@item</li>
+                                        }
+                                    }
+                                </ol>
+                            </nav>
+                        </div>
+
+                        <!-- Right Side: User Menu & Utilities -->
+                        <div class="flex items-center gap-4">
+                            <!-- Real-Time Notifications Widget -->
+                            @await Html.PartialAsync("_NotificationWidget")
+
+                            <!-- User Menu -->
+                            <div class="relative group">
+                                <button class="flex items-center gap-2 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" type="button">
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <span class="hidden sm:inline text-sm font-medium text-gray-900">@User.Identity?.Name</span>
+                                </button>
+                                <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 hidden group-hover:block z-50">
+                                    <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">@User.Identity?.Name</div>
+                                    <a href="/admin/settings" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 transition">
+                                        <i class="fas fa-cog w-4"></i>
+                                        <span>Settings</span>
+                                    </a>
+                                    <a href="/admin/profile" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 transition">
+                                        <i class="fas fa-user w-4"></i>
+                                        <span>Profile</span>
+                                    </a>
+                                    <div class="border-t border-gray-200"></div>
+                                    <a asp-controller="Auth" asp-action="Logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition">
+                                        <i class="fas fa-sign-out-alt w-4"></i>
+                                        <span>Logout</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Page Content -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-4 md:p-6 lg:p-8">
+                    <!-- Alert Messages -->
+                    @if (!string.IsNullOrEmpty(TempData["SuccessMessage"]?.ToString()))
+                    {
+                        <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 flex items-start gap-3 animate-fadeIn">
+                            <i class="fas fa-check-circle flex-shrink-0 mt-0.5"></i>
+                            <div class="flex-grow">@TempData["SuccessMessage"]</div>
+                            <button type="button" class="text-green-400 hover:text-green-600 ml-2" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(TempData["ErrorMessage"]?.ToString()))
+                    {
+                        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-start gap-3 animate-fadeIn">
+                            <i class="fas fa-exclamation-circle flex-shrink-0 mt-0.5"></i>
+                            <div class="flex-grow">@TempData["ErrorMessage"]</div>
+                            <button type="button" class="text-red-400 hover:text-red-600 ml-2" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(TempData["WarningMessage"]?.ToString()))
+                    {
+                        <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 flex items-start gap-3 animate-fadeIn">
+                            <i class="fas fa-exclamation-triangle flex-shrink-0 mt-0.5"></i>
+                            <div class="flex-grow">@TempData["WarningMessage"]</div>
+                            <button type="button" class="text-yellow-400 hover:text-yellow-600 ml-2" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Main Page Content -->
+                    <main class="page-content">
+                        @RenderBody()
+                    </main>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-white border-t border-gray-200 px-4 md:px-6 lg:px-8 py-4 mt-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+                    <p class="mb-0">
+                        &copy; 2024 Gymunity. All rights reserved.
+                    </p>
+                    <div id="currentTime" class="text-gray-500"></div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Font Awesome JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <!-- Admin Custom JS -->
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('translate-x-full');
+            sidebar.classList.toggle('translate-x-0');
+        });
+
+        // Close sidebar on link click (mobile)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 1024) {
+                    const sidebar = document.getElementById('sidebar');
+                    sidebar.classList.add('translate-x-full');
+                    sidebar.classList.remove('translate-x-0');
+                }
+            });
+        });
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeEl = document.getElementById('currentTime');
+            if (timeEl) {
+                timeEl.textContent = now.toLocaleTimeString();
+            }
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Mark active navigation link
+        function setActiveNavLink() {
+            const currentUrl = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const href = link.getAttribute('href')?.toLowerCase() || '';
+                if (currentUrl.includes(href) && href !== '/') {
+                    link.classList.add('bg-blue-50', 'text-blue-600', 'border-l-blue-600');
+                    link.classList.remove('text-gray-600', 'border-transparent');
+                }
+            });
+        }
+        setActiveNavLink();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

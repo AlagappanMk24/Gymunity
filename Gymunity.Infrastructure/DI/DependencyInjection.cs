@@ -4,6 +4,7 @@ using Gymunity.Application.Contracts.ExternalServices.Email;
 using Gymunity.Application.Contracts.Services;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.Services;
+using Gymunity.Domain;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Infrastructure.Data.Context;
 using Gymunity.Infrastructure.Data.Initializers;
@@ -68,6 +69,7 @@ namespace Gymunity.Infrastructure.DI
         }
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDbInitializer, DbInitializer>();
 
             // Register External Services

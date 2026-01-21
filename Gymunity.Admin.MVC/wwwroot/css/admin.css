@@ -1,0 +1,554 @@
+/* ============================================
+   Gymunity Admin Dashboard - Global Styles
+   ============================================ */
+
+:root {
+    --primary-color: #0D6EFD;
+    --primary-dark: #0B5ED7;
+    --secondary-color: #6C757D;
+    --success-color: #198754;
+    --danger-color: #DC3545;
+    --warning-color: #FFC107;
+    --info-color: #0DCAF0;
+    --light-color: #F8F9FA;
+    --dark-color: #212529;
+    
+    --sidebar-width: 280px;
+    --sidebar-width-collapsed: 80px;
+    --topbar-height: 70px;
+    --footer-height: 60px;
+    
+    --transition-speed: 0.3s;
+    --border-radius: 8px;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   TAILWIND ADMIN CUSTOM STYLES
+   ============================================ */
+
+@layer base {
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+}
+
+@layer components {
+    /* ============================================
+       SIDEBAR STYLES
+       ============================================ */
+    
+    .sidebar-menu {
+        @apply scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400;
+    }
+
+    .sidebar-menu::-webkit-scrollbar {
+        @apply w-2;
+    }
+
+    .sidebar-menu::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+
+    .sidebar-menu::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 rounded;
+    }
+
+    .sidebar-menu::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-400;
+    }
+
+    /* ============================================
+       NAVIGATION STYLES
+       ============================================ */
+
+    .nav-link {
+        @apply relative transition-all duration-200;
+    }
+
+    .nav-link.active,
+    .nav-link[aria-current="page"] {
+        @apply bg-blue-50 text-blue-600 border-l-blue-600 font-semibold;
+    }
+
+    .nav-link:hover:not(.active) {
+        @apply bg-gray-50 text-gray-900;
+    }
+
+    /* ============================================
+       CARD STYLES
+       ============================================ */
+
+    .card {
+        @apply bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow;
+    }
+
+    .card-header {
+        @apply bg-gray-50 border-b border-gray-200 px-6 py-4 font-semibold text-gray-900;
+    }
+
+    .card-body {
+        @apply p-6;
+    }
+
+    /* ============================================
+       BUTTON STYLES
+       ============================================ */
+
+    .btn-primary {
+        @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium;
+    }
+
+    .btn-secondary {
+        @apply px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-medium;
+    }
+
+    .btn-danger {
+        @apply px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium;
+    }
+
+    .btn-success {
+        @apply px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium;
+    }
+
+    .btn-outline-primary {
+        @apply px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium;
+    }
+
+    .btn-outline-secondary {
+        @apply px-4 py-2 bg-white text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium;
+    }
+
+    .btn-sm {
+        @apply px-3 py-1.5 text-sm;
+    }
+
+    .btn-lg {
+        @apply px-6 py-3 text-lg;
+    }
+
+    .btn-icon {
+        @apply w-10 h-10 rounded-full flex items-center justify-center p-0;
+    }
+
+    /* ============================================
+       FORM STYLES
+       ============================================ */
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition;
+    }
+
+    .form-label {
+        @apply block font-medium text-gray-900 mb-2 text-sm;
+    }
+
+    .form-error {
+        @apply text-red-600 text-sm mt-1;
+    }
+
+    .form-success {
+        @apply text-green-600 text-sm mt-1;
+    }
+
+    /* ============================================
+       BADGE STYLES
+       ============================================ */
+
+    .badge {
+        @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold;
+    }
+
+    .badge-primary {
+        @apply bg-blue-100 text-blue-700;
+    }
+
+    .badge-success {
+        @apply bg-green-100 text-green-700;
+    }
+
+    .badge-danger {
+        @apply bg-red-100 text-red-700;
+    }
+
+    .badge-warning {
+        @apply bg-yellow-100 text-yellow-700;
+    }
+
+    .badge-info {
+        @apply bg-cyan-100 text-cyan-700;
+    }
+
+    /* ============================================
+       TABLE STYLES
+       ============================================ */
+
+    .table {
+        @apply w-full border-collapse;
+    }
+
+    .table thead {
+        @apply bg-gray-50 border-b-2 border-gray-200;
+    }
+
+    .table thead th {
+        @apply px-6 py-3 text-left text-xs font-semibold text-gray-900 uppercase tracking-wider;
+    }
+
+    .table tbody tr {
+        @apply border-b border-gray-200 hover:bg-gray-50 transition;
+    }
+
+    .table tbody td {
+        @apply px-6 py-4 text-sm text-gray-900;
+    }
+
+    /* ============================================
+       ALERT STYLES
+       ============================================ */
+
+    .alert {
+        @apply p-4 rounded-lg border flex items-start gap-3;
+    }
+
+    .alert-success {
+        @apply bg-green-50 border-green-200 text-green-700;
+    }
+
+    .alert-danger {
+        @apply bg-red-50 border-red-200 text-red-700;
+    }
+
+    .alert-warning {
+        @apply bg-yellow-50 border-yellow-200 text-yellow-700;
+    }
+
+    .alert-info {
+        @apply bg-blue-50 border-blue-200 text-blue-700;
+    }
+
+    .alert-icon {
+        @apply flex-shrink-0 mt-0.5 text-lg;
+    }
+
+    .alert-content {
+        @apply flex-grow;
+    }
+
+    /* ============================================
+       MODAL STYLES
+       ============================================ */
+
+    .modal {
+        @apply fixed inset-0 z-50 flex items-center justify-center hidden;
+    }
+
+    .modal.open {
+        @apply flex bg-black/50;
+    }
+
+    .modal-content {
+        @apply bg-white rounded-lg shadow-xl max-w-md w-full mx-4;
+    }
+
+    .modal-header {
+        @apply border-b border-gray-200 px-6 py-4 font-semibold text-gray-900;
+    }
+
+    .modal-body {
+        @apply p-6;
+    }
+
+    .modal-footer {
+        @apply border-t border-gray-200 px-6 py-4 flex gap-3 justify-end;
+    }
+
+    /* ============================================
+       DROPDOWN STYLES
+       ============================================ */
+
+    .dropdown {
+        @apply relative inline-block;
+    }
+
+    .dropdown-menu {
+        @apply hidden absolute right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 min-w-max;
+    }
+
+    .dropdown.open .dropdown-menu {
+        @apply block;
+    }
+
+    .dropdown-item {
+        @apply block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm transition;
+    }
+
+    /* ============================================
+       PAGINATION STYLES
+       ============================================ */
+
+    .pagination {
+        @apply flex gap-1 items-center justify-center;
+    }
+
+    .pagination-item {
+        @apply px-3 py-2 rounded border border-gray-300 text-sm hover:bg-gray-100 transition;
+    }
+
+    .pagination-item.active {
+        @apply bg-blue-600 text-white border-blue-600;
+    }
+
+    .pagination-item:disabled {
+        @apply opacity-50 cursor-not-allowed;
+    }
+
+    /* ============================================
+       TOOLTIP & POPOVER
+       ============================================ */
+
+    .tooltip {
+        @apply relative;
+    }
+
+    .tooltip-content {
+        @apply hidden absolute z-10 p-2 text-xs bg-gray-900 text-white rounded;
+    }
+
+    .tooltip:hover .tooltip-content {
+        @apply block;
+    }
+}
+
+@layer utilities {
+    /* ============================================
+       CUSTOM UTILITIES
+       ============================================ */
+
+    /* Text utilities */
+    .text-truncate {
+        @apply truncate;
+    }
+
+    .text-clamp {
+        @apply line-clamp-2;
+    }
+
+    /* Flexbox helpers */
+    .flex-center {
+        @apply flex items-center justify-center;
+    }
+
+    .flex-between {
+        @apply flex items-center justify-between;
+    }
+
+    /* Size utilities */
+    .size-full {
+        @apply w-full h-full;
+    }
+
+    /* Transition utilities */
+    .transition-fast {
+        @apply transition duration-150;
+    }
+
+    .transition-base {
+        @apply transition duration-300;
+    }
+
+    .transition-slow {
+        @apply transition duration-500;
+    }
+
+    /* Shadow utilities */
+    .shadow-soft {
+        @apply shadow-sm;
+    }
+
+    .shadow-sharp {
+        @apply shadow-lg;
+    }
+
+    /* Border utilities */
+    .border-light {
+        @apply border border-gray-200;
+    }
+
+    .border-dark {
+        @apply border border-gray-400;
+    }
+
+    /* Background utilities */
+    .bg-subtle {
+        @apply bg-gray-50;
+    }
+
+    .bg-muted {
+        @apply bg-gray-100;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+    from {
+        @apply opacity-0;
+    }
+    to {
+        @apply opacity-100;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        @apply opacity-0 translate-y-4;
+    }
+    to {
+        @apply opacity-100 translate-y-0;
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        @apply opacity-0 -translate-y-4;
+    }
+    to {
+        @apply opacity-100 translate-y-0;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        @apply opacity-0 -translate-x-4;
+    }
+    to {
+        @apply opacity-100 translate-x-0;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        @apply opacity-0 translate-x-4;
+    }
+    to {
+        @apply opacity-100 translate-x-0;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        @apply opacity-0 scale-95;
+    }
+    to {
+        @apply opacity-100 scale-100;
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideInUp {
+    animation: slideInUp 0.3s ease-out;
+}
+
+.animate-slideInDown {
+    animation: slideInDown 0.3s ease-out;
+}
+
+.animate-slideInLeft {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-slideInRight {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.3s ease-out;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+    @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    .no-print {
+        @apply hidden;
+    }
+
+    .sidebar-menu {
+        @apply hidden;
+    }
+
+    .page-content {
+        @apply p-0;
+    }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    .sidebar-menu {
+        @apply fixed left-0 top-0 h-screen w-full transform -translate-x-full transition-transform duration-300;
+    }
+
+    .sidebar-menu.open {
+        @apply translate-x-0;
+    }
+
+    .nav-text {
+        @apply hidden;
+    }
+
+    .sidebar-menu.open .nav-text {
+        @apply block;
+    }
+
+    .card {
+        @apply text-sm;
+    }
+
+    .btn-sm {
+        @apply text-xs;
+    }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Optional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    /* Dark mode styles can be added here if needed */
+}
