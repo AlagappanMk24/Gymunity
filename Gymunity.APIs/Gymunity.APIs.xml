@@ -1,0 +1,791 @@
+﻿<?xml version="1.0"?>
+<doc>
+	<assembly>
+		<name>Gymunity.APIs</name>
+	</assembly>
+	<members>
+		<member name="T:Gymunity.APIs.Areas.Client.ClientProgramsController">
+			<summary>
+				Provides API endpoints for retrieving and managing client-specific program data for the authenticated user.
+			</summary>
+			<remarks>
+				This controller requires the user to be authenticated. All actions operate in the context of
+				the currently logged-in user and return appropriate HTTP responses for unauthorized access or invalid
+				requests.
+			</remarks>
+			<param name="programsService">The service used to access and manage client program information.</param>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.ClientProgramsController.#ctor(ITI.Gymunity.FP.Application.Services.ClientServices.ClientProgramsService)">
+			<summary>
+				Provides API endpoints for retrieving and managing client-specific program data for the authenticated user.
+			</summary>
+			<remarks>
+				This controller requires the user to be authenticated. All actions operate in the context of
+				the currently logged-in user and return appropriate HTTP responses for unauthorized access or invalid
+				requests.
+			</remarks>
+			<param name="programsService">The service used to access and manage client program information.</param>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.ClientProgramsController.GetActivePrograms">
+			<summary>
+				Retrieves the list of active programs associated with the currently authenticated user.
+			</summary>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a collection of <see cref="T:ITI.Gymunity.FP.Application.DTOs.Program.ProgramResponse"/> objects
+				representing the user's active programs. Returns an unauthorized response if the user is not authenticated,
+				or a bad request response if an error occurs.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.ClientProgramsController.GetProgramById(System.Int32)">
+			<summary>
+				Retrieves the details of a specific program by its unique identifier.
+			</summary>
+			<remarks>
+				This endpoint requires the caller to be an authenticated user. If the user is not
+				authorized to access the requested program, an unauthorized response is returned.
+			</remarks>
+			<param name="programId">The unique identifier of the program to retrieve.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing the program details if found; otherwise, an
+				appropriate error response such as 401 Unauthorized or 400 Bad Request.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.ClientProgramsController.GetProgramWeeks(System.Int32)">
+			<summary>
+				Retrieves all weeks associated with the specified program.
+			</summary>
+			<param name="programId">The unique identifier of the program for which to retrieve weeks.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a collection of <see cref="T:ITI.Gymunity.FP.Application.DTOs.Program.ProgramWeekResponse"/> objects
+				representing the weeks in the specified program. Returns 401 Unauthorized if the user is not authenticated
+				or does not have access to the program. Returns 400 Bad Request if an error occurs.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.ClientProgramsController.GetWeekDays(System.Int32)">
+			<summary>
+				Retrieves all program days associated with the specified week.
+			</summary>
+			<param name="weekId">The unique identifier of the week for which to retrieve program days.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a collection of <see cref="T:ITI.Gymunity.FP.Application.DTOs.Program.ProgramDayDtos.ProgramDayResponse"/> objects for the
+				specified week. Returns 401 Unauthorized if the user is not authenticated, or 400 Bad Request if an error
+				occurs.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.ClientProgramsController.GetDayById(System.Int32)">
+			<summary>
+				Retrieves the details of a specific program day by its unique identifier.
+			</summary>
+			<param name="dayId">The unique identifier of the program day to retrieve.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing the program day details if found; otherwise, an
+				appropriate error response such as 401 Unauthorized or 400 Bad Request.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.ClientTrainersController.GetAllTrainers">
+			<summary>
+				Retrieves a list of trainers associated with the current user.
+			</summary>
+			<remarks>
+				This method is intended for clients to obtain all trainers linked to their active
+				subscription. The response will be empty if the user has no associated trainers.
+			</remarks>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a list of <see cref="T:ITI.Gymunity.FP.Application.DTOs.Trainer.TrainerBriefResponse"/> objects
+				representing the user's trainers. Returns a 404 Not Found response if no trainers are found.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.PaymentsController.InitiatePayment(ITI.Gymunity.FP.Application.DTOs.User.Payment.InitiatePaymentRequest)">
+			<summary>
+				Initiate payment for a subscription
+				POST: /api/client/payments/initiate
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.PaymentsController.GetPaymentHistory(System.Nullable{ITI.Gymunity.FP.Domain.Models.Enums.PaymentStatus})">
+			<summary>
+				Get payment history for current client
+				GET: /api/client/payments
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.PaymentsController.GetPayment(System.Int32)">
+			<summary>
+				Get payment details by ID
+				GET: /api/client/payments/{id}
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.PaymentsController.NotifyAdminOfPaymentAsync(ITI.Gymunity.FP.Application.DTOs.User.Payment.PaymentResponse,System.String)">
+			<summary>
+				Sends admin notification for new payment
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.HasActiveSubscription(System.Int32)">
+			<summary>
+				Determines whether the current user has an active subscription to the specified package.
+			</summary>
+			<param name="packageId">The identifier of the package to check for an active subscription.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.IActionResult"/> containing a boolean value: <see langword="true"/> if the user has an active
+				subscription to the package; otherwise, <see langword="false"/>.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.Subscribe(ITI.Gymunity.FP.Application.DTOs.User.Subscribe.SubscribePackageRequest)">
+			<summary>
+				Subscribe to a package (creates UNPAID subscription)
+				POST: api/client/subscriptions/subscribe
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.GetMySubscriptions(System.Nullable{ITI.Gymunity.FP.Domain.Models.Enums.SubscriptionStatus})">
+			<summary>
+				Get all client subscriptions
+				GET: api/client/subscriptions
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.GetSubscriptionById(System.Int32)">
+			<summary>
+				Get single subscription details
+				GET: api/client/subscriptions/{id}
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.CancelSubscription(System.Int32)">
+			<summary>
+				Cancel subscription
+				DELETE: api/client/subscriptions/{id}
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.ActivateSubscription(System.Int32,Gymunity.APIs.Areas.Client.ActivateSubscriptionRequest)">
+			<summary>
+				Activate subscription after payment (called by payment webhook)
+				POST: api/client/subscriptions/{id}/activate
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.NotifyAdminOfSubscriptionAsync(System.Object,System.Boolean)">
+			<summary>
+				Sends admin notification for new subscription
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.NotifyAdminOfSubscriptionCancellationAsync(System.Int32)">
+			<summary>
+				Sends admin notification for subscription cancellation
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Client.SubscriptionsController.NotifyAdminOfSubscriptionActivationAsync(System.Object)">
+			<summary>
+				Sends admin notification for subscription activation
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Trainer.TrainerProfileController.GetMyProfile">
+			<summary>
+				Retrieves the profile details of the currently authenticated trainer.
+			</summary>
+			<remarks>
+				This endpoint requires the user to be authenticated. The response includes detailed
+				profile information for the trainer associated with the current user account.
+			</remarks>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.IActionResult"/> containing the trainer's profile details with status code 200 (OK) if found;
+				status code 404 (Not Found) if the profile does not exist; or status code 401 (Unauthorized) if the user is
+				not authenticated.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Areas.Trainer.TrainerProfileController.NotifyAdminOfProfileCreationAsync(ITI.Gymunity.FP.Application.DTOs.Trainer.TrainerProfileDetailResponse,System.String)">
+			<summary>
+				Sends admin notification for trainer profile creation
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Controllers.AccountController">
+			<summary>
+				Provides API endpoints for user account registration and authentication operations.
+			</summary>
+			<remarks>
+				This controller exposes endpoints for registering new users and authenticating existing
+				users, including support for standard and Google-based authentication. All endpoints return appropriate HTTP
+				responses based on the outcome of the requested operation.
+			</remarks>
+			<param name="accountService">The account service used to perform user registration and authentication operations. Cannot be null.</param>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.#ctor(ITI.Gymunity.FP.Application.Contracts.ExternalServices.IAccountService,Gymunity.APIs.Services.IAdminNotificationService,Gymunity.APIs.Services.AdminUserResolverService,Microsoft.Extensions.Logging.ILogger{Gymunity.APIs.Controllers.AccountController})">
+			<summary>
+				Provides API endpoints for user account registration and authentication operations.
+			</summary>
+			<remarks>
+				This controller exposes endpoints for registering new users and authenticating existing
+				users, including support for standard and Google-based authentication. All endpoints return appropriate HTTP
+				responses based on the outcome of the requested operation.
+			</remarks>
+			<param name="accountService">The account service used to perform user registration and authentication operations. Cannot be null.</param>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.Register(ITI.Gymunity.FP.Application.DTOs.Account.RegisterRequest)">
+			<summary>
+				Registers a new user account using the provided registration details.
+			</summary>
+			<remarks>
+				This endpoint is typically used to create a new user account. The request data is
+				expected as form data. If registration fails due to validation or other errors, a 400 Bad Request response
+				is returned with an error message.
+			</remarks>
+			<param name="request">
+				The registration information submitted by the client. Must include all required user details as specified by
+				the registration process. Cannot be null.
+			</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing the newly created user's information if registration
+				is successful; otherwise, a bad request response with error details.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.Login(ITI.Gymunity.FP.Application.DTOs.Account.LoginRequest)">
+			<summary>
+				Authenticates a user with the provided login credentials and returns user information if authentication is
+				successful.
+			</summary>
+			<param name="request">The login credentials submitted by the client. Must include valid username and password values.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a <see cref="T:ITI.Gymunity.FP.Application.DTOs.Account.AuthResponse"/> if authentication succeeds;
+				otherwise, a bad request response with error details.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.GoogleAuth(ITI.Gymunity.FP.Application.DTOs.Account.GoogleAuthRequest)">
+			<summary>
+				Authenticates a user using Google credentials and returns user information if authentication is successful.
+			</summary>
+			<param name="request">The Google authentication request containing the user's credentials. Cannot be null.</param>
+			<returns>
+				An ActionResult containing the authenticated user's information if successful; otherwise, a BadRequest
+				result with error details.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.UpdateProfile(ITI.Gymunity.FP.Application.DTOs.Account.UpdateProfileRequest)">
+			<summary>
+				Updates the authenticated user's profile with the specified information.
+			</summary>
+			<remarks>
+				This endpoint requires authentication. Only the currently authenticated user's
+				profile can be updated using this method.
+			</remarks>
+			<param name="request">
+				An <see cref="T:ITI.Gymunity.FP.Application.DTOs.Account.UpdateProfileRequest"/> object containing the new profile details to apply. Cannot be null.
+			</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing the updated user profile if the update is successful;
+				otherwise, a bad request response with error details.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.ChangePassword(ITI.Gymunity.FP.Application.DTOs.Account.ChangePasswordRequest)">
+			<summary>
+				Changes the current user's password using the specified password change request.
+			</summary>
+			<remarks>
+				This endpoint requires authentication. The user must provide their current password
+				and a valid new password as specified by the application's password policy.
+			</remarks>
+			<param name="request">An object containing the current password and the new password to set. Must not be null.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a UserResponse if the password change is successful; otherwise, a BadRequest
+				result with error details.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.SendResetPasswordLink(ITI.Gymunity.FP.Application.DTOs.Account.ForgetPasswordRequest)">
+			<summary>
+				Sends a password reset link to the email address specified in the request.
+			</summary>
+			<param name="request">The request containing the user's email address for which to send the reset password link. Cannot be null.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> indicating the result of the operation. Returns a success
+				response if the reset password email was sent; otherwise, returns a bad request response with an error
+				message.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.ResetPassword(ITI.Gymunity.FP.Application.DTOs.Account.ResetPasswordRequest)">
+			<summary>
+				Resets the user's password using the information provided in the request.
+			</summary>
+			<param name="request">The request containing the user's password reset information. Must not be null.</param>
+			<returns>
+				An <see cref="T:Microsoft.AspNetCore.Mvc.ActionResult`1"/> containing a <see cref="T:ITI.Gymunity.FP.Application.DTOs.Account.AuthResponse"/> if the password reset is
+				successful; otherwise, a bad request response with error details.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.NotifyAdminOfRegistrationAsync(ITI.Gymunity.FP.Application.DTOs.Account.AuthResponse)">
+			<summary>
+				Sends admin notification for new user registration
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.AccountController.NotifyAdminOfGoogleRegistrationAsync(ITI.Gymunity.FP.Application.DTOs.Account.AuthResponse)">
+			<summary>
+				Sends admin notification for Google registration
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Controllers.ChatBotController">
+			<summary>
+				Controller for chatbot that answers questions about packages
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatBotController.AskQuestion(Gymunity.APIs.Controllers.ChatBotController.ChatBotRequest)">
+			<summary>
+				Ask a question about packages
+			</summary>
+			<param name="request">The question to ask</param>
+			<returns>Answer from the chatbot</returns>
+		</member>
+		<member name="T:Gymunity.APIs.Controllers.ChatBotController.ChatBotRequest">
+			<summary>
+				Request model for chatbot
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Controllers.ChatBotController.ChatBotResponse">
+			<summary>
+				Response model for chatbot
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Controllers.ChatController">
+			<summary>
+				Provides API endpoints for managing chat threads and messages for authenticated users.
+			</summary>
+			<remarks>
+				All actions in this controller require the user to be authenticated. The controller enables
+				users to retrieve their chat threads, view messages within a thread, send messages, and mark messages or entire
+				threads as read. Most endpoints return results in a standard response format indicating success or failure. For
+				real-time messaging, consider using SignalR in addition to these endpoints.
+			</remarks>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.#ctor(ITI.Gymunity.FP.Application.Contracts.Services.IChatService,Microsoft.Extensions.Logging.ILogger{Gymunity.APIs.Controllers.ChatController})">
+			<summary>
+				Provides API endpoints for managing chat threads and messages for authenticated users.
+			</summary>
+			<remarks>
+				All actions in this controller require the user to be authenticated. The controller enables
+				users to retrieve their chat threads, view messages within a thread, send messages, and mark messages or entire
+				threads as read. Most endpoints return results in a standard response format indicating success or failure. For
+				real-time messaging, consider using SignalR in addition to these endpoints.
+			</remarks>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.GetUserChats">
+			<summary>
+				Get all chat threads for the current user
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.GetThreadMessages(System.Int32)">
+			<summary>
+				Get messages for a specific thread
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.SendMessage(System.Int32,ITI.Gymunity.FP.Application.DTOs.Messaging.SendMessageRequest)">
+			<summary>
+				Sends a new message to the specified chat thread.
+			</summary>
+			<remarks>
+				Returns an unauthorized response if the user is not authenticated. The message is
+				sent on behalf of the currently authenticated user.
+			</remarks>
+			<param name="threadId">The unique identifier of the chat thread to which the message will be sent.</param>
+			<param name="request">
+				An object containing the details of the message to send, including content and any relevant metadata. Cannot
+				be null.
+			</param>
+			<returns>
+				An ActionResult containing an ApiResponse with the details of the sent message if successful; otherwise, an
+				error response.
+			</returns>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.MarkMessageAsRead(System.Int64)">
+			<summary>
+				Mark a message as read
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.MarkThreadAsRead(System.Int32)">
+			<summary>
+				Mark entire thread as read
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.CreateChatThread(ITI.Gymunity.FP.Application.DTOs.Messaging.CreateChatThreadRequest)">
+			<summary>
+				Create a new chat thread between the current user and another user
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.ChatController.DeleteThread(System.Int32)">
+			<summary>
+				Delete a chat thread
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Controllers.NotificationsController">
+			<summary>
+				API controller that manages user notifications, including retrieving, counting, and updating notification status
+				for the authenticated user.
+			</summary>
+			<remarks>
+				All endpoints require the user to be authenticated. This controller provides actions to
+				retrieve notifications, get the count of unread notifications, and mark notifications as read. It is intended to
+				be used by client applications to manage notification state for the current user.
+			</remarks>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.NotificationsController.#ctor(ITI.Gymunity.FP.Application.Contracts.Services.INotificationService,Microsoft.Extensions.Logging.ILogger{Gymunity.APIs.Controllers.NotificationsController})">
+			<summary>
+				API controller that manages user notifications, including retrieving, counting, and updating notification status
+				for the authenticated user.
+			</summary>
+			<remarks>
+				All endpoints require the user to be authenticated. This controller provides actions to
+				retrieve notifications, get the count of unread notifications, and mark notifications as read. It is intended to
+				be used by client applications to manage notification state for the current user.
+			</remarks>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.NotificationsController.GetNotifications(System.Boolean)">
+			<summary>
+				Get all notifications for the current user
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.NotificationsController.GetUnreadCount">
+			<summary>
+				Get unread notification count
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.NotificationsController.MarkAsRead(System.Int32)">
+			<summary>
+				Mark a notification as read
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.NotificationsController.MarkAllAsRead">
+			<summary>
+				Mark all notifications as read
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.WebhooksController.PaymobWebhook(ITI.Gymunity.FP.Application.DTOs.User.Webhook.PaymobWebhookPayload)">
+			Paymob webhook endpoint
+			Called by Paymob after payment completion/failure
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.WebhooksController.PayPalWebhook(ITI.Gymunity.FP.Application.DTOs.User.Webhook.PayPalWebhookPayload)">
+			PayPal webhook endpoint
+			Called by PayPal for various payment events
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.WebhooksController.StripeWebhook">
+			<summary>
+				Stripe webhook endpoint
+				Called by Stripe for payment_intent events
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.WebhooksController.TestWebhook">
+			Test endpoint for webhook validation (Development only!)
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.WebhooksController.TestSendConfirmationEmail(System.String)">
+			NEW: Manual email test endpoint (Development only!)
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.WebhooksController.TestSendTrainerNotification(System.String)">
+			NEW: Manual trainer notification test (Development only!)
+		</member>
+		<member name="M:Gymunity.APIs.Controllers.WebhooksController.TestSendFailureEmail(System.String)">
+			NEW: Test payment failure email (Development only!)
+		</member>
+		<member name="T:Gymunity.APIs.Hubs.AdminNotificationHub">
+			<summary>
+				SignalR hub for real-time admin notifications
+				Handles notification broadcasting to connected admin users
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.AdminNotificationHub.SendNotificationToUser(System.String,System.String,System.String,System.String,System.String)">
+			<summary>
+				Send notification to specific admin user
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.AdminNotificationHub.BroadcastNotification(System.String,System.String,System.String,System.String)">
+			<summary>
+				Broadcast notification to all admins
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.AdminNotificationHub.SendCriticalAlert(System.String,System.String,System.String)">
+			<summary>
+				Send alert for critical events
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.AdminNotificationHub.UpdateNotificationCount(System.String,System.Int32)">
+			<summary>
+				Update unread notification count for user
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.AdminNotificationHub.NotifyActionRequired(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of action required
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Hubs.ChatHub">
+			<summary>
+				SignalR Hub for real-time messaging
+				Handles message sending, receiving, and read notifications
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.OnConnectedAsync">
+			<summary>
+				Called when a user connects to the hub
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.OnDisconnectedAsync(System.Exception)">
+			<summary>
+				Called when a user disconnects from the hub
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.SendMessage(System.Int32,ITI.Gymunity.FP.Application.DTOs.Messaging.SendMessageRequest)">
+			<summary>
+				Send a message to a specific thread
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.JoinThread(System.Int32)">
+			<summary>
+				Join a message thread group for real-time updates
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.LeaveThread(System.Int32)">
+			<summary>
+				Leave a message thread group
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.MarkMessageAsRead(System.Int64,System.Int32)">
+			<summary>
+				Mark a message as read
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.MarkThreadAsRead(System.Int32)">
+			<summary>
+				Mark entire thread as read
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.UserTyping(System.Int32)">
+			<summary>
+				Typing indicator - notify others that user is typing
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.ChatHub.UserStoppedTyping(System.Int32)">
+			<summary>
+				User stopped typing
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Hubs.NotificationHub">
+			<summary>
+				SignalR Hub for real-time notifications
+				Handles notification delivery and management
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.NotificationHub.#ctor(ITI.Gymunity.FP.Application.Contracts.Services.INotificationService,ITI.Gymunity.FP.Application.Contracts.ExternalServices.ISignalRConnectionManager,Microsoft.Extensions.Logging.ILogger{Gymunity.APIs.Hubs.NotificationHub})">
+			<summary>
+				SignalR Hub for real-time notifications
+				Handles notification delivery and management
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.NotificationHub.OnConnectedAsync">
+			<summary>
+				Called when a user connects to the notification hub
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.NotificationHub.OnDisconnectedAsync(System.Exception)">
+			<summary>
+				Called when a user disconnects from the notification hub
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.NotificationHub.GetUnreadNotifications">
+			<summary>
+				Get all unread notifications for the current user
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.NotificationHub.GetUnreadNotificationCount">
+			<summary>
+				Get unread notification count
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.NotificationHub.MarkNotificationAsRead(System.Int32)">
+			<summary>
+				Mark a notification as read
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Hubs.NotificationHub.MarkAllNotificationsAsRead">
+			<summary>
+				Mark all notifications as read
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Middlewares.WebhookSecurityMiddlewareExtensions">
+			<summary>
+				Provides extension methods for registering the WebhookSecurityMiddleware in an ASP.NET Core application's
+				request pipeline.
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Middlewares.WebhookSecurityMiddlewareExtensions.UseWebhookSecurity(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+			<summary>
+				Adds middleware to the application's request pipeline to validate and secure incoming webhook requests.
+			</summary>
+			<remarks>
+				This extension method should be called early in the middleware pipeline to ensure
+				that webhook requests are validated before further processing. It is typically used when configuring web
+				applications that receive webhook callbacks from external services.
+			</remarks>
+			<param name="builder">The application builder to configure the middleware pipeline.</param>
+			<returns>
+				The original <see cref="T:Microsoft.AspNetCore.Builder.IApplicationBuilder"/> instance with the webhook security middleware configured.
+			</returns>
+		</member>
+		<member name="T:Gymunity.APIs.Responses.ApiResponse">
+			<summary>
+				Represents a standard response returned by an API, including an HTTP status code and an optional message
+				describing the result.
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Responses.ApiResponse.#ctor(System.Int32,System.String)">
+			<summary>
+				Initializes a new instance of the ApiResponse class with the specified status code and an optional message.
+			</summary>
+			<param name="statusCode">The HTTP status code to associate with the response.</param>
+			<param name="message">An optional message describing the response. If null, a default message based on the status code is used.</param>
+		</member>
+		<member name="T:Gymunity.APIs.Responses.ApiResponse`1">
+			<summary>
+				Represents a standard response returned by an API operation, including the result data and a success indicator.
+			</summary>
+			<typeparam name="T">The type of the data returned by the API operation.</typeparam>
+			<param name="data">The data associated with the API response. This value is typically the result of the operation.</param>
+			<param name="success">
+				A value indicating whether the API operation was successful. The default is <see langword="true"/>.
+			</param>
+		</member>
+		<member name="M:Gymunity.APIs.Responses.ApiResponse`1.#ctor(`0,System.Boolean)">
+			<summary>
+				Represents a standard response returned by an API operation, including the result data and a success indicator.
+			</summary>
+			<typeparam name="T">The type of the data returned by the API operation.</typeparam>
+			<param name="data">The data associated with the API response. This value is typically the result of the operation.</param>
+			<param name="success">
+				A value indicating whether the API operation was successful. The default is <see langword="true"/>.
+			</param>
+		</member>
+		<member name="P:Gymunity.APIs.Responses.ApiResponse`1.Data">
+			<summary>
+				Gets the data associated with the current instance.
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Services.AdminNotificationService">
+			<summary>
+				Service for managing admin notifications
+				Handles creation, retrieval, and real-time notification delivery to admin users
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.CreateAdminNotificationAsync(System.String,System.String,System.String,ITI.Gymunity.FP.Domain.Models.Enums.NotificationType,System.String,System.Boolean)">
+			<summary>
+				Create and broadcast admin notification
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyNewClientRegistrationAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of new client registration
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyNewTrainerRegistrationAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of new trainer registration
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyNewSubscriptionAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of new subscription
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifySubscriptionCancelledAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of subscription cancellation
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyNewPaymentAsync(System.String,System.Decimal,System.String,System.String)">
+			<summary>
+				Notify admin of new payment
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyPaymentFailureAsync(System.String,System.Decimal,System.String,System.String)">
+			<summary>
+				Notify admin of payment failure
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyTrainerVerificationRequiredAsync(System.String,System.String,System.String)">
+			<summary>
+				Notify admin that trainer profile requires verification
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyReviewCreatedAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of review creation
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyReviewFlaggedAsync(System.String,System.String,System.String)">
+			<summary>
+				Notify admin of flagged review for moderation
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyTrainerProfileCreatedAsync(System.String,System.String,System.String)">
+			<summary>
+				Notify admin of trainer profile creation
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyAccountSuspendedAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of account suspension
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyAccountReactivatedAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of account reactivation
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyContentDeletedAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of content deletion
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifyUnusualActivityAsync(System.String,System.String,System.String,System.String)">
+			<summary>
+				Notify admin of unusual activity
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.NotifySecurityIssueAsync(System.String,System.String,System.String)">
+			<summary>
+				Notify admin of security issue
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.GetAdminUnreadNotificationsAsync(System.String)">
+			<summary>
+				Get admin's unread notifications
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.GetAdminNotificationsAsync(System.String,System.Int32,System.Int32)">
+			<summary>
+				Get all admin notifications
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.MarkNotificationAsReadAsync(System.Int32,System.String)">
+			<summary>
+				Mark notification as read and update count via SignalR
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminNotificationService.GetUnreadNotificationCountAsync(System.String)">
+			<summary>
+				Get unread notification count for admin
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Services.AdminUserResolverService">
+			<summary>
+				Helper service to get admin user(s) for notification purposes
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminUserResolverService.GetPrimaryAdminAsync">
+			<summary>
+				Get the primary admin user (usually the first admin)
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminUserResolverService.GetAllAdminsAsync">
+			<summary>
+				Get all admin users
+			</summary>
+		</member>
+		<member name="M:Gymunity.APIs.Services.AdminUserResolverService.GetAdminByIdAsync(System.String)">
+			<summary>
+				Get admin user by ID
+			</summary>
+		</member>
+		<member name="T:Gymunity.APIs.Services.IAdminNotificationService">
+			<summary>
+				Interface for admin notification management
+			</summary>
+		</member>
+	</members>
+</doc>

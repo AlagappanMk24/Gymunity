@@ -1,0 +1,15 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/Gymunity.Admin.MVC/bin/Debug/net8.0
+/Gymunity.Admin.MVC/obj
+/Gymunity.APIs/bin/Debug/net8.0
+/Gymunity.APIs/obj
+/Gymunity.Application/bin/Debug/net8.0
+/Gymunity.Application/obj
+/Gymunity.Domain/bin/Debug/net8.0
+/Gymunity.Domain/obj
+/Gymunity.Infrastructure/bin/Debug/net8.0
+/Gymunity.Infrastructure/obj

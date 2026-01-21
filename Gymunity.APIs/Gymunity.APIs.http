@@ -1,0 +1,6 @@
+@Gymunity.APIs_HostAddress = http://localhost:5038
+
+GET {{Gymunity.APIs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
