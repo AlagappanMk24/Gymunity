@@ -1,0 +1,127 @@
+@using Gymunity.Admin.MVC.ViewModels.Clients
+@model ClientsListViewModel
+
+<!-- Clients Table -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Client Info</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Email</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Joined</th>
+                    <th class="px-6 py-4 text-right text-sm font-semibold text-gray-900">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                @if (Model.Clients.Any())
+                {
+                    @foreach (var client in Model.Clients)
+                    {
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                        @(client.FullName?.Split(' ').FirstOrDefault()?[0] ?? 'U')
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">@client.FullName</p>
+                                        <p class="text-sm text-gray-500">@@@client.UserName</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                @if (!string.IsNullOrEmpty(client.Email))
+                                {
+                                    <a href="mailto:@client.Email" class="text-blue-600 hover:text-blue-700">@client.Email</a>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400">No email</span>
+                                }
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                @client.CreatedAt.ToString("MMM dd, yyyy")
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="@Url.Action("Details", new { id = client.UserId })" 
+                                       class="px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                       title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center gap-3">
+                                <i class="fas fa-inbox text-4xl text-gray-300"></i>
+                                <p class="text-gray-500 font-medium">No clients found</p>
+                                <p class="text-sm text-gray-400">Try adjusting your filters or search criteria</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+@if (Model.TotalPages > 1)
+{
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p class="text-sm text-gray-600">
+                Showing page <span class="font-semibold">@Model.PageNumber</span> of 
+                <span class="font-semibold">@Model.TotalPages</span>
+                (<span class="font-semibold">@Model.TotalCount</span> total clients)
+            </p>
+            
+            <div class="flex items-center gap-2">
+                @if (Model.HasPreviousPage)
+                {
+                    <button type="button" 
+                            data-page-number="@(Model.PageNumber - 1)"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium pagination-link">
+                        <i class="fas fa-chevron-left mr-2"></i>Previous
+                    </button>
+                }
+
+                <div class="flex items-center gap-1">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        @if (i == Model.PageNumber)
+                        {
+                            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">@i</span>
+                        }
+                        else if (i <= 3 || i > Model.TotalPages - 2 || (i > Model.PageNumber - 2 && i < Model.PageNumber + 2))
+                        {
+                            <button type="button"
+                                    data-page-number="@i"
+                                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium pagination-link">@i</button>
+                        }
+                        else if (i == 4 || i == Model.TotalPages - 3)
+                        {
+                            <span class="px-2">...</span>
+                        }
+                    }
+                </div>
+
+                @if (Model.HasNextPage)
+                {
+                    <button type="button"
+                            data-page-number="@(Model.PageNumber + 1)"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium pagination-link">
+                        Next<i class="fas fa-chevron-right ml-2"></i>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
