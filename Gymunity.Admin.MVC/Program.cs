@@ -1,4 +1,5 @@
 ﻿using Gymunity.Admin.MVC.Services;
+using Gymunity.Application.DI;
 using Gymunity.Infrastructure.DI;
 
 namespace Gymunity.Admin.MVC
@@ -35,6 +36,7 @@ namespace Gymunity.Admin.MVC
                     config.LoginPath = "/Auth/Login";
                 });
             builder.Services.AddDbContextServices(builder.Configuration);
+            builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices();
             // Add Dashboard Service
             builder.Services.AddScoped<DashboardStatisticsService>();

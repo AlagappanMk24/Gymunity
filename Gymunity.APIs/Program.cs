@@ -1,3 +1,4 @@
+using Gymunity.Application.DI;
 using Gymunity.Infrastructure.Data.DbExtension;
 using Gymunity.Infrastructure.DI;
 using KS_Sweets.Infrastructure.Data.Initializers;
@@ -45,6 +46,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     // --- Database & Infrastructure ---
     services.AddDbContextServices(configuration);
+    services.AddApplicationServices(builder.Configuration);
     services.AddInfrastructureServices();
 
     // Required for DI scope in background tasks or seeding

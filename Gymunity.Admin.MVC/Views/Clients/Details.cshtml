@@ -1,0 +1,870 @@
+@using Gymunity.Admin.MVC.ViewModels.Clients
+@model ClientDetailsViewModel
+
+@{
+    ViewData["Title"] = "Client Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Client Details</h1>
+            <p class="text-gray-600 mt-1">@@ <span class="font-semibold">@Model.UserName</span></p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <a href="@Url.Action("Index", "Clients")" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                <i class="fas fa-arrow-left mr-2"></i>Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Client Info Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Basic Info Card -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-500">Full Name</p>
+                    <p class="font-medium text-gray-900">@Model.FullName</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Username</p>
+                    <p class="font-medium text-gray-900">@Model.UserName</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Email</p>
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <a href="mailto:@Model.Email" class="font-medium text-blue-600 hover:text-blue-700">@Model.Email</a>
+                    }
+                    else
+                    {
+                        <p class="font-medium text-gray-400">Not provided</p>
+                    }
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">User ID</p>
+                    <p class="font-medium text-gray-900 text-sm break-all">@Model.UserId</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    <div class="mt-1">
+                        @if (Model.IsVerified)
+                        {
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm font-medium">
+                                <i class="fas fa-check-circle"></i>
+                                Verified
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full text-sm font-medium">
+                                <i class="fas fa-clock"></i>
+                                Not Verified
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Subscription Stats</h3>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-500">Total Subscriptions</p>
+                    <p class="text-3xl font-bold text-blue-600">@Model.TotalSubscriptions</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Active Subscriptions</p>
+                    <p class="text-3xl font-bold text-green-600">@Model.ActiveSubscriptions</p>
+                </div>
+                <div class="pt-4 border-t border-gray-200">
+                    <p class="text-sm text-gray-500">Total Amount Paid</p>
+                    <p class="text-2xl font-bold text-purple-600">@Model.TotalAmountPaid.ToString("C")</p>
+                    <p class="text-xs text-gray-400 mt-1">@Model.Currency</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Info Card -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-500">Account Created</p>
+                    <p class="font-medium text-gray-900">@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Last Login</p>
+                    @if (Model.LastLoginAt.HasValue)
+                    {
+                        <p class="font-medium text-gray-900">@Model.LastLoginAt.Value.ToString("MMM dd, yyyy HH:mm")</p>
+                    }
+                    else
+                    {
+                        <p class="font-medium text-gray-400">Never logged in</p>
+                    }
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Payments</p>
+                    <p class="text-2xl font-bold text-blue-600">@Model.TotalPaymentsCount</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Profile Data -->
+    @if (Model.HeightCm.HasValue || Model.StartingWeightKg.HasValue || !string.IsNullOrEmpty(Model.Gender))
+    {
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Fitness Profile</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                @if (Model.HeightCm.HasValue)
+                {
+                    <div>
+                        <p class="text-sm text-gray-500">Height</p>
+                        <p class="font-medium text-gray-900">@Model.HeightCm cm</p>
+                    </div>
+                }
+                @if (Model.StartingWeightKg.HasValue)
+                {
+                    <div>
+                        <p class="text-sm text-gray-500">Starting Weight</p>
+                        <p class="font-medium text-gray-900">@Model.StartingWeightKg kg</p>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Gender))
+                {
+                    <div>
+                        <p class="text-sm text-gray-500">Gender</p>
+                        <p class="font-medium text-gray-900">@Model.Gender</p>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Goal))
+                {
+                    <div>
+                        <p class="text-sm text-gray-500">Goal</p>
+                        <p class="font-medium text-gray-900">@Model.Goal</p>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ExperienceLevel))
+                {
+                    <div>
+                        <p class="text-sm text-gray-500">Experience Level</p>
+                        <p class="font-medium text-gray-900">@Model.ExperienceLevel</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Subscriptions Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Subscriptions (@Model.Subscriptions.Count)</h3>
+        
+        @if (Model.Subscriptions.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Package</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Trainer</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Amount</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Period</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Expires</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach (var sub in Model.Subscriptions)
+                        {
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-gray-900">@sub.PackageName</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <p class="text-gray-600">@@@sub.TrainerHandle</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    @{
+                                        var statusBadgeClass = sub.Status switch
+                                        {
+                                            "Active" => "bg-green-50 text-green-700",
+                                            "Canceled" => "bg-red-50 text-red-700",
+                                            "PastDue" => "bg-orange-50 text-orange-700",
+                                            "Unpaid" => "bg-yellow-50 text-yellow-700",
+                                            _ => "bg-gray-50 text-gray-700"
+                                        };
+                                        var statusIcon = sub.Status switch
+                                        {
+                                            "Active" => "fa-check-circle",
+                                            "Canceled" => "fa-times-circle",
+                                            "PastDue" => "fa-exclamation-circle",
+                                            "Unpaid" => "fa-clock",
+                                            _ => "fa-info-circle"
+                                        };
+                                    }
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium @statusBadgeClass">
+                                        <i class="fas @statusIcon mr-1"></i>
+                                        @sub.Status
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-gray-900">@sub.AmountPaid.ToString("C") @sub.Currency</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <p class="text-gray-600 text-xs">@(sub.IsAnnual ? "Annual" : "Monthly")</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="text-right">
+                                        <p class="font-medium text-gray-900">@sub.CurrentPeriodEnd.ToString("MMM dd, yyyy")</p>
+                                        @if (sub.IsExpiringSoon)
+                                        {
+                                            <p class="text-xs text-orange-600">@sub.DaysRemaining days left</p>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-8">
+                <i class="fas fa-inbox text-3xl text-gray-300 mb-2"></i>
+                <p class="text-gray-600">No subscriptions found</p>
+            </div>
+        }
+    </div>
+
+    <!-- Payments Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment History (@Model.Payments.Count)</h3>
+        
+        @if (Model.Payments.Any())
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Package</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Trainer</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Amount</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Method</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach (var payment in Model.Payments.OrderByDescending(p => p.CreatedAt))
+                        {
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-gray-900">@payment.PackageName</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <p class="text-gray-600">@payment.TrainerName</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-gray-900">@payment.Amount.ToString("C") @payment.Currency</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <p class="text-gray-600 text-xs">@payment.Method</p>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium @payment.StatusBadgeClass">
+                                        @payment.Status
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="text-right">
+                                        <p class="font-medium text-gray-900">@payment.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                        @if (payment.PaidAt.HasValue)
+                                        {
+                                            <p class="text-xs text-gray-500">Paid: @payment.PaidAt.Value.ToString("HH:mm")</p>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-8">
+                <i class="fas fa-inbox text-3xl text-gray-300 mb-2"></i>
+                <p class="text-gray-600">No payments found</p>
+            </div>
+        }
+    </div>
+
+    <!-- Actions Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">Actions</h3>
+        
+        <div class="flex flex-wrap gap-3">
+            <!-- Send Email -->
+            <button type="button" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center gap-2" 
+                    id="sendEmailBtn" onclick="openModal('sendEmailModal')">
+                <i class="fas fa-envelope"></i>
+                <span>Send Email</span>
+            </button>
+
+            <!-- View Activity Log -->
+            <button type="button" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium flex items-center gap-2" 
+                    id="viewActivityBtn" onclick="viewActivityLog('@Model.UserId')">
+                <i class="fas fa-history"></i>
+                <span>Activity Log</span>
+            </button>
+
+            <!-- Download Report -->
+            <button type="button" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center gap-2" 
+                    id="downloadReportBtn" onclick="downloadClientReport('@Model.UserId')">
+                <i class="fas fa-download"></i>
+                <span>Download Report</span>
+            </button>
+
+            <!-- Suspend/Reactivate Account -->
+            <button type="button" class="px-4 py-2 border border-orange-300 text-orange-700 hover:bg-orange-50 rounded-lg transition font-medium flex items-center gap-2" 
+                    id="suspendBtn" data-user-id="@Model.UserId" data-client-profile-id="@Model.ProfileId">
+                <i class="fas fa-pause-circle"></i>
+                <span>Suspend Account</span>
+            </button>
+
+            <!-- Refund Payment -->
+            @if (Model.Payments.Any(p => p.IsCompleted))
+            {
+                <button type="button" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium flex items-center gap-2" 
+                        id="refundBtn" onclick="openModal('refundModal')">
+                    <i class="fas fa-undo"></i>
+                    <span>Refund Payment</span>
+                </button>
+            }
+
+            <!-- View Compliance -->
+            <button type="button" class="px-4 py-2 border border-purple-300 text-purple-700 hover:bg-purple-50 rounded-lg transition font-medium flex items-center gap-2" 
+                    id="complianceBtn" onclick="viewComplianceCheck('@Model.UserId')">
+                <i class="fas fa-shield-alt"></i>
+                <span>Compliance</span>
+            </button>
+        </div>
+
+        <!-- Additional Info -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <p class="text-gray-500 font-medium">Last Updated</p>
+                    <p class="text-gray-900">Just now</p>
+                </div>
+                <div>
+                    <p class="text-gray-500 font-medium">Account Status</p>
+                    <div class="mt-1">
+                        <span class="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+                            <i class="fas fa-check-circle"></i>
+                            Active
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-gray-500 font-medium">Profile Completion</p>
+                    <p class="text-gray-900">85%</p>
+                </div>
+                <div>
+                    <p class="text-gray-500 font-medium">Risk Level</p>
+                    <span class="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+                        Low
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Send Email Modal -->
+<div id="sendEmailModal" class="hidden fixed inset-0 z-50 overflow-y-auto flex items-center justify-center" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeModal('sendEmailModal')"></div>
+        
+        <!-- Modal -->
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full relative z-10">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Send Email to @Model.FullName</h2>
+                <button type="button" onclick="closeModal('sendEmailModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <form id="sendEmailForm">
+                <div class="px-6 py-4 space-y-4">
+                    <input type="hidden" name="clientId" value="@Model.UserId">
+                    <input type="hidden" name="email" value="@Model.Email">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">To</label>
+                        <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" value="@Model.Email" readonly>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" name="subject" placeholder="Email subject" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" name="message" rows="5" placeholder="Your message" required></textarea>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" name="sendCopy" id="sendCopy" class="w-4 h-4 text-blue-600 rounded cursor-pointer">
+                        <label for="sendCopy" class="ml-2 text-sm text-gray-700 cursor-pointer">
+                            Send a copy to admin email
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
+                    <button type="button" onclick="closeModal('sendEmailModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">Send Email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Refund Modal -->
+@if (Model.Payments.Any(p => p.IsCompleted))
+{
+    <div id="refundModal" class="hidden fixed inset-0 z-50 overflow-y-auto flex items-center justify-center" role="dialog">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeModal('refundModal')"></div>
+            
+            <!-- Modal -->
+            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full relative z-10">
+                <!-- Header -->
+                <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Process Refund</h2>
+                    <button type="button" onclick="closeModal('refundModal')" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                
+                <!-- Content -->
+                <form id="refundForm">
+                    <div class="px-6 py-4 space-y-4">
+                        <input type="hidden" name="clientId" value="@Model.UserId">
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Select Payment</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" name="paymentId" required>
+                                <option value="">Choose a payment...</option>
+                                @foreach (var payment in Model.Payments.Where(p => p.IsCompleted))
+                                {
+                                    <option value="@payment.Id">
+                                        @payment.PackageName - @payment.Amount.ToString("C") (@payment.CreatedAt.ToString("MMM dd, yyyy"))
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" name="reason" required>
+                                <option value="">Select reason...</option>
+                                <option value="customer-request">Customer Request</option>
+                                <option value="duplicate-charge">Duplicate Charge</option>
+                                <option value="subscription-canceled">Subscription Canceled</option>
+                                <option value="service-issue">Service Issue
+                                </option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+                        </div>
+
+                        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            This action cannot be undone. Please verify the refund details before proceeding.
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
+                        <button type="button" onclick="closeModal('refundModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition">Process Refund</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="hidden fixed inset-0 z-50 overflow-y-auto flex items-center justify-center" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeModal('confirmationModal')"></div>
+        
+        <!-- Modal -->
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full relative z-10">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Confirm Action</h2>
+                <button type="button" onclick="closeModal('confirmationModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="px-6 py-4">
+                <p id="confirmationMessage" class="text-gray-700">Are you sure you want to perform this action?</p>
+                <div id="confirmationDetails" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800"></div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
+                <button type="button" onclick="closeModal('confirmationModal')" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition">Cancel</button>
+                <button type="button" id="confirmationBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Modal -->
+<div id="activityModal" class="hidden fixed inset-0 z-50 overflow-y-auto flex items-center justify-center" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onclick="closeModal('activityModal')"></div>
+        
+        <!-- Modal -->
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full relative z-10">
+            <!-- Header -->
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                <h2 id="activityModalTitle" class="text-lg font-semibold text-gray-900">Activity Log</h2>
+                <button type="button" onclick="closeModal('activityModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="px-6 py-4 max-h-96 overflow-y-auto">
+                <div id="activityContent" class="space-y-3">
+                    <div class="text-center py-8">
+                        <div class="inline-block">
+                            <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                        </div>
+                        <p class="text-gray-600 mt-2">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Modal management
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Close modal when pressing Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('[role="dialog"]:not(.hidden)').forEach(modal => {
+            closeModal(modal.id);
+        });
+    }
+});
+
+// Send Email
+document.getElementById('sendEmailForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        clientId: formData.get('clientId') || '',
+        email: formData.get('email') || '@Model.Email',
+        recipientName: '@Model.FullName',
+        subject: formData.get('subject') || '',
+        body: formData.get('message') || '',
+        message: formData.get('message') || '',
+        sendCopy: formData.get('sendCopy') === 'on'
+    };
+    
+    console.log('Sending email with data:', data);
+    
+    try {
+        const response = await fetch('@Url.Action("SendEmail", "Clients")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('Email sent successfully!', 'success');
+            closeModal('sendEmailModal');
+            e.target.reset();
+        } else {
+            showAlert(result.message || 'Failed to send email', 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred: ' + error.message, 'danger');
+    }
+});
+
+// Suspend Account
+document.getElementById('suspendBtn')?.addEventListener('click', async (e) => {
+    const userId = e.currentTarget.dataset.userId;
+    const profileId = e.currentTarget.dataset.clientProfileId;
+    
+    document.getElementById('confirmationMessage').textContent = 'Are you sure you want to suspend this client account? They will no longer be able to access their subscriptions.';
+    document.getElementById('confirmationBtn').onclick = async () => {
+        try {
+            const response = await fetch(`@Url.Action("Suspend", "Clients")?id=${profileId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAlert('Client suspended successfully', 'success');
+                closeModal('confirmationModal');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showAlert(result.message || 'Failed to suspend client', 'danger');
+            }
+        } catch (error) {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        }
+    };
+    
+    openModal('confirmationModal');
+});
+
+// View Activity Log
+async function viewActivityLog(userId) {
+    openModal('activityModal');
+    const content = document.getElementById('activityContent');
+    document.getElementById('activityModalTitle').textContent = 'Activity Log';
+    
+    try {
+        const response = await fetch(`@Url.Action("GetActivity", "Clients")?userId=${userId}`);
+        const result = await response.json();
+        
+        if (result.success && result.data.length > 0) {
+            content.innerHTML = result.data.map(activity => `
+                <div class="border border-gray-200 rounded p-4 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h6 class="font-semibold text-gray-900">${activity.action}</h6>
+                            <p class="text-sm text-gray-600">${activity.details}</p>
+                        </div>
+                        <span class="text-xs text-gray-500 whitespace-nowrap ml-4">${new Date(activity.timestamp).toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            content.innerHTML = '<div class="text-center py-8"><p class="text-gray-600">No activity found</p></div>';
+        }
+    } catch (error) {
+        content.innerHTML = '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">Error loading activity log</div>';
+    }
+}
+
+// Download Client Report
+async function downloadClientReport(userId) {
+    try {
+        const response = await fetch(`@Url.Action("GenerateReport", "Clients")?userId=${userId}`);
+        const blob = await response.blob();
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `client-report-${userId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        showAlert('Report downloaded successfully', 'success');
+    } catch (error) {
+        showAlert('Failed to download report: ' + error.message, 'danger');
+    }
+}
+
+// View Compliance Check
+async function viewComplianceCheck(userId) {
+    openModal('activityModal');
+    const content = document.getElementById('activityContent');
+    document.getElementById('activityModalTitle').textContent = 'Compliance Check';
+    
+    try {
+        const response = await fetch(`@Url.Action("GetCompliance", "Clients")?userId=${userId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const data = result.data;
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="border border-gray-200 rounded p-4">
+                        <h6 class="font-semibold text-gray-900 mb-3">Compliance Status</h6>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">Email Verified</span>
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full ${data.emailVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                    ${data.emailVerified ? 'Yes' : 'No'}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">Payment Method Verified</span>
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full ${data.paymentVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                    ${data.paymentVerified ? 'Yes' : 'No'}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">Active Subscription</span>
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full ${data.hasActiveSubscription ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                                    ${data.hasActiveSubscription ? 'Yes' : 'No'}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-700">Last Payment Status</span>
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full ${data.lastPaymentSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${data.lastPaymentSuccess ? 'Success' : 'Failed'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+                        <strong>Overall Risk Level:</strong> ${data.riskLevel}
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        content.innerHTML = '<div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">Error loading compliance data</div>';
+    }
+}
+
+// Process Refund
+document.getElementById('refundForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        clientId: formData.get('clientId') || '',
+        paymentId: formData.get('paymentId') || '',
+        reason: formData.get('reason') || '',
+        notes: formData.get('notes') || ''
+    };
+    
+    document.getElementById('confirmationMessage').textContent = `Are you sure you want to refund this payment? This action cannot be undone.`;
+    document.getElementById('confirmationBtn').onclick = async () => {
+        try {
+            const response = await fetch('@Url.Action("ProcessRefund", "Clients")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAlert('Refund processed successfully', 'success');
+                closeModal('confirmationModal');
+                closeModal('refundModal');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showAlert(result.message || 'Failed to process refund', 'danger');
+            }
+        } catch (error) {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        }
+    };
+    
+    openModal('confirmationModal');
+});
+
+// Show Alert Helper
+function showAlert(message, type = 'info') {
+    const typeClasses = {
+        success: 'bg-green-50 border-green-200 text-green-800',
+        danger: 'bg-red-50 border-red-200 text-red-800',
+        warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+        info: 'bg-blue-50 border-blue-200 text-blue-800'
+    };
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `fixed top-4 right-4 max-w-md p-4 border rounded-lg ${typeClasses[type] || typeClasses.info} shadow-lg z-40 animate-slideIn`;
+    alertDiv.innerHTML = `
+        <div class="flex items-start gap-3">
+            <div class="flex-grow">${message}</div>
+            <button type="button" class="text-gray-400 hover:text-gray-600" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+</script>
+
+<style>
+    @@keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .animate-slideIn {
+        animation: slideIn 0.3s ease-out;
+    }
+</style>
