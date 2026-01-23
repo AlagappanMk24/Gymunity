@@ -7,6 +7,7 @@ using Gymunity.Application.DI;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Infrastructure.DI;
 using Gymunity.Infrastructure.Services.Identity;
+using ITI.Gymunity.FP.Application.Services.Admin;
 
 namespace Gymunity.Admin.MVC
 {
@@ -51,7 +52,9 @@ namespace Gymunity.Admin.MVC
 
             // ✅ Register Admin Services (required for notification handlers)
             builder.Services.AddScoped<ITrainerAdminService, TrainerAdminService>();
-            
+            builder.Services.AddScoped<ISubscriptionAdminService, SubscriptionAdminService>();
+            builder.Services.AddScoped<IPaymentAdminService, PaymentAdminService>();
+
             // ✅ Register AccountService (from Infrastructure layer)
             builder.Services.AddScoped<IAccountService, AccountService>();
 

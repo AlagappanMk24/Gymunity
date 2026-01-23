@@ -33,7 +33,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Manage Programs");
-                SetBreadcrumbs("Dashboard", "Programs");
+                SetBreadcrumbs("Programs");
 
                 ProgramType? typeFilter = null;
                 if (!string.IsNullOrWhiteSpace(programType) &&
@@ -138,7 +138,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Program Details");
-                SetBreadcrumbs("Dashboard", "Programs", "Details");
+                SetBreadcrumbs("Programs", "Details");
 
                 // Load program data with trainer information using specification pattern
                 var program = await _programService.GetProgramDetailsWithTrainerAsync(id);
@@ -189,7 +189,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Public Programs");
-                SetBreadcrumbs("Dashboard", "Programs", "Public");
+                SetBreadcrumbs("Programs", "Public");
 
                 var programs = await _programService.GetPublicProgramsAsync(pageNumber, pageSize);
                 var totalCount = await _programService.GetPublicProgramCountAsync();
@@ -223,7 +223,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Private Programs");
-                SetBreadcrumbs("Dashboard", "Programs", "Private");
+                SetBreadcrumbs("Programs", "Private");
 
                 var programs = await _programService.GetPrivateProgramsAsync(pageNumber, pageSize);
                 var totalCount = await _programService.GetPrivateProgramCountAsync();

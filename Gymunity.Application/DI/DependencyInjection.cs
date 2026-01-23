@@ -3,6 +3,7 @@ using Gymunity.Application.Contracts.Services.Packages;
 using Gymunity.Application.Mapping;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Application.Services.Packages;
+using ITI.Gymunity.FP.Application.Services.Admin;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,6 +25,8 @@ namespace Gymunity.Application.DI
             services.AddScoped<IClientAdminService, ClientAdminService>();
             services.AddScoped<ITrainerAdminService, TrainerAdminService>();
             services.AddScoped<IProgramAdminService, ProgramAdminService>();
+            services.AddScoped<ISubscriptionAdminService, SubscriptionAdminService>();
+            services.AddScoped<IPaymentAdminService, PaymentAdminService>();
 
             services.AddScoped<IPackageService, PackageService>();
 

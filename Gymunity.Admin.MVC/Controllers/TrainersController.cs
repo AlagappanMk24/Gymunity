@@ -49,7 +49,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Manage Trainers");
-                SetBreadcrumbs("Dashboard", "Trainers");
+                SetBreadcrumbs("Trainers");
 
                 var specs = new TrainerFilterSpecs(
                     isVerified: isVerified,
@@ -140,7 +140,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Trainer Details");
-                SetBreadcrumbs("Dashboard", "Trainers", "Details");
+                SetBreadcrumbs("Trainers", "Details");
 
                 // Get trainer details with earnings and reviews using specification
                 var (trainer, reviews, totalEarnings, platformFees, completedPaymentsCount) = 
