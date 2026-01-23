@@ -1,0 +1,405 @@
+@using Gymunity.Admin.MVC.ViewModels.Trainers
+@model TrainersListViewModel
+
+@{
+    ViewData["Title"] = "Manage Trainers";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Trainers Management</h1>
+            <p class="text-gray-600 mt-1">Manage trainer profiles and verification status</p>
+        </div>
+        
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+            <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
+                @Model.TotalCount Total Trainers
+            </span>
+            @if (Model.IsVerifiedFilter == false)
+            {
+                <span class="px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full font-medium">
+                    Pending Verification
+                </span>
+            }
+            @if (Model.IsSuspendedFilter == true)
+            {
+                <span class="px-3 py-1 bg-red-50 text-red-700 rounded-full font-medium">
+                    Suspended
+                </span>
+            }
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <!-- Search Input -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" id="searchTerm" name="searchTerm" value="@Model.SearchTerm" 
+                           placeholder="Name, email, or handle..."
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                </div>
+
+                <!-- Verification Status Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
+                    <select id="isVerified" name="isVerified" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        <option value="">All Trainers</option>
+                        <option value="true" selected="@(Model.IsVerifiedFilter == true ? "selected" : "")">Verified Only</option>
+                        <option value="false" selected="@(Model.IsVerifiedFilter == false ? "selected" : "")">Pending Verification</option>
+                    </select>
+                </div>
+
+                <!-- Suspended Status Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Account Status</label>
+                    <select id="isSuspended" name="isSuspended" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        <option value="">All Accounts</option>
+                        <option value="false" selected="@(Model.IsSuspendedFilter == false ? "selected" : "")">Active Only</option>
+                        <option value="true" selected="@(Model.IsSuspendedFilter == true ? "selected" : "")">Suspended Only</option>
+                    </select>
+                </div>
+
+                <!-- Page Size -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Per Page</label>
+                    <select id="pageSize" name="pageSize" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        <option value="10" selected="@(Model.PageSize == 10 ? "selected" : "")">10</option>
+                        <option value="25" selected="@(Model.PageSize == 25 ? "selected" : "")">25</option>
+                        <option value="50" selected="@(Model.PageSize == 50 ? "selected" : "")">50</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Clear Filters Button -->
+            <div class="flex items-center gap-3">
+                <button type="button" id="clearFilterBtn" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition font-medium flex items-center gap-2">
+                    <i class="fas fa-times"></i>
+                    <span>Clear Filters</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="hidden bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg flex items-center gap-3">
+        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+        <span>Loading trainers...</span>
+    </div>
+
+    <!-- Trainers Table Container -->
+    <div id="trainersTableContainer">
+        <partial name="_TrainersTablePartial" />
+    </div>
+</div>
+
+<!-- Action Confirmation Modal -->
+<div id="actionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
+        <!-- Modal Header -->
+        <div id="modalHeader" class="px-6 py-4 border-b border-gray-200">
+            <h3 id="modalTitle" class="text-lg font-bold text-gray-900"></h3>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-6 py-4">
+            <div class="flex items-center gap-4 mb-4">
+                <div id="modalIconContainer" class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full">
+                    <i id="modalIcon" class="text-2xl"></i>
+                </div>
+                <div>
+                    <p id="modalMessage" class="text-gray-700 text-sm leading-relaxed"></p>
+                    <p id="modalTrainerInfo" class="text-gray-900 font-semibold text-sm mt-1"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 justify-end">
+            <button type="button" id="modalCancelBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+            <button type="button" id="modalConfirmBtn" class="px-4 py-2 text-white rounded-lg transition font-medium flex items-center gap-2">
+                <i id="confirmBtnIcon" class="fas"></i>
+                <span id="confirmBtnText">Confirm</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const searchTermInput = document.getElementById('searchTerm');
+        const isVerifiedSelect = document.getElementById('isVerified');
+        const isSuspendedSelect = document.getElementById('isSuspended');
+        const pageSizeSelect = document.getElementById('pageSize');
+        const clearFilterBtn = document.getElementById('clearFilterBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const trainersTableContainer = document.getElementById('trainersTableContainer');
+
+        // Modal elements
+        const actionModal = document.getElementById('actionModal');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalIconContainer = document.getElementById('modalIconContainer');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalTrainerInfo = document.getElementById('modalTrainerInfo');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const confirmBtnIcon = document.getElementById('confirmBtnIcon');
+        const confirmBtnText = document.getElementById('confirmBtnText');
+
+        // Current action state
+        let currentAction = null;
+        let currentTrainerId = null;
+        let currentTrainerName = null;
+
+        // Debounce timer for search input
+        let searchDebounceTimer;
+        const SEARCH_DEBOUNCE_DELAY = 500;
+
+        // Load trainers via AJAX
+        function loadTrainers(pageNumber = 1) {
+            const searchTerm = searchTermInput.value.trim();
+            const isVerified = isVerifiedSelect.value ? (isVerifiedSelect.value === 'true') : null;
+            const isSuspended = isSuspendedSelect.value ? (isSuspendedSelect.value === 'true') : null;
+            const pageSize = parseInt(pageSizeSelect.value);
+
+            loadingIndicator.classList.remove('hidden');
+
+            const queryParams = new URLSearchParams();
+            queryParams.append('pageNumber', pageNumber);
+            queryParams.append('pageSize', pageSize);
+            if (searchTerm) queryParams.append('searchTerm', searchTerm);
+            if (isVerified !== null) queryParams.append('isVerified', isVerified);
+            if (isSuspended !== null) queryParams.append('isSuspended', isSuspended);
+
+            fetch(`/admin/trainers/filter?${queryParams.toString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    loadingIndicator.classList.add('hidden');
+                    if (data.success) {
+                        trainersTableContainer.innerHTML = data.html;
+                        window.scrollTo({ top: trainersTableContainer.offsetTop - 100, behavior: 'smooth' });
+                        attachEventListeners();
+                    } else {
+                        showErrorModal('Error', data.message);
+                    }
+                })
+                .catch(err => {
+                    loadingIndicator.classList.add('hidden');
+                    showErrorModal('Error', 'Failed to load trainers: ' + err.message);
+                });
+        }
+
+        // Show action confirmation modal
+        function showActionModal(action, trainerId, trainerName) {
+            currentAction = action;
+            currentTrainerId = trainerId;
+            currentTrainerName = trainerName;
+
+            const actionConfig = {
+                verify: {
+                    title: 'Verify Trainer',
+                    message: 'Are you sure you want to verify this trainer? They will gain full access to the platform.',
+                    icon: 'fas fa-check-circle',
+                    iconBg: 'bg-green-100 text-green-600',
+                    btnClass: 'bg-green-600 hover:bg-green-700',
+                    btnIcon: 'fas fa-check',
+                    btnText: 'Verify Trainer'
+                },
+                reject: {
+                    title: 'Reject Trainer',
+                    message: 'Are you sure you want to reject this trainer? This action cannot be undone and their profile will be soft-deleted.',
+                    icon: 'fas fa-times-circle',
+                    iconBg: 'bg-red-100 text-red-600',
+                    btnClass: 'bg-red-600 hover:bg-red-700',
+                    btnIcon: 'fas fa-trash',
+                    btnText: 'Reject Trainer'
+                },
+                suspend: {
+                    title: 'Suspend Trainer',
+                    message: 'Are you sure you want to suspend this trainer? They will be unable to access the platform until reactivated.',
+                    icon: 'fas fa-pause-circle',
+                    iconBg: 'bg-orange-100 text-orange-600',
+                    btnClass: 'bg-orange-600 hover:bg-orange-700',
+                    btnIcon: 'fas fa-pause',
+                    btnText: 'Suspend Trainer'
+                },
+                reactivate: {
+                    title: 'Reactivate Trainer',
+                    message: 'Are you sure you want to reactivate this trainer? They will regain access to the platform.',
+                    icon: 'fas fa-undo-alt',
+                    iconBg: 'bg-blue-100 text-blue-600',
+                    btnClass: 'bg-blue-600 hover:bg-blue-700',
+                    btnIcon: 'fas fa-check',
+                    btnText: 'Reactivate Trainer'
+                }
+            };
+
+            const config = actionConfig[action];
+            if (!config) return;
+
+            modalTitle.textContent = config.title;
+            modalMessage.textContent = config.message;
+            modalTrainerInfo.textContent = `Trainer: ${trainerName}`;
+            modalIcon.className = config.icon;
+            modalIconContainer.className = `flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${config.iconBg}`;
+            modalConfirmBtn.className = `px-4 py-2 text-white rounded-lg transition font-medium flex items-center gap-2 ${config.btnClass}`;
+            confirmBtnIcon.className = config.btnIcon;
+            confirmBtnText.textContent = config.btnText;
+
+            actionModal.classList.remove('hidden');
+        }
+
+        // Show error modal
+        function showErrorModal(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalTrainerInfo.textContent = '';
+            modalIcon.className = 'fas fa-exclamation-circle';
+            modalIconContainer.className = 'flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 text-red-600';
+            modalConfirmBtn.className = 'px-4 py-2 text-white rounded-lg transition font-medium flex items-center gap-2 bg-red-600 hover:bg-red-700';
+            confirmBtnIcon.className = 'fas fa-times';
+            confirmBtnText.textContent = 'Close';
+            currentAction = null;
+            actionModal.classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeModal() {
+            actionModal.classList.add('hidden');
+            currentAction = null;
+            currentTrainerId = null;
+            currentTrainerName = null;
+        }
+
+        // Handle modal confirm
+        modalConfirmBtn.addEventListener('click', function() {
+            if (!currentAction) {
+                closeModal();
+                return;
+            }
+
+            const endpoints = {
+                verify: `/admin/trainers/${currentTrainerId}/verify`,
+                reject: `/admin/trainers/${currentTrainerId}/reject`,
+                suspend: `/admin/trainers/${currentTrainerId}/suspend`,
+                reactivate: `/admin/trainers/${currentTrainerId}/reactivate`
+            };
+
+            const endpoint = endpoints[currentAction];
+            if (!endpoint) {
+                closeModal();
+                return;
+            }
+
+            fetch(endpoint, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    closeModal();
+                    if (data.success) {
+                        loadTrainers(1);
+                    } else {
+                        showErrorModal('Error', data.message);
+                    }
+                })
+                .catch(err => {
+                    closeModal();
+                    showErrorModal('Error', 'Failed to perform action: ' + err.message);
+                });
+        });
+
+        // Modal cancel button
+        modalCancelBtn.addEventListener('click', closeModal);
+
+        // Close modal on outside click
+        actionModal.addEventListener('click', function(e) {
+            if (e.target === actionModal) {
+                closeModal();
+            }
+        });
+
+        // Attach event listeners to dynamically loaded elements
+        function attachEventListeners() {
+            // Pagination
+            document.querySelectorAll('.pagination-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const pageNumber = parseInt(this.dataset.page);
+                    loadTrainers(pageNumber);
+                });
+            });
+
+            // Verify Trainer
+            document.querySelectorAll('.verify-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const trainerId = this.dataset.trainerId;
+                    const trainerName = this.dataset.trainerName;
+                    showActionModal('verify', trainerId, trainerName);
+                });
+            });
+
+            // Reject Trainer
+            document.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const trainerId = this.dataset.trainerId;
+                    const trainerName = this.dataset.trainerName;
+                    showActionModal('reject', trainerId, trainerName);
+                });
+            });
+
+            // Suspend Trainer
+            document.querySelectorAll('.suspend-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const trainerId = this.dataset.trainerId;
+                    const trainerName = this.dataset.trainerName;
+                    showActionModal('suspend', trainerId, trainerName);
+                });
+            });
+
+            // Reactivate Trainer
+            document.querySelectorAll('.reactivate-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const trainerId = this.dataset.trainerId;
+                    const trainerName = this.dataset.trainerName;
+                    showActionModal('reactivate', trainerId, trainerName);
+                });
+            });
+        }
+
+        // Search input with debounce
+        searchTermInput.addEventListener('input', function() {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                loadTrainers(1);
+            }, SEARCH_DEBOUNCE_DELAY);
+        });
+
+        // Instant updates for selects
+        isVerifiedSelect.addEventListener('change', () => loadTrainers(1));
+        isSuspendedSelect.addEventListener('change', () => loadTrainers(1));
+        pageSizeSelect.addEventListener('change', () => loadTrainers(1));
+
+        // Clear filters button
+        clearFilterBtn.addEventListener('click', function() {
+            searchTermInput.value = '';
+            isVerifiedSelect.value = '';
+            isSuspendedSelect.value = '';
+            pageSizeSelect.value = '10';
+            loadTrainers(1);
+        });
+
+        // Initialize event listeners on page load
+        document.addEventListener('DOMContentLoaded', attachEventListeners);
+    </script>
+}

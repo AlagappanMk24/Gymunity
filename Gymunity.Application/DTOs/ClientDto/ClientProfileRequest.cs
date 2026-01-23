@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace ITI.Gymunity.FP.Application.DTOs.ClientDto
+namespace Gymunity.Application.DTOs.ClientDto
 {
     public class ClientProfileRequest
     {
