@@ -1,6 +1,12 @@
-﻿using Gymunity.Admin.MVC.Services;
+using Gymunity.Admin.MVC.Hubs;
+using Gymunity.Admin.MVC.Services;
+using Gymunity.Admin.MVC.Services.Interfaces;
+using Gymunity.Application.Contracts.Services.Admin;
+using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.DI;
+using Gymunity.Application.Services.Admin;
 using Gymunity.Infrastructure.DI;
+using Gymunity.Infrastructure.Services.Identity;
 
 namespace Gymunity.Admin.MVC
 {
@@ -38,8 +44,21 @@ namespace Gymunity.Admin.MVC
             builder.Services.AddDbContextServices(builder.Configuration);
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddInfrastructureServices();
+
             // Add Dashboard Service
-            builder.Services.AddScoped<DashboardStatisticsService>();
+            builder.Services.AddScoped<IDashboardStatisticsService, DashboardStatisticsService>();
+
+
+            // ✅ Register Admin Services (required for notification handlers)
+            builder.Services.AddScoped<ITrainerAdminService, TrainerAdminService>();
+            
+            // ✅ Register AccountService (from Infrastructure layer)
+            builder.Services.AddScoped<IAccountService, AccountService>();
+
+            // Add Admin Notification Services
+            builder.Services.AddScoped<IAdminUserResolverService, AdminUserResolverService>();
+            builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -51,7 +70,6 @@ namespace Gymunity.Admin.MVC
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles(); 
             app.UseRouting();
 
             app.UseAuthentication();
@@ -59,6 +77,9 @@ namespace Gymunity.Admin.MVC
 
             // Enable CORS before mapping SignalR hubs
             app.UseCors("adminSignalRPolicy");
+
+            // Map SignalR hub
+            app.MapHub<AdminNotificationHub>("/hubs/admin-notifications");
 
             app.MapControllerRoute(
                 name: "default",

@@ -1,0 +1,959 @@
+@using Gymunity.Admin.MVC.ViewModels.Trainers
+@model TrainerDetailsViewModel
+
+@{
+    ViewData["Title"] = "Trainer Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="space-y-8 animate-fade-in">
+    <!-- Page Header with Enhanced Styling -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl shadow-md border border-blue-100">
+        <div class="flex items-center gap-4">
+            <div class="p-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full text-white shadow-lg">
+                <i class="fas fa-dumbbell text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Trainer Details</h1>
+                <p class="text-lg text-gray-600 mt-2 flex items-center gap-3">
+                    <i class="fas fa-at text-blue-500"></i>
+                    <span class="font-bold text-blue-700">@Model.Handle</span>
+                </p>
+            </div>
+        </div>
+        <a href="@Url.Action("Index", "Trainers")" class="px-6 py-3 bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 hover:border-blue-500 transition font-semibold shadow-sm flex items-center gap-2">
+            <i class="fas fa-arrow-left"></i> Back to Trainers
+        </a>
+    </div>
+
+    <!-- Trainer Info Cards - Responsive Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Basic Info Card with Color Accents -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 col-span-1 lg:col-span-2">
+            <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <i class="fas fa-address-card text-blue-600 text-2xl"></i>
+                Basic Information
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500 font-medium">Username</p>
+                    <p class="font-semibold text-gray-900 bg-blue-50 p-2 rounded-md">@Model.UserName</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500 font-medium">Email</p>
+                    <a href="mailto:@Model.Email" class="font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-2 bg-blue-50 p-2 rounded-md">
+                        @Model.Email <i class="fas fa-external-link-alt text-xs"></i>
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500 font-medium">Handle</p>
+                    <span class="font-semibold text-blue-700 bg-blue-100 px-3 py-1 rounded-full">@Model.Handle</span>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500 font-medium">User ID</p>
+                    <p class="font-mono text-gray-900 bg-gray-50 p-2 rounded-md">@Model.UserId</p>
+                </div>
+                <div class="space-y-2 md:col-span-2">
+                    <p class="text-sm text-gray-500 font-medium">Status</p>
+                    <div>
+                        @if (Model.IsSuspended)
+                        {
+                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-full font-medium border border-red-200 shadow-sm">
+                                <i class="fas fa-ban"></i> Suspended
+                            </span>
+                        }
+                        else if (Model.IsVerified)
+                        {
+                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full font-medium border border-green-200 shadow-sm">
+                                <i class="fas fa-check-circle"></i> Verified
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full font-medium border border-yellow-200 shadow-sm">
+                                <i class="fas fa-clock"></i> Pending Verification
+                            </span>
+                        }
+                    </div>
+                </div>
+                @if (Model.IsSuspended && Model.SuspendedAt.HasValue)
+                {
+                    <div class="md:col-span-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 shadow-inner">
+                        <p class="font-semibold mb-1 flex items-center gap-2">
+                            <i class="fas fa-exclamation-circle"></i> Suspended On
+                        </p>
+                        <p>@Model.SuspendedAt.Value.ToString("MMMM dd, yyyy HH:mm")</p>
+                    </div>
+                }
+                <div class="space-y-2 md:col-span-2 pt-4 border-t border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Account Created</p>
+                    <p class="font-semibold text-gray-900">@Model.CreatedAt.ToString("MMMM dd, yyyy HH:mm")</p>
+                </div>
+                <div class="md:col-span-2 p-4 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg shadow-md">
+                    <p class="text-sm text-green-700 font-semibold">Available Balance</p>
+                    <p class="text-3xl font-bold text-green-600 mt-1">@Model.AvailableBalance.ToString("C")</p>
+                    <p class="text-xs text-green-600 mt-2">Funds ready for payout</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics & Actions Column -->
+        <div class="flex flex-col gap-6 col-span-1">
+            <!-- Statistics Card -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                    <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                    Statistics
+                </h3>
+                <div class="space-y-6">
+                    <div class="pb-4 border-b border-gray-100">
+                        <p class="text-sm text-gray-500 font-medium">Total Clients</p>
+                        <p class="text-4xl font-bold text-blue-600 mt-1">@Model.TotalClients <span class="text-sm text-gray-500 font-normal">active</span></p>
+                    </div>
+                    <div class="pb-4 border-b border-gray-100">
+                        <p class="text-sm text-gray-500 font-medium">Average Rating</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <div class="flex gap-1 text-yellow-400 text-xl">
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    if (i < (int)Model.RatingAverage)
+                                    {
+                                        <i class="fas fa-star"></i>
+                                    }
+                                    else if (i < Model.RatingAverage)
+                                    {
+                                        <i class="fas fa-star-half-alt"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star"></i>
+                                    }
+                                }
+                            </div>
+                            <span class="font-bold text-gray-900 text-lg">@Model.RatingAverage.ToString("F1") / 5</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Years of Experience</p>
+                        <p class="text-4xl font-bold text-purple-600 mt-1">@Model.YearsExperience <span class="text-sm text-gray-500 font-normal">years</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Card with Colorful Buttons -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Actions</h3>
+                <div class="space-y-3">
+                    @if (Model.IsSuspended)
+                    {
+                        <button type="button" class="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition font-bold shadow-md flex items-center justify-center gap-2 reactivate-trainer-btn" data-trainer-id="@Model.Id">
+                            <i class="fas fa-redo-alt"></i> Reactivate Account
+                        </button>
+                    }
+                    else if (!Model.IsVerified)
+                    {
+                        <button type="button" class="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-bold shadow-md flex items-center justify-center gap-2 verify-trainer-btn" data-trainer-id="@Model.Id">
+                            <i class="fas fa-check"></i> Verify Trainer
+                        </button>
+                        <button type="button" class="w-full py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition font-bold shadow-md flex items-center justify-center gap-2 reject-trainer-btn" data-trainer-id="@Model.Id">
+                            <i class="fas fa-times"></i> Reject Trainer
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition font-bold shadow-md flex items-center justify-center gap-2 suspend-trainer-btn" data-trainer-id="@Model.Id">
+                            <i class="fas fa-pause-circle"></i> Suspend Account
+                        </button>
+                    }
+                    <button type="button" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition font-bold shadow-md flex items-center justify-center gap-2" id="email-trainer-btn">
+                        <i class="fas fa-envelope"></i> Send Email <i class="fas fa-arrow-right text-xs ml-2"></i>
+                    </button>
+                    <div class="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100">
+                        <button type="button" class="py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg hover:from-gray-200 hover:to-gray-300 transition font-semibold shadow-sm flex items-center justify-center gap-2" title="View payment history">
+                            <i class="fas fa-credit-card"></i> <span class="hidden sm:inline">Payments</span>
+                        </button>
+                        <button type="button" class="py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg hover:from-gray-200 hover:to-gray-300 transition font-semibold shadow-sm flex items-center justify-center gap-2" title="View activity log">
+                            <i class="fas fa-history"></i> <span class="hidden sm:inline">Activity</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary - Card Layout with Gradients -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 text-white">
+            <h3 class="text-xl font-bold flex items-center gap-3">
+                <i class="fas fa-coins text-2xl"></i> Financial Summary
+            </h3>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="flex flex-col items-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:scale-105 transition-transform duration-300 shadow-sm">
+                <i class="fas fa-money-bill-wave text-4xl text-green-600 mb-4"></i>
+                <p class="text-sm text-gray-600 font-semibold">Total Earnings</p>
+                <p class="text-4xl font-bold text-green-600 mt-2">@Model.TotalEarnings.ToString("C")</p>
+                <p class="text-xs text-gray-500 mt-1">@Model.Currency</p>
+            </div>
+            <div class="flex flex-col items-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200 hover:scale-105 transition-transform duration-300 shadow-sm">
+                <i class="fas fa-chart-pie text-4xl text-blue-600 mb-4"></i>
+                <p class="text-sm text-gray-600 font-semibold">Platform Commission</p>
+                <p class="text-4xl font-bold text-blue-600 mt-2">@Model.PlatformFeesGained.ToString("C")</p>
+                <p class="text-xs text-gray-500 mt-1">Earned as Commission</p>
+            </div>
+            <div class="flex flex-col items-center p-6 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl border border-purple-200 hover:scale-105 transition-transform duration-300 shadow-sm">
+                <i class="fas fa-check-circle text-4xl text-purple-600 mb-4"></i>
+                <p class="text-sm text-gray-600 font-semibold">Transactions</p>
+                <p class="text-4xl font-bold text-purple-600 mt-2">@Model.CompletedPaymentsCount</p>
+                <p class="text-xs text-gray-500 mt-1">Completed Payments</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Info Card -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4 text-white">
+            <h3 class="text-xl font-bold flex items-center gap-3">
+                <i class="fas fa-briefcase text-2xl"></i> Professional Information
+            </h3>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500 font-semibold">Bio</p>
+                @if (string.IsNullOrEmpty(Model.Bio))
+                {
+                    <p class="text-gray-400 italic bg-gray-50 p-3 rounded-md">No bio provided</p>
+                }
+                else
+                {
+                    <p class="text-gray-900 bg-gray-50 p-3 rounded-md">@Model.Bio</p>
+                }
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500 font-semibold">Video Intro</p>
+                @if (!string.IsNullOrEmpty(Model.VideoIntroUrl))
+                {
+                    <a href="@Model.VideoIntroUrl" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 flex items-center gap-2 font-semibold">
+                        <i class="fas fa-video"></i> Watch Video <i class="fas fa-external-link-alt text-xs"></i>
+                    </a>
+                }
+                else
+                {
+                    <p class="text-gray-400 italic">Not provided</p>
+                }
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500 font-semibold">Verification Date</p>
+                @if (Model.VerifiedAt.HasValue)
+                {
+                    <span class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full font-medium">
+                        <i class="fas fa-calendar-check"></i> @Model.VerifiedAt.Value.ToString("MMMM dd, yyyy HH:mm")
+                    </span>
+                }
+                else
+                {
+                    <p class="text-gray-400 italic">Not verified yet</p>
+                }
+            </div>
+            <div class="space-y-2">
+                <p class="text-sm text-gray-500 font-semibold">Member Since</p>
+                <p class="font-semibold text-gray-900">@Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.BrandingColors))
+            {
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500 font-semibold">Branding Colors</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg border border-gray-300 shadow-sm" style="background-color: @Model.BrandingColors;"></div>
+                        <p class="font-semibold text-gray-900">@Model.BrandingColors</p>
+                    </div>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+            {
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500 font-semibold">Cover Image</p>
+                    <a href="@Model.CoverImageUrl" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 flex items-center gap-2 font-semibold">
+                        <i class="fas fa-image"></i> View Image <i class="fas fa-external-link-alt text-xs"></i>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Packages Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-pink-500 to-rose-600 px-6 py-4 text-white flex items-center justify-between">
+            <h3 class="text-xl font-bold flex items-center gap-3">
+                <i class="fas fa-box text-2xl"></i> Training Packages
+            </h3>
+            <span class="bg-white/20 px-4 py-1 rounded-full text-sm font-bold">@Model.Packages.Count</span>
+        </div>
+        <div class="p-6">
+            @if (Model.Packages.Any())
+            {
+                <div class="space-y-6">
+                    @foreach (var package in Model.Packages)
+                    {
+                        <div class="p-6 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300">
+                            <div class="flex flex-col md:flex-row justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <p class="text-xl font-bold text-gray-900">@package.Name</p>
+                                            <p class="text-sm text-gray-500 mt-1">Created @package.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                                        </div>
+                                        <span class="px-4 py-2 rounded-full text-sm font-bold @(package.IsActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700")">
+                                            <i class="fas @(package.IsActive ? "fa-check-circle" : "fa-circle") mr-1"></i> @(package.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-700 mb-4">@(string.IsNullOrEmpty(package.Description) ? "No description provided" : package.Description)</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-gray-100 mb-4">
+                                        <div>
+                                            <p class="text-xs text-gray-600 font-semibold">Monthly Price</p>
+                                            <p class="text-xl font-bold text-blue-600">@package.PriceMonthly.ToString("C")</p>
+                                        </div>
+                                        @if (package.PriceYearly.HasValue)
+                                        {
+                                            <div>
+                                                <p class="text-xs text-gray-600 font-semibold">Yearly Price</p>
+                                                <p class="text-xl font-bold text-green-600">@package.PriceYearly.Value.ToString("C")</p>
+                                            </div>
+                                        }
+                                        <div>
+                                            <p class="text-xs text-gray-600 font-semibold">Currency</p>
+                                            <p class="text-xl font-bold text-gray-900">@package.Currency</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-4 text-sm text-gray-600 flex-wrap">
+                                        @if (!string.IsNullOrEmpty(package.PromoCode))
+                                        {
+                                            <span class="flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full font-medium">
+                                                <i class="fas fa-tag"></i> Promo: @package.PromoCode
+                                            </span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(package.ThumbnailUrl))
+                                        {
+                                            <a href="@package.ThumbnailUrl" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
+                                                <i class="fas fa-image"></i> View Thumbnail <i class="fas fa-external-link-alt text-xs"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-16">
+                    <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-xl font-semibold text-gray-700">No packages created yet</p>
+                    <p class="text-sm text-gray-500 mt-2">This trainer hasn't added any training packages</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-indigo-500 to-violet-600 px-6 py-4 text-white flex items-center justify-between">
+            <h3 class="text-xl font-bold flex items-center gap-3">
+                <i class="fas fa-star text-2xl"></i> Client Reviews
+            </h3>
+            <span class="bg-white/20 px-4 py-1 rounded-full text-sm font-bold">@Model.TotalReviewsCount</span>
+        </div>
+        <div class="p-6">
+            @if (Model.Reviews.Any())
+            {
+                <div class="space-y-6">
+                    @foreach (var review in Model.Reviews)
+                    {
+                        <div class="p-6 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                            @review.ClientName.FirstOrDefault()
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-gray-900 text-lg">@review.ClientName</p>
+                                            <p class="text-sm text-gray-500">@review.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="flex gap-1 text-yellow-400 text-lg">
+                                            @for (int i = 0; i < 5; i++)
+                                            {
+                                                if (i < review.Rating)
+                                                {
+                                                    <i class="fas fa-star"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-star"></i>
+                                                }
+                                            }
+                                        </div>
+                                        <span class="font-bold text-gray-900">@review.Rating.ToString("F1")</span>
+                                    </div>
+                                    <div class="p-4 bg-white rounded-lg border border-gray-100 mb-4 shadow-sm">
+                                        <p class="text-gray-700">
+                                            @(string.IsNullOrEmpty(review.Comment) ? "No comment provided" : review.Comment)
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-4 text-xs text-gray-500 flex-wrap">
+                                        @if (review.IsEdited && review.EditedAt.HasValue)
+                                        {
+                                            <span class="flex items-center gap-1"><i class="fas fa-edit"></i> Edited @review.EditedAt.Value.ToString("MMMM dd, yyyy")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="flex items-center gap-1 text-gray-400"><i class="fas fa-check-circle"></i> Original</span>
+                                        }
+                                        @if (review.IsApproved)
+                                        {
+                                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium flex items-center gap-1">
+                                                <i class="fas fa-check-circle"></i> Approved
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium flex items-center gap-1">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (Model.Reviews.Count > 10)
+                {
+                    <div class="mt-6 pt-4 border-t border-gray-200 text-center text-sm text-gray-600">
+                        <i class="fas fa-info-circle mr-2"></i> Showing first 10 of @Model.TotalReviewsCount reviews
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-16">
+                    <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-xl font-semibold text-gray-700">No approved reviews yet</p>
+                    <p class="text-sm text-gray-500 mt-2">Reviews will appear once submitted and approved</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<!-- Action Confirmation Modal -->
+<div id="actionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
+        <!-- Modal Header -->
+        <div id="modalHeader" class="px-6 py-4 border-b border-gray-200">
+            <h3 id="modalTitle" class="text-lg font-bold text-gray-900"></h3>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-6 py-4">
+            <div class="flex items-center gap-4 mb-4">
+                <div id="modalIconContainer" class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full">
+                    <i id="modalIcon" class="text-2xl"></i>
+                </div>
+                <div>
+                    <p id="modalMessage" class="text-gray-700 text-sm leading-relaxed"></p>
+                    <p id="modalTrainerInfo" class="text-gray-900 font-semibold text-sm mt-1"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 justify-end">
+            <button type="button" id="modalCancelBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-medium">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+            <button type="button" id="modalConfirmBtn" class="px-4 py-2 text-white rounded-lg transition font-medium flex items-center gap-2">
+                <i id="confirmBtnIcon" class="fas"></i>
+                <span id="confirmBtnText">Confirm</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Email Modal -->
+<div id="emailModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+        <!-- Modal content -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:w-full sm:max-w-2xl">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 sm:p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg leading-6 font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-envelope"></i>
+                            <span>Send Email to Trainer</span>
+                        </h3>
+                        <p class="text-blue-100 text-sm mt-1">Communicate directly with @Model.Handle</p>
+                    </div>
+                    <button type="button" id="closeEmailModal" class="text-blue-100 hover:text-white transition">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="bg-white px-6 pt-5 pb-4 sm:p-6 space-y-4">
+                <!-- Recipient Information Card -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-circle-info text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <h4 class="font-semibold text-blue-900 text-sm">Recipient Information</h4>
+                            <div class="grid grid-cols-2 gap-3 mt-3">
+                                <div>
+                                    <p class="text-xs text-blue-700 font-medium">Name</p>
+                                    <p class="text-sm text-blue-900 font-semibold">@Model.Handle</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-blue-700 font-medium">Email</p>
+                                    <p class="text-sm text-blue-900 font-semibold break-all">@Model.Email</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-blue-700 font-medium">Status</p>
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium mt-1">
+                                        @if (Model.IsVerified)
+                                        {
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Verified</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-clock"></i>
+                                            <span>Pending</span>
+                                        }
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-blue-700 font-medium">Member Since</p>
+                                    <p class="text-sm text-blue-900">@Model.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Form -->
+                <form id="emailForm" class="space-y-4">
+                    <!-- Hidden trainer email field -->
+                    <input type="hidden" id="trainerEmail" value="@Model.Email">
+                    
+                    <!-- Quick Templates Section -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Quick Templates
+                        </label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <button type="button" class="template-btn px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 transition" data-template="welcome">
+                                <i class="fas fa-hand-peace mr-1"></i>Welcome
+                            </button>
+                            <button type="button" class="template-btn px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 transition" data-template="verification">
+                                <i class="fas fa-check-circle mr-1"></i>Verification
+                            </button>
+                            <button type="button" class="template-btn px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 transition" data-template="announcement">
+                                <i class="fas fa-bullhorn mr-1"></i>Announcement
+                            </button>
+                            <button type="button" class="template-btn px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-700 transition" data-template="support">
+                                <i class="fas fa-headset mr-1"></i>Support
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Subject Field -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Subject <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="emailSubject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" required placeholder="Email subject" minlength="5" maxlength="100">
+                        <p class="text-xs text-gray-500 mt-1">Keep it clear and concise</p>
+                    </div>
+
+                    <!-- Message Field -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Message <span class="text-red-500">*</span>
+                            </label>
+                            <span class="text-xs text-gray-500">
+                                <span id="charCount">0</span>/1000 characters
+                            </span>
+                        </div>
+                        <textarea id="emailMessage" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none" rows="6" required placeholder="Type your message here..." minlength="10" maxlength="1000"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Minimum 10 characters required</p>
+                    </div>
+
+                    <!-- Additional Options -->
+                    <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="sendCopy" class="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer">
+                            <label for="sendCopy" class="ml-2 text-sm text-gray-700 cursor-pointer">
+                                <span class="font-medium">Send copy to admin email</span>
+                                <p class="text-xs text-gray-500 mt-0.5">Keep a record of this communication</p>
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="trackEmail" class="w-4 h-4 text-blue-600 border-gray-300 rounded cursor-pointer" checked>
+                            <label for="trackEmail" class="ml-2 text-sm text-gray-700 cursor-pointer">
+                                <span class="font-medium">Add to email history</span>
+                                <p class="text-xs text-gray-500 mt-0.5">This email will be logged for audit purposes</p>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 px-6 py-4 sm:px-6 sm:py-4 sm:flex sm:flex-row-reverse gap-2 border-t border-gray-200">
+                <button type="button" id="sendEmailBtn" class="w-full inline-flex justify-center items-center rounded-lg shadow-sm px-4 py-2 bg-blue-600 font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition sm:w-auto" disabled>
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    <span>Send Email</span>
+                </button>
+                <button type="button" id="cancelEmailBtn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 sm:mt-0 sm:w-auto">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Configuration
+        const trainerId = '@Model.Id';
+        const trainerHandle = '@Model.Handle';
+        let currentAction = null;
+
+        // Modal elements
+        const actionModal = document.getElementById('actionModal');
+        const emailModal = document.getElementById('emailModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalIconContainer = document.getElementById('modalIconContainer');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalTrainerInfo = document.getElementById('modalTrainerInfo');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const confirmBtnIcon = document.getElementById('confirmBtnIcon');
+        const confirmBtnText = document.getElementById('confirmBtnText');
+
+        // Show action confirmation modal
+        function showActionModal(action) {
+            const actionConfig = {
+                verify: {
+                    title: 'Verify Trainer',
+                    message: 'Are you sure you want to verify this trainer? They will gain full access to the platform.',
+                    icon: 'fas fa-check-circle',
+                    iconBg: 'bg-green-100 text-green-600',
+                    btnClass: 'bg-green-600 hover:bg-green-700',
+                    btnIcon: 'fas fa-check',
+                    btnText: 'Verify Trainer'
+                },
+                reject: {
+                    title: 'Reject Trainer',
+                    message: 'Are you sure you want to reject this trainer? This action cannot be undone and their profile will be soft-deleted.',
+                    icon: 'fas fa-times-circle',
+                    iconBg: 'bg-red-100 text-red-600',
+                    btnClass: 'bg-red-600 hover:bg-red-700',
+                    btnIcon: 'fas fa-trash',
+                    btnText: 'Reject Trainer'
+                },
+                suspend: {
+                    title: 'Suspend Trainer',
+                    message: 'Are you sure you want to suspend this trainer? They will be unable to access the platform until reactivated.',
+                    icon: 'fas fa-pause-circle',
+                    iconBg: 'bg-orange-100 text-orange-600',
+                    btnClass: 'bg-orange-600 hover:bg-orange-700',
+                    btnIcon: 'fas fa-pause',
+                    btnText: 'Suspend Trainer'
+                },
+                reactivate: {
+                    title: 'Reactivate Trainer',
+                    message: 'Are you sure you want to reactivate this trainer? They will regain access to the platform.',
+                    icon: 'fas fa-undo-alt',
+                    iconBg: 'bg-blue-100 text-blue-600',
+                    btnClass: 'bg-blue-600 hover:bg-blue-700',
+                    btnIcon: 'fas fa-check',
+                    btnText: 'Reactivate Trainer'
+                }
+            };
+
+            const config = actionConfig[action];
+            if (!config) return;
+
+            currentAction = action;
+            modalTitle.textContent = config.title;
+            modalMessage.textContent = config.message;
+            modalTrainerInfo.textContent = `Trainer: ${trainerHandle}`;
+            modalIcon.className = config.icon;
+            modalIconContainer.className = `flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${config.iconBg}`;
+            modalConfirmBtn.className = `px-4 py-2 text-white rounded-lg transition font-medium flex items-center gap-2 ${config.btnClass}`;
+            confirmBtnIcon.className = config.btnIcon;
+            confirmBtnText.textContent = config.btnText;
+
+            actionModal.classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeModal() {
+            actionModal.classList.add('hidden');
+            currentAction = null;
+        }
+
+        // Close email modal
+        function closeEmailModal() {
+            emailModal.classList.add('hidden');
+        }
+
+        // Modal cancel button
+        modalCancelBtn.addEventListener('click', closeModal);
+
+        // Close modal on outside click
+        actionModal.addEventListener('click', function(e) {
+            if (e.target === actionModal) {
+                closeModal();
+            }
+        });
+
+        // Handle modal confirm
+        modalConfirmBtn.addEventListener('click', async function() {
+            if (!currentAction) {
+                closeModal();
+                return;
+            }
+
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            const endpoints = {
+                verify: `/admin/trainers/${trainerId}/verify`,
+                reject: `/admin/trainers/${trainerId}/reject`,
+                suspend: `/admin/trainers/${trainerId}/suspend`,
+                reactivate: `/admin/trainers/${trainerId}/reactivate`
+            };
+
+            const endpoint = endpoints[currentAction];
+            if (!endpoint) {
+                closeModal();
+                return;
+            }
+
+            try {
+                const response = await fetch(endpoint, { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccessMessage(data.message || 'Action completed successfully');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showErrorMessage(data.message || 'An error occurred');
+                    this.disabled = false;
+                    this.innerHTML = `<i id="confirmBtnIcon"></i> <span id="confirmBtnText"></span>`;
+                }
+            } catch (error) {
+                showErrorMessage('An error occurred: ' + error.message);
+                this.disabled = false;
+                this.innerHTML = `<i id="confirmBtnIcon"></i> <span id="confirmBtnText"></span>`;
+            }
+        });
+
+        // Action button listeners
+        document.querySelector('.verify-trainer-btn')?.addEventListener('click', () => showActionModal('verify'));
+        document.querySelector('.reject-trainer-btn')?.addEventListener('click', () => showActionModal('reject'));
+        document.querySelector('.suspend-trainer-btn')?.addEventListener('click', () => showActionModal('suspend'));
+        document.querySelector('.reactivate-trainer-btn')?.addEventListener('click', () => showActionModal('reactivate'));
+
+        // Email button
+        document.getElementById('email-trainer-btn').addEventListener('click', function() {
+            document.getElementById('trainerEmail').value = '@Model.Email';
+            document.getElementById('emailSubject').value = '';
+            document.getElementById('emailMessage').value = '';
+            emailModal.classList.remove('hidden');
+        });
+
+        document.getElementById('closeEmailModal').addEventListener('click', closeEmailModal);
+        document.getElementById('cancelEmailBtn').addEventListener('click', closeEmailModal);
+
+        // Email Modal Enhancements
+        const emailTemplates = {
+            welcome: {
+                subject: "Welcome to Gymunity - Your Trainer Profile is Ready",
+                body: "Dear @Model.Handle,\n\nWelcome to Gymunity! We're excited to have you join our community as a professional trainer.\n\nYour profile has been successfully created and is ready for use. You can now start connecting with clients who are looking for your expertise.\n\nIf you have any questions or need assistance, please don't hesitate to reach out to our support team.\n\nBest regards,\nGymunity Admin Team"
+            },
+            verification: {
+                subject: "Profile Verification Completed",
+                body: "Dear @Model.Handle,\n\nCongratulations! Your trainer profile has been verified and approved.\n\nYou now have full access to all platform features and can begin accepting client subscriptions.\n\nThank you for joining the Gymunity community.\n\nBest regards,\nGymunity Admin Team"
+            },
+            announcement: {
+                subject: "Important Announcement from Gymunity",
+                body: "Dear @Model.Handle,\n\nWe have an important update for you regarding our platform.\n\n[Add your announcement details here]\n\nFor more information, please visit your dashboard or contact our support team.\n\nBest regards,\nGymunity Admin Team"
+            },
+            support: {
+                subject: "We're Here to Help",
+                body: "Dear @Model.Handle,\n\nWe noticed there might be an issue with your account or profile.\n\nOur support team is here to assist you. Please reply to this email or contact us through your dashboard.\n\nWe're committed to resolving any concerns quickly.\n\nBest regards,\nGymunity Support Team"
+            }
+        };
+
+        // Character counter
+        document.getElementById('emailMessage')?.addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+
+        // Email validation
+        function validateEmail() {
+            const subject = document.getElementById('emailSubject')?.value.trim() || '';
+            const message = document.getElementById('emailMessage')?.value.trim() || '';
+            
+            if (!subject || subject.length < 5) {
+                showErrorMessage('Subject must be at least 5 characters long');
+                return false;
+            }
+            
+            if (!message || message.length < 10) {
+                showErrorMessage('Message must be at least 10 characters long');
+                return false;
+            }
+            
+            if (subject.length > 100) {
+                showErrorMessage('Subject cannot exceed 100 characters');
+                return false;
+            }
+            
+            if (message.length > 1000) {
+                showErrorMessage('Message cannot exceed 1000 characters');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Enable/disable send button based on input
+        function updateSendButtonState() {
+            const subject = document.getElementById('emailSubject')?.value.trim() || '';
+            const message = document.getElementById('emailMessage')?.value.trim() || '';
+            const sendBtn = document.getElementById('sendEmailBtn');
+            
+            sendBtn.disabled = !subject || !message || subject.length < 5 || message.length < 10;
+        }
+
+        document.getElementById('emailSubject')?.addEventListener('input', updateSendButtonState);
+        document.getElementById('emailMessage')?.addEventListener('input', updateSendButtonState);
+
+        // Template button handlers
+        document.querySelectorAll('.template-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const templateKey = btn.dataset.template;
+                const template = emailTemplates[templateKey];
+                
+                if (template) {
+                    document.getElementById('emailSubject').value = template.subject;
+                    document.getElementById('emailMessage').value = template.body;
+                    document.getElementById('charCount').textContent = template.body.length;
+                    updateSendButtonState();
+                    
+                    // Highlight the button
+                    document.querySelectorAll('.template-btn').forEach(b => b.classList.remove('bg-blue-100', 'border-blue-300'));
+                    btn.classList.add('bg-blue-100', 'border-blue-300');
+                }
+            });
+        });
+
+        // Email form submission with enhanced error handling
+        document.getElementById('sendEmailBtn').addEventListener('click', async function() {
+            if (!validateEmail()) {
+                return;
+            }
+
+            this.disabled = true;
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+
+            try {
+                const emailAddress = document.getElementById('trainerEmail')?.value || '@Model.Email';
+                const subject = document.getElementById('emailSubject').value.trim();
+                const body = document.getElementById('emailMessage').value.trim();
+
+                if (!emailAddress) {
+                    showErrorMessage('Email address is missing');
+                    this.disabled = false;
+                    this.innerHTML = originalHTML;
+                    return;
+                }
+
+                const response = await fetch('@Url.Action("SendEmail", "Trainers")', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        email: emailAddress,
+                        recipientName: trainerHandle,
+                        subject: subject,
+                        body: body
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccessMessage('Email sent successfully to @Model.Handle');
+                    closeEmailModal();
+                    document.getElementById('emailForm').reset();
+                    document.getElementById('charCount').textContent = '0';
+                    document.querySelectorAll('.template-btn').forEach(b => b.classList.remove('bg-blue-100', 'border-blue-300'));
+                } else {
+                    showErrorMessage(data.message || 'Failed to send email. Please try again.');
+                    console.error('Email send error:', data);
+                }
+            } catch (error) {
+                console.error('Email send error:', error);
+                showErrorMessage('An error occurred while sending the email: ' + error.message);
+            } finally {
+                this.disabled = false;
+                this.innerHTML = originalHTML;
+                updateSendButtonState();
+            }
+        });
+
+        // Notification Functions
+        function showSuccessMessage(message) {
+            const alert = document.createElement('div');
+            alert.className = 'fixed top-4 right-4 px-6 py-3 bg-green-50 border border-green-200 rounded-lg text-green-700 shadow-lg z-50 flex items-center gap-2';
+            alert.innerHTML = `<i class="fas fa-check-circle"></i><span>${message}</span>`;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function showErrorMessage(message) {
+            const alert = document.createElement('div');
+            alert.className = 'fixed top-4 right-4 px-6 py-3 bg-red-50 border border-red-200 rounded-lg text-red-700 shadow-lg z-50 flex items-center gap-2';
+            alert.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Close email modal on outside click
+        emailModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEmailModal();
+            }
+        });
+    </script>
+}

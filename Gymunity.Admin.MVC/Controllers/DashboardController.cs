@@ -1,4 +1,4 @@
-using Gymunity.Admin.MVC.Services;
+using Gymunity.Admin.MVC.Services.Interfaces;
 using Gymunity.Admin.MVC.ViewModels.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +14,10 @@ namespace Gymunity.Admin.MVC.Controllers
     [Route("admin")]
     public class DashboardController(
         ILogger<DashboardController> logger,
-        DashboardStatisticsService dashboardService) : BaseAdminController
+        IDashboardStatisticsService dashboardService) : BaseAdminController
     {
         private readonly ILogger<DashboardController> _logger = logger;
-        private readonly DashboardStatisticsService _dashboardService = dashboardService;
+        private readonly IDashboardStatisticsService _dashboardService = dashboardService;
 
         /// <summary>
         /// Displays the main dashboard with statistics and charts.

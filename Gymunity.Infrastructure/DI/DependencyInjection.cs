@@ -2,13 +2,16 @@
 using Gymunity.Application.Contracts.ExternalServices.Auth;
 using Gymunity.Application.Contracts.ExternalServices.Email;
 using Gymunity.Application.Contracts.Services;
+using Gymunity.Application.Contracts.Services.Communication;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.Services;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.Identity;
+using Gymunity.Domain.Interfaces;
 using Gymunity.Infrastructure.Data.Context;
 using Gymunity.Infrastructure.Data.Initializers;
 using Gymunity.Infrastructure.ExternalServices;
+using Gymunity.Infrastructure.Repositories;
 using Gymunity.Infrastructure.Services;
 using Gymunity.Infrastructure.Services.ExternalAuth.Google;
 using Gymunity.Infrastructure.Services.Identity;
@@ -80,7 +83,10 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
             services.AddScoped<IFileUploadService, FileUploadService>();
+            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
+
+            services.AddScoped<IPackageRepository, PackageRepository>();
             return services;
         }
     }

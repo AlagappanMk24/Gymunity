@@ -6,7 +6,6 @@ namespace Gymunity.Infrastructure.Services
     public class ImageUrlResolver(IConfiguration configuration): IImageUrlResolver
     {
         private readonly IConfiguration _configuration = configuration;
-
         public string? ResolveImageUrl(string url)
         {
             if (string.IsNullOrEmpty(url)) return null;
