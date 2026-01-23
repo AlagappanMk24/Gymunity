@@ -49,6 +49,8 @@ namespace Gymunity.Admin.MVC
             // Add Dashboard Service
             builder.Services.AddScoped<IDashboardStatisticsService, DashboardStatisticsService>();
 
+            // Add Analytics Service
+            builder.Services.AddScoped<IAdminAnalyticsService, AdminAnalyticsService>();
 
             // ✅ Register Admin Services (required for notification handlers)
             builder.Services.AddScoped<ITrainerAdminService, TrainerAdminService>();
