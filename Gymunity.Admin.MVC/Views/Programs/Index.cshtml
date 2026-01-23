@@ -1,0 +1,709 @@
+@using Gymunity.Admin.MVC.ViewModels.Programs
+@model ProgramsListViewModel
+
+@{
+    ViewData["Title"] = "Manage Programs";
+}
+
+@* <!-- Page Header with Gradient Background -->
+<div class="mb-8 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 -mx-8 -mt-8 px-8 py-8 shadow-lg">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-4xl font-bold text-white flex items-center gap-3">
+                <i class="fas fa-dumbbell"></i>Manage Programs
+            </h1>
+            <p class="text-blue-100 mt-2">Oversee all training programs in the system</p>
+        </div>
+    </div>
+</div> *@
+
+<!-- Filter Section -->
+<div id="filterForm" class="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm hover:shadow-md transition">
+    <form id="programsFilterForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition">
+                    <i class="fas fa-search mr-2 text-blue-500"></i>Search Programs
+                </label>
+                <input type="text" 
+                       id="searchTermInput" 
+                       name="searchTerm" 
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-lg transition placeholder-gray-400" 
+                       placeholder="Search by title or description..." 
+                       value="@Model.SearchTerm">
+            </div>
+            <div class="group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-green-600 transition">
+                    <i class="fas fa-eye mr-2 text-green-500"></i>Visibility
+                </label>
+                <select id="visibilityFilter" 
+                        name="isPublic" 
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent focus:shadow-lg transition cursor-pointer">
+                    <option value="">All Visibility</option>
+                    <option value="true" selected="@(Model.IsPublicFilter == true)">Public</option>
+                    <option value="false" selected="@(Model.IsPublicFilter == false)">Private</option>
+                </select>
+            </div>
+            <div class="group">
+                <label class="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-purple-600 transition">
+                    <i class="fas fa-dumbbell mr-2 text-purple-500"></i>Program Type
+                </label>
+                <select id="programTypeFilter" 
+                        name="programType" 
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:shadow-lg transition cursor-pointer">
+                    <option value="">All Types</option>
+                    <option value="Workout" selected="@(Model.ProgramTypeFilter == "Workout")">Workout</option>
+                    <option value="Nutrition" selected="@(Model.ProgramTypeFilter == "Nutrition")">Nutrition</option>
+                    <option value="Hybrid" selected="@(Model.ProgramTypeFilter == "Hybrid")">Hybrid</option>
+                    <option value="Challenge" selected="@(Model.ProgramTypeFilter == "Challenge")">Challenge</option>
+                </select>
+            </div>
+            <div class="pt-5">
+                <button type="button" 
+                        id="filterBtn" 
+                        class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-semibold shadow-md hover:shadow-lg">
+                    <i class="fas fa-search mr-2"></i>Search
+                </button>
+            </div>
+            <div class="pt-5">
+                <button type="button" 
+                        id="resetBtn" 
+                        class="w-full px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-semibold">
+                    <i class="fas fa-redo mr-2"></i>Reset
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Statistics Cards with Enhanced Design -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Programs -->
+    <div class="group bg-white rounded-xl border border-gray-200 p-6 hover:shadow-xl hover:border-blue-300 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold text-gray-600 uppercase tracking-wider">Total Programs</div>
+            <div class="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition">
+                <i class="fas fa-list-check text-blue-600 text-lg"></i>
+            </div>
+        </div>
+        <div id="totalProgramsCount" class="text-4xl font-bold text-gray-900 mb-2">@Model.TotalCount</div>
+        <p class="text-xs text-gray-500">All programs in system</p>
+        <div class="mt-4 h-1 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"></div>
+    </div>
+
+    <!-- Total Pages -->
+    <div class="group bg-white rounded-xl border border-gray-200 p-6 hover:shadow-xl hover:border-green-300 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold text-gray-600 uppercase tracking-wider">Total Pages</div>
+            <div class="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition">
+                <i class="fas fa-bookmark text-green-600 text-lg"></i>
+            </div>
+        </div>
+        <div id="totalPagesCount" class="text-4xl font-bold text-gray-900 mb-2">@Model.TotalPages</div>
+        <p id="pageSizeText" class="text-xs text-gray-500">@Model.PageSize items per page</p>
+        <div class="mt-4 h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>
+    </div>
+
+    <!-- Current Page -->
+    <div class="group bg-white rounded-xl border border-gray-200 p-6 hover:shadow-xl hover:border-purple-300 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold text-gray-600 uppercase tracking-wider">Current Page</div>
+            <div class="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition">
+                <i class="fas fa-layer-group text-purple-600 text-lg"></i>
+            </div>
+        </div>
+        <div id="currentPageCount" class="text-4xl font-bold text-gray-900 mb-2">
+            @Model.PageNumber<span class="text-lg text-gray-400">/</span><span class="text-2xl">@Model.TotalPages</span>
+        </div>
+        <p class="text-xs text-gray-500">Page position</p>
+        <div class="mt-4 h-1 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full"></div>
+    </div>
+
+    <!-- Page Size -->
+    <div class="group bg-white rounded-xl border border-gray-200 p-6 hover:shadow-xl hover:border-orange-300 transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold text-gray-600 uppercase tracking-wider">Page Size</div>
+            <div class="p-3 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition">
+                <i class="fas fa-expand text-orange-600 text-lg"></i>
+            </div>
+        </div>
+        <div id="pageSizeCount" class="text-4xl font-bold text-gray-900 mb-2">@Model.PageSize</div>
+        <p class="text-xs text-gray-500">Items displayed</p>
+        <div class="mt-4 h-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full"></div>
+    </div>
+</div>
+
+<!-- Programs Table Section -->
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition">
+    <!-- Table Header with Action Bar -->
+    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="font-semibold text-gray-900 text-lg">Programs List</h3>
+        <span id="itemsCount" class="text-xs font-semibold text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
+            @Model.Programs.Count() items
+        </span>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="hidden px-6 py-12 text-center">
+        <div class="inline-flex items-center gap-3">
+            <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+            <span class="text-gray-600 font-semibold">Loading programs...</span>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div id="tableContainer">
+        @Html.Partial("_ProgramsTablePartial", Model)
+    </div>
+
+    <!-- Pagination Section -->
+    <div id="paginationContainer" class="border-t border-gray-200 px-6 py-5 bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="text-sm font-semibold text-gray-700">
+            Showing page <span id="currentPageDisplay" class="text-blue-600">@Model.PageNumber</span> of <span id="totalPagesDisplay" class="text-blue-600">@Model.TotalPages</span>
+        </div>
+        <nav id="paginationNav" class="flex items-center gap-2">
+            @* Pagination will be rendered by JavaScript *@
+        </nav>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            ProgramsFilterModule.init();
+
+            // Also manually bind the filter button for testing
+            const filterBtn = document.getElementById('filterBtn');
+            if (filterBtn) {
+                filterBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Filter button clicked');
+                    ProgramsFilterModule.applyFilter(1);
+                });
+            }
+
+            // Add Enter key support for search input
+            const searchInput = document.getElementById('searchTermInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        console.log('Enter key pressed');
+                        ProgramsFilterModule.applyFilter(1);
+                    }
+                });
+            }
+        });
+        // ============================================================
+        // AJAX Filter Module - Handles Real-time Program Filtering
+        // ============================================================
+        const ProgramsFilterModule = (() => {
+            const config = {
+                filterFormId: 'programsFilterForm',
+                filterUrl: '@Url.Action("FilterPrograms", "Programs", new { area = "Admin" })',
+                pageSize: @Model.PageSize,
+                debounceDelay: 300
+            };
+
+            let debounceTimer;
+
+            // Initialize event listeners
+            const init = () => {
+                bindFilterEvents();
+                setupDebounce();
+            };
+
+            // Bind all filter input events
+            const bindFilterEvents = () => {
+                const searchInput = document.getElementById('searchTermInput');
+                const visibilityFilter = document.getElementById('visibilityFilter');
+                const programTypeFilter = document.getElementById('programTypeFilter');
+                const filterBtn = document.getElementById('filterBtn');
+                const resetBtn = document.getElementById('resetBtn');
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', handleFilterChange);
+                    searchInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            applyFilter(1);
+                        }
+                    });
+                }
+
+                if (visibilityFilter) {
+                    visibilityFilter.addEventListener('change', handleFilterChange);
+                }
+
+                if (programTypeFilter) {
+                    programTypeFilter.addEventListener('change', handleFilterChange);
+                }
+
+                if (filterBtn) {
+                    filterBtn.addEventListener('click', () => applyFilter(1));
+                }
+
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', resetFilters);
+                }
+            };
+
+            // Handle filter input changes with debounce
+            const handleFilterChange = () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    applyFilter(1);
+                }, config.debounceDelay);
+            };
+
+            // Setup debounce for search specifically
+            const setupDebounce = () => {
+                // Additional debounce logic can be added here if needed
+            };
+
+            // Apply filters and fetch data
+            const applyFilter = async (pageNumber = 1) => {
+                try {
+                      console.log('applyFilter called with page:', pageNumber);
+                    const filterData = getFilterData(pageNumber);
+                      console.log('Filter data:', filterData);
+                    // Show loading state
+                    showLoadingState();
+
+                    const response = await fetch(
+                        `${config.filterUrl}?${new URLSearchParams(filterData).toString()}`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        }
+                    );
+                        console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                       console.log('Response result:', result);
+
+                    if (result.success) {
+                        updateUI(result.data, result.html);
+                        hideLoadingState();
+                        // showSuccessNotification('Programs filtered successfully');
+                    } else {
+                        // showErrorNotification(result.message || 'Failed to filter programs');
+                        hideLoadingState();
+                    }
+                } catch (error) {
+                    console.error('Error applying filter:', error);
+                    // showErrorNotification('An error occurred while filtering programs');
+                    hideLoadingState();
+                }
+            };
+
+            // Get filter form data
+            const getFilterData = (pageNumber) => {
+                return {
+                    pageNumber: pageNumber,
+                    pageSize: config.pageSize,
+                    searchTerm: document.getElementById('searchTermInput')?.value || '',
+                    isPublic: document.getElementById('visibilityFilter')?.value || '',
+                    programType: document.getElementById('programTypeFilter')?.value || ''
+                };
+            };
+
+            // Update UI with new data
+            const updateUI = (data, html) => {
+                // Update statistics cards
+                updateStatistics(data);
+
+                // Update table content
+                const tableContainer = document.getElementById('tableContainer');
+                if (tableContainer) {
+                    tableContainer.innerHTML = html;
+                }
+
+                // Update item count
+                const itemsCount = document.getElementById('itemsCount');
+                if (itemsCount) {
+                    itemsCount.textContent = `${data.programs.length} items`;
+                }
+
+                // Update pagination
+                updatePagination(data);
+
+                // Re-attach event listeners for action buttons
+                rebindActionEvents();
+
+                // Scroll to table
+                document.getElementById('tableContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            // Update statistics cards
+            const updateStatistics = (data) => {
+                const totalProgramsCount = document.getElementById('totalProgramsCount');
+                const totalPagesCount = document.getElementById('totalPagesCount');
+                const currentPageCount = document.getElementById('currentPageCount');
+                const pageSizeText = document.getElementById('pageSizeText');
+                const pageSizeCount = document.getElementById('pageSizeCount');
+                const currentPageDisplay = document.getElementById('currentPageDisplay');
+                const totalPagesDisplay = document.getElementById('totalPagesDisplay');
+
+                if (totalProgramsCount) totalProgramsCount.textContent = data.totalCount;
+                if (totalPagesCount) totalPagesCount.textContent = data.totalPages;
+                if (currentPageCount) {
+                    currentPageCount.innerHTML = `${data.pageNumber}<span class="text-lg text-gray-400">/</span><span class="text-2xl">${data.totalPages}</span>`;
+                }
+                if (pageSizeText) pageSizeText.textContent = `${data.pageSize} items per page`;
+                if (pageSizeCount) pageSizeCount.textContent = data.pageSize;
+                if (currentPageDisplay) currentPageDisplay.textContent = data.pageNumber;
+                if (totalPagesDisplay) totalPagesDisplay.textContent = data.totalPages;
+            };
+
+            // Update pagination controls
+            const updatePagination = (data) => {
+                const paginationNav = document.getElementById('paginationNav');
+                if (!paginationNav) return;
+
+                let html = '';
+
+                // Previous button
+                if (data.pageNumber > 1) {
+                    html += `
+                        <button type="button" 
+                                onclick="ProgramsFilterModule.goToPage(${data.pageNumber - 1})"
+                                class="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-200 hover:border-gray-400 transition duration-150">
+                            <i class="fas fa-chevron-left mr-1.5"></i>Previous
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <button type="button" disabled
+                                class="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 opacity-50 cursor-not-allowed bg-gray-100">
+                            <i class="fas fa-chevron-left mr-1.5"></i>Previous
+                        </button>
+                    `;
+                }
+
+                // Page numbers
+                const maxPages = Math.min(5, data.totalPages);
+                for (let i = 1; i <= maxPages; i++) {
+                    if (i === data.pageNumber) {
+                        html += `
+                            <button type="button" disabled
+                                    class="px-3.5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-semibold shadow-md">
+                                ${i}
+                            </button>
+                        `;
+                    } else {
+                        html += `
+                            <button type="button" 
+                                    onclick="ProgramsFilterModule.goToPage(${i})"
+                                    class="px-3.5 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-100 transition duration-150">
+                                ${i}
+                            </button>
+                        `;
+                    }
+                }
+
+                // Ellipsis
+                if (data.totalPages > 5) {
+                    html += '<span class="px-3 py-2.5 text-gray-500 font-semibold">...</span>';
+                }
+
+                // Next button
+                if (data.pageNumber < data.totalPages) {
+                    html += `
+                        <button type="button"
+                                onclick="ProgramsFilterModule.goToPage(${data.pageNumber + 1})"
+                                class="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-200 hover:border-gray-400 transition duration-150">
+                            Next<i class="fas fa-chevron-right ml-1.5"></i>
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <button type="button" disabled
+                                class="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 opacity-50 cursor-not-allowed bg-gray-100">
+                            Next<i class="fas fa-chevron-right ml-1.5"></i>
+                        </button>
+                    `;
+                }
+
+                paginationNav.innerHTML = html;
+            };
+
+            // Reset filters
+            const resetFilters = () => {
+                document.getElementById('searchTermInput').value = '';
+                document.getElementById('visibilityFilter').value = '';
+                document.getElementById('programTypeFilter').value = '';
+                applyFilter(1);
+            };
+
+            // Go to specific page
+            const goToPage = (pageNumber) => {
+                applyFilter(pageNumber);
+            };
+
+            // Show/hide loading state
+            const showLoadingState = () => {
+                const spinner = document.getElementById('loadingSpinner');
+                const tableContainer = document.getElementById('tableContainer');
+                if (spinner) spinner.classList.remove('hidden');
+                if (tableContainer) tableContainer.style.opacity = '0.5';
+            };
+
+            const hideLoadingState = () => {
+                const spinner = document.getElementById('loadingSpinner');
+                const tableContainer = document.getElementById('tableContainer');
+                if (spinner) spinner.classList.add('hidden');
+                if (tableContainer) tableContainer.style.opacity = '1';
+            };
+
+            // Rebind action button events after table update
+            const rebindActionEvents = () => {
+                // Re-attach toggle visibility handlers
+                const toggleButtons = document.querySelectorAll('button[onclick*="toggleVisibility"]');
+                toggleButtons.forEach(btn => {
+                    btn.onclick = null;
+                    const programId = btn.getAttribute('onclick').match(/\d+/)[0];
+                    btn.addEventListener('click', () => toggleVisibility(programId));
+                });
+
+                // Re-attach delete handlers
+                const deleteButtons = document.querySelectorAll('button[onclick*="deleteProgram"]');
+                deleteButtons.forEach(btn => {
+                    btn.onclick = null;
+                    const programId = btn.getAttribute('onclick').match(/\d+/)[0];
+                    btn.addEventListener('click', () => deleteProgram(programId));
+                });
+            };
+
+            // Public API
+            return {
+                init,
+                applyFilter,
+                goToPage,
+                resetFilters
+            };
+        })();
+
+        // ============================================================
+        // Action Handlers - Toggle Visibility & Delete
+        // ============================================================
+        let currentDialogAction = null;
+
+        function showToggleVisibilityDialog(programId) {
+            currentDialogAction = { type: 'toggleVisibility', programId: programId };
+            openActionDialog(
+                'toggleVisibilityDialog',
+                'Toggle Visibility',
+                `Are you sure you want to toggle this program's visibility?`,
+                'This will change the programs public/private status.',
+                'confirm'
+            );
+        }
+
+        function showDeleteDialog(programId) {
+            currentDialogAction = { type: 'delete', programId: programId };
+            openActionDialog(
+                'deleteDialog',
+                'Delete Program',
+                'Are you sure you want to delete this program?',
+                'This action cannot be undone. The program will be permanently deleted.',
+                'danger'
+            );
+        }
+
+        function toggleVisibility(programId) {
+            showToggleVisibilityDialog(programId);
+        }
+
+        function deleteProgram(programId) {
+            showDeleteDialog(programId);
+        }
+
+        function openActionDialog(dialogId, title, message, details, type) {
+            // Create dialog container if it doesn't exist
+            let container = document.getElementById('actionDialogContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'actionDialogContainer';
+                document.body.appendChild(container);
+            }
+
+            const isDelete = type === 'danger';
+            const isDarkBg = isDelete;
+            const headerGradient = isDelete ? 'from-red-600 to-pink-600' : 'from-purple-600 to-indigo-600';
+            const buttonGradient = isDelete ? 'from-red-600 to-pink-600' : 'from-purple-600 to-indigo-600';
+            const buttonHover = isDelete ? 'hover:from-red-700 hover:to-pink-700' : 'hover:from-purple-700 hover:to-indigo-700';
+            const icon = isDelete ? 'fa-trash' : 'fa-toggle-on';
+
+            const overlay = document.getElementById('actionDialogOverlay');
+            if (!overlay) {
+                const newOverlay = document.createElement('div');
+                newOverlay.id = 'actionDialogOverlay';
+                newOverlay.className = 'hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300';
+                newOverlay.addEventListener('click', closeActionDialog);
+                document.body.appendChild(newOverlay);
+            }
+
+            container.innerHTML = `
+                <div id="actionDialog" class="hidden fixed inset-0 flex items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300">
+                        <!-- Dialog Header -->
+                        <div class="bg-gradient-to-r ${headerGradient} px-8 py-6">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 bg-white bg-opacity-20 rounded-lg">
+                                    <i class="fas ${icon} text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">${title}</h3>
+                                    <p class="${isDelete ? 'text-red-100' : 'text-purple-100'} text-sm mt-1">
+                                        ${isDelete ? 'Permanent action' : 'Change program status'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dialog Content -->
+                        <div class="px-8 py-6 bg-gradient-to-b from-white to-gray-50">
+                            ${isDelete ? `
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="p-2 bg-red-100 rounded-lg">
+                                        <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-700 font-semibold text-base">${message}</p>
+                                        <p class="text-gray-600 text-sm mt-1">${details}</p>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+                                    <p class="text-red-800 text-sm font-semibold">
+                                        <i class="fas fa-info-circle mr-2"></i>This will remove the program from the system.
+                                    </p>
+                                </div>
+                            ` : `
+                                <p class="text-gray-700 text-base mb-2">${message}</p>
+                                <p class="text-gray-500 text-sm">${details}</p>
+                            `}
+                        </div>
+
+                        <!-- Dialog Actions -->
+                        <div class="border-t border-gray-200 px-8 py-4 bg-gray-50 flex gap-3 justify-end rounded-b-2xl">
+                            <button type="button" class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-semibold" 
+                                    onclick="closeActionDialog()">
+                                <i class="fas fa-times mr-2"></i>Cancel
+                            </button>
+                            <button type="button" class="px-6 py-2.5 bg-gradient-to-r ${buttonGradient} text-white rounded-lg ${buttonHover} transition font-semibold" 
+                                    onclick="confirmActionDialog()">
+                                <i class="fas ${isDelete ? 'fa-trash' : 'fa-check'} mr-2"></i>${isDelete ? 'Delete' : 'Confirm'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const dialog = document.getElementById('actionDialog');
+            const dialogOverlay = document.getElementById('actionDialogOverlay');
+            
+            if (dialog && dialogOverlay) {
+                dialogOverlay.classList.remove('hidden');
+                dialog.classList.remove('hidden');
+                
+                // Trigger animation
+                setTimeout(() => {
+                    dialog.querySelector('.bg-white')?.classList.add('scale-100');
+                }, 10);
+            }
+        }
+
+        function closeActionDialog() {
+            const dialog = document.getElementById('actionDialog');
+            const overlay = document.getElementById('actionDialogOverlay');
+            
+            if (dialog) dialog.classList.add('hidden');
+            if (overlay) overlay.classList.add('hidden');
+            
+            currentDialogAction = null;
+        }
+
+        function confirmActionDialog() {
+            if (!currentDialogAction) return;
+            
+            closeActionDialog();
+            
+            if (currentDialogAction.type === 'toggleVisibility') {
+                performToggleVisibility(currentDialogAction.programId);
+            } else if (currentDialogAction.type === 'delete') {
+                performDelete(currentDialogAction.programId);
+            }
+        }
+
+        function performToggleVisibility(programId) {
+            const btn = event?.currentTarget;
+            
+            fetch(`/admin/programs/${programId}/toggle-visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    showSuccessNotification('Success', data.message);
+                    // Refresh the filter to get updated data
+                    ProgramsFilterModule.applyFilter(@Model.PageNumber);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorNotification('Error', 'An error occurred');
+                });
+        }
+
+        function performDelete(programId) {
+            const btn = event?.currentTarget;
+            
+            fetch(`/admin/programs/${programId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    showSuccessNotification('Success', data.message);
+                    // Refresh the filter to get updated data
+                    ProgramsFilterModule.applyFilter(1);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorNotification('Error', 'An error occurred');
+                });
+        }
+
+        // Close dialog when clicking overlay
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'actionDialogOverlay') {
+                closeActionDialog();
+            }
+        });
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeActionDialog();
+            }
+            
+            if (e.key === 'Enter' && currentDialogAction && !document.getElementById('actionDialog')?.classList.contains('hidden')) {
+                confirmActionDialog();
+            }
+        });
+    </script>
+}

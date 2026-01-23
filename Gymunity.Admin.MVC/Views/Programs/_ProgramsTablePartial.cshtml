@@ -1,0 +1,88 @@
+@using Gymunity.Admin.MVC.ViewModels.Programs
+@model ProgramsListViewModel
+
+<!-- Programs Table Partial View -->
+<div class="overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Title</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Trainer</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Duration</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Visibility</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Price</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Created</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            @if (Model.Programs.Any())
+            {
+                @foreach (var program in Model.Programs)
+                {
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                @if (!string.IsNullOrEmpty(program.ThumbnailUrl))
+                                {
+                                    <img src="@program.ThumbnailUrl" alt="@program.Title" class="w-10 h-10 rounded object-cover">
+                                }
+                                else
+                                {
+                                    <div class="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-dumbbell"></i>
+                                    </div>
+                                }
+                                <div>
+                                    <h6 class="font-semibold text-gray-900">@program.Title</h6>
+                                    <p class="text-sm text-gray-500">@(program.Description?.Substring(0, Math.Min(40, program.Description?.Length ?? 0)) ?? "No description")...</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">@(program.TrainerHandle ?? "Unknown")</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                @program.Type
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">@program.DurationWeeks weeks</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full @(program.IsPublic ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800")">
+                                @(program.IsPublic ? "Public" : "Private")
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            @if (program.Price.HasValue)
+                            {
+                                <span>EGP @program.Price.Value.ToString("N2")</span>
+                            }
+                            else
+                            {
+                                <span class="text-gray-500">Subscription</span>
+                            }
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">@program.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex gap-2 justify-end">
+                                <a href="@Url.Action("Details", new { id = program.Id })" 
+                                   class="p-2 text-blue-600 hover:bg-blue-50 rounded transition" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center">
+                        <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
+                        <p class="text-gray-500 font-medium">No programs found</p>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
