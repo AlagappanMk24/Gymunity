@@ -1,0 +1,568 @@
+@using Gymunity.Admin.MVC.ViewModels.Programs
+@model ProgramDetailsViewModel
+
+@{
+    ViewData["Title"] = "Program Details";
+}
+
+<!-- Page Header with Gradient Background -->
+<div class="mb-8 bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 -mx-8 -mt-8 px-8 py-4 shadow-lg">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="text-white">
+            <div class="flex items-center gap-3 mb-2">
+                <i class="fas fa-dumbbell text-2xl"></i>
+                <h1 class="text-4xl font-bold">@Model.Title</h1>
+            </div>
+            <p class="text-indigo-100 text-lg">Program management and overview</p>
+        </div>
+        <div class="flex gap-3 flex-wrap">
+            <a href="@Url.Action("Index")" class="inline-flex items-center gap-2 px-5 py-3 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition font-semibold shadow-md hover:shadow-lg">
+                <i class="fas fa-arrow-left"></i>Back
+            </a>
+        </div>
+    </div>
+</div> 
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column - Main Content -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Program Header Card with Enhanced Design -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+            <div class="flex flex-col md:flex-row gap-8 p-8 bg-gradient-to-br from-gray-50 to-white">
+                <div class="flex-shrink-0">
+                    @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+                    {
+                        <div class="relative group">
+                            <img src="@Model.ThumbnailUrl" alt="@Model.Title" 
+                                 class="w-40 h-40 rounded-xl object-cover shadow-lg group-hover:shadow-2xl transition-shadow duration-300">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-xl transition duration-300"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="w-40 h-40 rounded-xl bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 flex items-center justify-center text-white shadow-lg">
+                            <i class="fas fa-dumbbell text-6xl text-indigo-600 opacity-50"></i>
+                        </div>
+                    }
+                </div>
+                <div class="flex-grow flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-900 mb-3">@Model.Title</h2>
+                        <p class="text-gray-600 text-lg mb-6 leading-relaxed">@Model.Description</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-4 py-2 inline-flex items-center gap-2 text-sm font-bold rounded-full @(Model.IsPublic ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800") shadow-sm">
+                            <i class="fas @(Model.IsPublic ? "fa-globe" : "fa-lock")"></i>@(Model.IsPublic ? "Public" : "Private")
+                        </span>
+                        <span class="px-4 py-2 inline-flex items-center gap-2 text-sm font-bold rounded-full bg-blue-100 text-blue-800 shadow-sm">
+                            <i class="fas fa-check-circle"></i>@Model.Type
+                        </span>
+                        @if (Model.Price.HasValue)
+                        {
+                            <span class="px-4 py-2 inline-flex items-center gap-2 text-sm font-bold rounded-full bg-green-100 text-green-800 shadow-sm">
+                                <i class="fas fa-pound-sign"></i>EGP @Model.Price.Value.ToString("N0")
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Program Details Card -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+            <div class="border-b border-gray-200 px-8 py-5 bg-gradient-to-r from-gray-50 to-gray-100">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-info-circle text-blue-600"></i>Program Details
+                </h3>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="group p-6 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-md transition">
+                        <label class="block text-xs font-bold text-blue-700 uppercase tracking-wider mb-3">
+                            <i class="fas fa-calendar-days mr-2"></i>Duration
+                        </label>
+                        <p class="text-4xl font-bold text-blue-900 mb-1">@Model.DurationWeeks</p>
+                        <p class="text-sm text-blue-700 font-medium">weeks</p>
+                    </div>
+                    <div class="group p-6 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-md transition">
+                        <label class="block text-xs font-bold text-purple-700 uppercase tracking-wider mb-3">
+                            <i class="fas fa-dumbbell mr-2"></i>Total Exercises
+                        </label>
+                        <p class="text-4xl font-bold text-purple-900 mb-1">@Model.TotalExercises</p>
+                        <p class="text-sm text-purple-700 font-medium">exercises</p>
+                    </div>
+                    <div class="group p-6 rounded-lg bg-gradient-to-br from-green-50 to-green-100 hover:shadow-md transition">
+                        <label class="block text-xs font-bold text-green-700 uppercase tracking-wider mb-3">
+                            <i class="fas fa-pound-sign mr-2"></i>Price
+                        </label>
+                        <p class="text-4xl font-bold text-green-900 mb-1">
+                            @if (Model.Price.HasValue)
+                            {
+                                <span>EGP @Model.Price.Value.ToString("N0")</span>
+                            }
+                            else
+                            {
+                                <span class="text-lg">Sub</span>
+                            }
+                        </p>
+                        <p class="text-sm text-green-700 font-medium">@(Model.Price.HasValue ? "One-time" : "Subscription only")</p>
+                    </div>
+                    <div class="group p-6 rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 hover:shadow-md transition">
+                        <label class="block text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
+                            <i class="fas fa-users mr-2"></i>Max Clients
+                        </label>
+                        <p class="text-4xl font-bold text-indigo-900 mb-1">@(Model.MaxClients?.ToString() ?? "∞")</p>
+                        <p class="text-sm text-indigo-700 font-medium">@(Model.MaxClients.HasValue ? "Limited" : "Unlimited")</p>
+                    </div>
+                    <div class="group p-6 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-md transition">
+                        <label class="block text-xs font-bold text-orange-700 uppercase tracking-wider mb-3">
+                            <i class="fas fa-calendar-plus mr-2"></i>Created
+                        </label>
+                        <p class="text-2xl font-bold text-orange-900 mb-1">@Model.CreatedAt.ToString("dd MMM")</p>
+                        <p class="text-sm text-orange-700 font-medium">@Model.CreatedAt.ToString("HH:mm")</p>
+                    </div>
+                    <div class="group p-6 rounded-lg bg-gradient-to-br from-pink-50 to-pink-100 hover:shadow-md transition">
+                        <label class="block text-xs font-bold text-pink-700 uppercase tracking-wider mb-3">
+                            <i class="fas fa-sync-alt mr-2"></i>Updated
+                        </label>
+                        <p class="text-2xl font-bold text-pink-900 mb-1">@Model.UpdatedAt.ToString("dd MMM")</p>
+                        <p class="text-sm text-pink-700 font-medium">@Model.UpdatedAt.ToString("HH:mm")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trainer Information Card -->
+        @if (Model.TrainerProfileId.HasValue)
+        {
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                <div class="border-b border-gray-200 px-8 py-5 bg-gradient-to-r from-gray-50 to-gray-100">
+                    <h3 class="text-xl font-bold text-gray-900 flex items-center gap-3">
+                        <i class="fas fa-user-tie text-purple-600"></i>Trainer Information
+                    </h3>
+                </div>
+                <div class="p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-5 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100">
+                            <label class="block text-xs font-bold text-purple-700 uppercase tracking-wider mb-2">
+                                <i class="fas fa-user mr-2"></i>Trainer Name
+                            </label>
+                            <p class="text-lg font-bold text-purple-900">@(Model.TrainerUserName ?? "Unknown")</p>
+                        </div>
+                        <div class="p-5 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100">
+                            <label class="block text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">
+                                <i class="fas fa-at mr-2"></i>Handle
+                            </label>
+                            <p class="text-lg font-bold text-blue-900">@(Model.TrainerHandle ?? "Unknown")</p>
+                        </div>
+                        <div class="p-5 rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 md:col-span-2">
+                            <label class="block text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2">
+                                <i class="fas fa-envelope mr-2"></i>Email
+                            </label>
+                            <p class="text-lg font-bold text-indigo-900 break-all">@(Model.TrainerEmail ?? "N/A")</p>
+                        </div>
+                        <div class="md:col-span-2 pt-4">
+                            <a href="@Url.Action("Details", "Trainers", new { id = Model.TrainerProfileId })" 
+                               class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition font-bold shadow-md hover:shadow-lg">
+                                <i class="fas fa-arrow-right"></i>View Trainer Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="space-y-8">
+        <!-- Statistics Card -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow top-8">
+            <div class="border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-blue-50 to-blue-100">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-chart-simple text-blue-600"></i>Statistics
+                </h3>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="text-center p-6 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-md transition">
+                    <div class="text-5xl font-bold text-blue-600 mb-2">@Model.TotalWeeks</div>
+                    <p class="text-sm font-semibold text-blue-700 uppercase tracking-wider">
+                        <i class="fas fa-calendar mr-1.5"></i>Weeks Duration
+                    </p>
+                </div>
+                <div class="text-center p-6 rounded-lg bg-gradient-to-br from-green-50 to-green-100 hover:shadow-md transition">
+                    <div class="text-5xl font-bold text-green-600 mb-2">@Model.TotalExercises</div>
+                    <p class="text-sm font-semibold text-green-700 uppercase tracking-wider">
+                        <i class="fas fa-dumbbell mr-1.5"></i>Total Exercises
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Card -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+            <div class="border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-purple-50 to-purple-100">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-tag text-purple-600"></i>Status
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">Visibility</label>
+                    <span class="w-full block text-center px-4 py-3 rounded-lg font-bold @(Model.IsPublic ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800") shadow-sm">
+                        <i class="fas @(Model.IsPublic ? "fa-globe" : "fa-lock") mr-2"></i>@(Model.IsPublic ? "Public" : "Private")
+                    </span>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">Program Type</label>
+                    <span class="w-full block text-center px-4 py-3 rounded-lg font-bold bg-blue-100 text-blue-800 shadow-sm">
+                        <i class="fas fa-check-circle mr-2"></i>@Model.Type
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Card -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+            <div class="border-b border-gray-200 px-6 py-5 bg-gradient-to-r from-gray-50 to-gray-100">
+                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-bolt text-orange-600"></i>Actions
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <button type="button" class="w-full px-4 py-3 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-bold flex items-center justify-center gap-2 hover:shadow-md" 
+                        onclick="editProgram(@Model.Id)">
+                    <i class="fas fa-edit"></i>Edit Program
+                </button>
+                <button type="button" class="w-full px-4 py-3 border-2 border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition font-bold flex items-center justify-center gap-2 hover:shadow-md" 
+                        onclick="showToggleVisibilityDialog(@Model.Id)">
+                    <i class="fas fa-toggle-on"></i>Toggle Visibility
+                </button>
+                <button type="button" class="w-full px-4 py-3 border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition font-bold flex items-center justify-center gap-2 hover:shadow-md" 
+                        onclick="showDeleteDialog(@Model.Id)">
+                    <i class="fas fa-trash"></i>Delete Program
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Info Card -->
+        <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6 shadow-sm">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-lightbulb text-indigo-600 text-xl mt-1"></i>
+                <div>
+                    <p class="font-semibold text-gray-900 mb-1">Quick Tip</p>
+                    <p class="text-sm text-gray-700">Use the toggle button to quickly change program visibility to public or private.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dialog Overlay (Backdrop) -->
+<div id="dialogOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"></div>
+
+<!-- Action Dialogs -->
+<!-- Toggle Visibility Dialog -->
+<div id="toggleVisibilityDialog" class="hidden fixed inset-0 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300">
+        <!-- Dialog Header -->
+        <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-6">
+            <div class="flex items-center gap-3">
+                <div class="p-3 bg-white bg-opacity-20 rounded-lg">
+                    <i class="fas fa-toggle-on text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Toggle Visibility</h3>
+                    <p class="text-purple-100 text-sm mt-1">Change program visibility status</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialog Content -->
+        <div class="px-8 py-6 bg-gradient-to-b from-white to-gray-50">
+            <p class="text-gray-700 text-base mb-2">
+                Are you sure you want to toggle this program's visibility?
+            </p>
+            <p class="text-gray-500 text-sm">
+                This will change the program from <span id="currentVisibility" class="font-semibold text-gray-700">Public</span> to <span id="newVisibility" class="font-semibold text-gray-700">Private</span>.
+            </p>
+        </div>
+
+        <!-- Dialog Actions -->
+        <div class="border-t border-gray-200 px-8 py-4 bg-gray-50 flex gap-3 justify-end rounded-b-2xl">
+            <button type="button" class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-semibold" 
+                    onclick="closeToggleVisibilityDialog()">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+            <button type="button" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition font-semibold" 
+                    onclick="confirmToggleVisibility()">
+                <i class="fas fa-check mr-2"></i>Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Dialog -->
+<div id="deleteDialog" class="hidden fixed inset-0 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300">
+        <!-- Dialog Header -->
+        <div class="bg-gradient-to-r from-red-600 to-pink-600 px-8 py-6">
+            <div class="flex items-center gap-3">
+                <div class="p-3 bg-white bg-opacity-20 rounded-lg">
+                    <i class="fas fa-trash text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Delete Program</h3>
+                    <p class="text-red-100 text-sm mt-1">Permanent action</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialog Content -->
+        <div class="px-8 py-6 bg-gradient-to-b from-white to-gray-50">
+            <div class="flex items-start gap-3 mb-4">
+                <div class="p-2 bg-red-100 rounded-lg">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-gray-700 font-semibold text-base">Are you sure?</p>
+                    <p class="text-gray-600 text-sm mt-1">
+                        This action cannot be undone. The program <strong id="programTitleDelete">@Model.Title</strong> will be permanently deleted.
+                    </p>
+                </div>
+            </div>
+            <div class="p-3 bg-red-50 rounded-lg border border-red-200">
+                <p class="text-red-800 text-sm font-semibold">
+                    <i class="fas fa-info-circle mr-2"></i>This will remove the program from the system.
+                </p>
+            </div>
+        </div>
+
+        <!-- Dialog Actions -->
+        <div class="border-t border-gray-200 px-8 py-4 bg-gray-50 flex gap-3 justify-end rounded-b-2xl">
+            <button type="button" class="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition font-semibold" 
+                    onclick="closeDeleteDialog()">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+            <button type="button" class="px-6 py-2.5 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:from-red-700 hover:to-pink-700 transition font-semibold" 
+                    onclick="confirmDelete()">
+                <i class="fas fa-trash mr-2"></i>Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentDialogAction = null;
+
+        // ============================================================
+        // Dialog Management Functions
+        // ============================================================
+        
+        function openDialog(dialogId) {
+            const dialog = document.getElementById(dialogId);
+            const overlay = document.getElementById('dialogOverlay');
+            
+            if (dialog && overlay) {
+                overlay.classList.remove('hidden');
+                dialog.classList.remove('hidden');
+                
+                // Trigger animation
+                setTimeout(() => {
+                    dialog.querySelector('.bg-white')?.classList.add('scale-100');
+                }, 10);
+            }
+        }
+
+        function closeDialog(dialogId) {
+            const dialog = document.getElementById(dialogId);
+            const overlay = document.getElementById('dialogOverlay');
+            
+            if (dialog && overlay) {
+                dialog.classList.add('hidden');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // Close dialog when clicking overlay
+        document.getElementById('dialogOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                const dialogs = ['toggleVisibilityDialog', 'deleteDialog'];
+                dialogs.forEach(id => closeDialog(id));
+            }
+        });
+
+        // ============================================================
+        // Toggle Visibility Dialog
+        // ============================================================
+        
+        function showToggleVisibilityDialog(programId) {
+            const currentStatus = '@Model.IsPublic'.toLowerCase() === 'true' ? 'Public' : 'Private';
+            const newStatus = currentStatus === 'Public' ? 'Private' : 'Public';
+            
+            document.getElementById('currentVisibility').textContent = currentStatus;
+            document.getElementById('newVisibility').textContent = newStatus;
+            
+            currentDialogAction = { type: 'toggleVisibility', programId: programId };
+            openDialog('toggleVisibilityDialog');
+        }
+
+        function closeToggleVisibilityDialog() {
+            closeDialog('toggleVisibilityDialog');
+            currentDialogAction = null;
+        }
+
+        function confirmToggleVisibility() {
+            if (!currentDialogAction) return;
+            
+            const programId = currentDialogAction.programId;
+            const btn = document.querySelector('button[onclick="showToggleVisibilityDialog(' + programId + ')"]');
+            
+            closeToggleVisibilityDialog();
+            performToggleVisibility(programId, btn);
+        }
+
+        function performToggleVisibility(programId, btn) {
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+
+            fetch(`/admin/programs/${programId}/toggle-visibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Success', data.message, 'success');
+                setTimeout(() => location.reload(), 1200);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error', 'An error occurred', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-toggle-on"></i>Toggle Visibility';
+                }
+            });
+        }
+
+        // ============================================================
+        // Delete Dialog
+        // ============================================================
+        
+        function showDeleteDialog(programId) {
+            document.getElementById('programTitleDelete').textContent = '@Model.Title';
+            currentDialogAction = { type: 'delete', programId: programId };
+            openDialog('deleteDialog');
+        }
+
+        function closeDeleteDialog() {
+            closeDialog('deleteDialog');
+            currentDialogAction = null;
+        }
+
+        function confirmDelete() {
+            if (!currentDialogAction) return;
+            
+            const programId = currentDialogAction.programId;
+            const btn = document.querySelector('button[onclick="showDeleteDialog(' + programId + ')"]');
+            
+            closeDeleteDialog();
+            performDelete(programId, btn);
+        }
+
+        function performDelete(programId, btn) {
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+
+            fetch(`/admin/programs/${programId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showNotification('Success', data.message, 'success');
+                setTimeout(() => window.location.href = '/admin/programs', 1200);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Error', 'An error occurred', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i>Delete Program';
+                }
+            });
+        }
+
+        // ============================================================
+        // Edit Program
+        // ============================================================
+        
+        function editProgram(programId) {
+            showNotification('Info', 'Edit functionality coming soon', 'info');
+        }
+
+        // ============================================================
+        // Notification System
+        // ============================================================
+        
+        function showNotification(title, message, type) {
+            const colors = {
+                success: 'bg-emerald-500 border-emerald-600',
+                error: 'bg-red-500 border-red-600',
+                info: 'bg-blue-500 border-blue-600'
+            };
+
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type] || colors.info} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-4 z-50 border-l-4`;
+            notification.innerHTML = `
+                <i class="fas ${icons[type]} text-xl"></i>
+                <div>
+                    <p class="font-bold">${title}</p>
+                    <p class="text-sm opacity-90">${message}</p>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // ============================================================
+        // Keyboard Support for Dialogs
+        // ============================================================
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDialog('toggleVisibilityDialog');
+                closeDialog('deleteDialog');
+            }
+            
+            if (e.key === 'Enter' && currentDialogAction) {
+                if (!document.getElementById('toggleVisibilityDialog').classList.contains('hidden')) {
+                    confirmToggleVisibility();
+                } else if (!document.getElementById('deleteDialog').classList.contains('hidden')) {
+                    confirmDelete();
+                }
+            }
+        });
+    </script>
+}

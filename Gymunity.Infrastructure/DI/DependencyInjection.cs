@@ -15,6 +15,7 @@ using Gymunity.Infrastructure.Repositories;
 using Gymunity.Infrastructure.Services;
 using Gymunity.Infrastructure.Services.ExternalAuth.Google;
 using Gymunity.Infrastructure.Services.Identity;
+using ITI.Gymunity.FP.Infrastructure.Repositories;
 using KS_Sweets.Infrastructure.Data.Initializers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -75,6 +76,9 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDbInitializer, DbInitializer>();
 
+            // Register Repositories 
+            services.AddScoped<IProgramRepository, ProgramRepository>();
+  
             // Register External Services
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IAccountService, AccountService>();

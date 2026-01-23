@@ -23,6 +23,8 @@ namespace Gymunity.Application.DI
             // ===========================
             services.AddScoped<IClientAdminService, ClientAdminService>();
             services.AddScoped<ITrainerAdminService, TrainerAdminService>();
+            services.AddScoped<IProgramAdminService, ProgramAdminService>();
+
             services.AddScoped<IPackageService, PackageService>();
 
             return services;

@@ -9,7 +9,7 @@ namespace Gymunity.Infrastructure.Repositories
     {
         public async Task<IReadOnlyList<Package>> GetByTrainerIdAsync(int trainerId)
         {
-            return await _Context.Packages
+            return await _context.Packages
             .Where(p => p.TrainerId == trainerId && !p.IsDeleted)
             .Include(p => p.PackagePrograms)
             .ThenInclude(pp => pp.Program)
@@ -20,7 +20,7 @@ namespace Gymunity.Infrastructure.Repositories
 
         public async Task<IReadOnlyList<Package>> GetAllActiveWithProgramsAsync()
         {
-            return await _Context.Packages
+            return await _context.Packages
             .Where(p => p.IsActive && !p.IsDeleted)
             .Include(p => p.PackagePrograms)
             .ThenInclude(pp => pp.Program)
@@ -31,7 +31,7 @@ namespace Gymunity.Infrastructure.Repositories
 
         public async Task<Package?> GetByIdWithProgramsAsync(int id)
         {
-            return await _Context.Packages
+            return await _context.Packages
             .Where(p => p.Id == id && !p.IsDeleted)
             .Include(p => p.PackagePrograms)
             .ThenInclude(pp => pp.Program)

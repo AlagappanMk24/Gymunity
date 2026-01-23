@@ -99,6 +99,18 @@ namespace Gymunity.Application.Mapping
                 .ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom<GenericImageUrlResolver<Program, ProgramClientResponse>, string?>(p => p.ThumbnailUrl));
 
             // ======================
+            // Week / Day / DayExercise mappings
+            // Used by:
+            // - WeeksController (GET/POST/PUT/DELETE)
+            // - DaysController (GET/POST/PUT/DELETE)
+            // - DayExercisesController (GET/POST/PUT/DELETE)
+            // ======================
+            CreateMap<ProgramWeek, ProgramWeekGetAllResponse>();
+            CreateMap<ProgramDay, ProgramDayGetAllResponse>();
+            CreateMap<ProgramDayExercise, ProgramDayExerciseGetAllResponse>()
+                .ForMember(dest => dest.VideoUrl, opt => opt.MapFrom<GenericImageUrlResolver<ProgramDayExercise, ProgramDayExerciseGetAllResponse>, string?>(p => p.VideoUrl));
+
+            // ======================
             // Package mappings (updated)
             // Used by:
             // - PackagesController / PackageService
