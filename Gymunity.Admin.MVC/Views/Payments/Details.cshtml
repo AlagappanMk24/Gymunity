@@ -1,0 +1,444 @@
+@using Gymunity.Application.DTOs.User.Payment
+@using Gymunity.Domain.Enums
+@model PaymentResponse
+
+@{
+    ViewData["Title"] = "Payment Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Status styling
+    var statusColor = Model.Status switch
+    {
+        PaymentStatus.Pending => "bg-yellow-50 text-yellow-700 border-yellow-200",
+        PaymentStatus.Completed => "bg-green-50 text-green-700 border-green-200",
+        PaymentStatus.Failed => "bg-red-50 text-red-700 border-red-200",
+        PaymentStatus.Refunded => "bg-purple-50 text-purple-700 border-purple-200",
+        _ => "bg-gray-50 text-gray-700 border-gray-200"
+    };
+
+    var statusIcon = Model.Status switch
+    {
+        PaymentStatus.Pending => "fas fa-hourglass-half",
+        PaymentStatus.Completed => "fas fa-check-circle",
+        PaymentStatus.Failed => "fas fa-times-circle",
+        PaymentStatus.Refunded => "fas fa-undo",
+        _ => "fas fa-question-circle"
+    };
+
+    var statusBadgeColor = Model.Status switch
+    {
+        PaymentStatus.Pending => "bg-yellow-100 text-yellow-700",
+        PaymentStatus.Completed => "bg-green-100 text-green-700",
+        PaymentStatus.Failed => "bg-red-100 text-red-700",
+        PaymentStatus.Refunded => "bg-purple-100 text-purple-700",
+        _ => "bg-gray-100 text-gray-700"
+    };
+
+    var methodIcon = Model.Method switch
+    {
+        PaymentMethod.Paymob => "fas fa-credit-card",
+        PaymentMethod.PayPal => "fab fa-paypal",
+        _ => "fas fa-money-bill"
+    };
+}
+
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Payment #@Model.Id.ToString().PadLeft(6, '0')</h1>
+            <p class="text-gray-500 mt-2">View and manage payment details</p>
+        </div>
+        <a href="@Url.Action("Index")" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition font-medium inline-flex items-center gap-2 w-fit">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Payments</span>
+        </a>
+    </div>
+
+    <!-- Status Alert Banner -->
+    @if (Model.Status == PaymentStatus.Failed)
+    {
+        <div class="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+            <i class="fas fa-exclamation-circle text-red-600 flex-shrink-0 mt-0.5"></i>
+            <div class="flex-grow">
+                <h3 class="font-semibold text-red-900">Payment Failed</h3>
+                <p class="text-sm text-red-700 mt-1">Reason: @(Model.FailureReason ?? "No reason provided")</p>
+            </div>
+        </div>
+    }
+
+    @if (Model.Status == PaymentStatus.Pending)
+    {
+        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3">
+            <i class="fas fa-hourglass-half text-yellow-600 flex-shrink-0 mt-0.5"></i>
+            <div class="flex-grow">
+                <h3 class="font-semibold text-yellow-900">Payment Pending</h3>
+                <p class="text-sm text-yellow-700 mt-1">This payment is awaiting completion. Check back later for updates.</p>
+            </div>
+        </div>
+    }
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Payment Details -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Payment Status Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-start justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 mb-2">Payment Status</h2>
+                        <p class="text-sm text-gray-600">Current payment status and transaction information</p>
+                    </div>
+                    <span class="inline-flex items-center gap-2 px-4 py-2 @statusBadgeColor rounded-full text-sm font-semibold">
+                        <i class="@statusIcon"></i>
+                        @Model.Status.ToString()
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Status Timeline -->
+                    <div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</label>
+                                <p class="text-lg font-semibold text-gray-900 mt-1">@Model.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                <p class="text-sm text-gray-600">@Model.CreatedAt.ToString("hh:mm tt")</p>
+                            </div>
+                            @if (Model.PaidAt.HasValue)
+                            {
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Completed</label>
+                                    <p class="text-lg font-semibold text-gray-900 mt-1">@Model.PaidAt?.ToString("MMM dd, yyyy")</p>
+                                    <p class="text-sm text-gray-600">@Model.PaidAt?.ToString("hh:mm tt")</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Payment Method Info -->
+                    <div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment Method</label>
+                                <p class="text-lg font-semibold text-gray-900 mt-1">
+                                    <i class="@methodIcon mr-2"></i>
+                                    @Model.Method.ToString()
+                                </p>
+                                <p class="text-sm text-gray-600">@(Model.Method == PaymentMethod.Paymob ? "Paymob Payment Gateway" : "PayPal Payment Gateway")</p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Transaction ID</label>
+                                <p class="text-lg font-semibold text-gray-900 mt-1 font-mono">@(Model.TransactionId ?? "N/A")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amount Details Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6">Amount Details</h2>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                        <span class="text-gray-600 font-medium">Subscription Amount</span>
+                        <span class="text-xl font-bold text-gray-900">@Model.Amount.ToString("C") @Model.Currency</span>
+                    </div>
+
+                    <div class="flex justify-between items-center py-3 border-b border-gray-200">
+                        <span class="text-gray-600 font-medium">Platform Fee (15%)</span>
+                        <span class="text-lg font-semibold text-red-600">-@Model.PlatformFee.ToString("C") @Model.Currency</span>
+                    </div>
+
+                    <div class="flex justify-between items-center py-3 bg-blue-50 rounded-lg px-4">
+                        <span class="text-gray-900 font-semibold">Trainer Payout</span>
+                        <span class="text-2xl font-bold text-blue-600">@Model.TrainerPayout.ToString("C") @Model.Currency</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Information Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Client Information</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Client Name</label>
+                        <p class="text-lg font-semibold text-gray-900 mt-1">@Model.ClientName</p>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</label>
+                        <p class="text-gray-700 mt-1">@Model.ClientEmail</p>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Client ID</label>
+                        <p class="text-gray-700 font-mono mt-1">@Model.ClientId</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subscription Information Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Subscription Information</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Subscription ID</label>
+                        <p class="text-lg font-semibold text-gray-900 mt-1">
+                            <a href="@Url.Action("Details", "Subscriptions", new { id = Model.SubscriptionId })" class="text-blue-600 hover:text-blue-700">
+                                #@Model.SubscriptionId
+                            </a>
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Package</label>
+                        <p class="text-lg font-semibold text-gray-900 mt-1">@Model.PackageName</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Subscription Status</label>
+                            <p class="text-gray-700 mt-1">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold
+                                    @(Model.SubscriptionStatus switch {
+                                        SubscriptionStatus.Active => "bg-green-100 text-green-700",
+                                        SubscriptionStatus.Unpaid => "bg-yellow-100 text-yellow-700",
+                                        SubscriptionStatus.Canceled => "bg-red-100 text-red-700",
+                                        _ => "bg-gray-100 text-gray-700"
+                                    })">
+                                    @Model.SubscriptionStatus?.ToString()
+                                </span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Subscription Type</label>
+                            <p class="text-gray-700 mt-1">
+                                @if (Model.IsAnnualSubscription)
+                                {
+                                    <span class="font-semibold">Annual Plan</span>
+                                }
+                                else
+                                {
+                                    <span class="font-semibold">Monthly Plan</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Start Date</label>
+                            <p class="text-gray-700 mt-1">@Model.SubscriptionStartDate?.ToString("MMM dd, yyyy")</p>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">End Date</label>
+                            <p class="text-gray-700 mt-1">@Model.SubscriptionEndDate?.ToString("MMM dd, yyyy")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Trainer & Actions -->
+        <div class="space-y-6">
+            <!-- Trainer Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Trainer Information</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Trainer Name</label>
+                        <p class="text-lg font-semibold text-gray-900 mt-1">
+                            @Model.TrainerName
+                            @if (Model.IsTrainerVerified)
+                            {
+                                <i class="fas fa-check-circle text-blue-600 ml-2" title="Verified Trainer"></i>
+                            }
+                        </p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.TrainerHandle))
+                    {
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Trainer Handle</label>
+                            <p class="text-gray-700 mt-1">@@<span class="font-semibold">@Model.TrainerHandle</span></p>
+                        </div>
+                    }
+
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Trainer ID</label>
+                        <p class="text-gray-700 font-mono mt-1">@Model.TrainerProfileId</p>
+                    </div>
+
+                    @if (Model.TrainerRating.HasValue && Model.TrainerTotalClients.HasValue)
+                    {
+                        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Average Rating</label>
+                                <p class="text-lg font-semibold text-yellow-600 mt-1">
+                                    ★ @Model.TrainerRating.Value.ToString("0.0")
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Clients</label>
+                                <p class="text-lg font-semibold text-blue-600 mt-1">
+                                    @Model.TrainerTotalClients.Value
+                                </p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- View Trainer Button -->
+                    <a href="@Url.Action("Details", "Trainers", new { id = Model.TrainerProfileId })"
+                       class="mt-4 w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium text-center text-sm block">
+                        View Trainer Profile
+                    </a>
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
+
+                <div class="space-y-2">
+                    @if (Model.Status == PaymentStatus.Completed)
+                    {
+                        <button type="button"
+                                class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium text-sm flex items-center justify-center gap-2"
+                                onclick="handleRefund(@Model.Id)">
+                            <i class="fas fa-undo"></i>
+                            <span>Process Refund</span>
+                        </button>
+                    }
+
+                    <button type="button"
+                            class="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition font-medium text-sm flex items-center justify-center gap-2"
+                            onclick="downloadDetails()">
+                        <i class="fas fa-download"></i>
+                        <span>Download Receipt</span>
+                    </button>
+
+                    <button type="button"
+                            class="w-full px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition font-medium text-sm flex items-center justify-center gap-2"
+                            onclick="printDetails()">
+                        <i class="fas fa-print"></i>
+                        <span>Print</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm border border-blue-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b border-blue-200">
+                        <span class="text-gray-600">Payment ID:</span>
+                        <span class="font-semibold text-gray-900">#@Model.Id.ToString().PadLeft(6, '0')</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-blue-200">
+                        <span class="text-gray-600">Amount:</span>
+                        <span class="font-semibold text-blue-600">@Model.Amount.ToString("C")</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-blue-200">
+                        <span class="text-gray-600">Status:</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-1 @statusBadgeColor rounded-full text-xs font-semibold">
+                            <i class="@statusIcon text-xs"></i>
+                            @Model.Status.ToString()
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-gray-600">Date:</span>
+                        <span class="font-semibold text-gray-900">@Model.CreatedAt.ToString("MMM dd, yyyy")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function handleRefund(paymentId) {
+            if (confirm('Are you sure you want to refund this payment?')) {
+                fetch(`/admin/payments/${paymentId}/refund`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Refund processed successfully');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(err => alert('Error processing refund'));
+            }
+        }
+
+        function downloadDetails() {
+            const html = `
+                <html>
+                <head>
+                    <title>Payment Receipt</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { color: #1e40af; margin-bottom: 20px; }
+                        .section { margin-bottom: 20px; }
+                        .label { font-weight: bold; color: #374151; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        td { padding: 8px; border: 1px solid #e5e7eb; }
+                        .total { background-color: #eff6ff; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="header">Payment Receipt</h1>
+                    <div class="section">
+                        <h2>Payment Information</h2>
+                        <table>
+                            <tr><td class="label">Payment ID:</td><td>@Model.Id</td></tr>
+                            <tr><td class="label">Status:</td><td>@Model.Status.ToString()</td></tr>
+                            <tr><td class="label">Amount:</td><td>@Model.Amount.ToString("C") @Model.Currency</td></tr>
+                            <tr><td class="label">Date:</td><td>@Model.CreatedAt.ToString("MMM dd, yyyy")</td></tr>
+                            <tr><td class="label">Method:</td><td>@Model.Method.ToString()</td></tr>
+                        </table>
+                    </div>
+                    <div class="section">
+                        <h2>Client Information</h2>
+                        <table>
+                            <tr><td class="label">Name:</td><td>@Model.ClientName</td></tr>
+                            <tr><td class="label">Email:</td><td>@Model.ClientEmail</td></tr>
+                        </table>
+                    </div>
+                    <div class="section">
+                        <h2>Subscription Information</h2>
+                        <table>
+                            <tr><td class="label">Subscription ID:</td><td>#@Model.SubscriptionId</td></tr>
+                            <tr><td class="label">Package:</td><td>@Model.PackageName</td></tr>
+                            <tr><td class="label">Trainer:</td><td>@Model.TrainerName</td></tr>
+                        </table>
+                    </div>
+                    <p style="margin-top: 40px; color: #6b7280; font-size: 12px;">Generated on @DateTime.Now.ToString("MMM dd, yyyy HH:mm:ss")</p>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `payment-@Model.Id-receipt.html`;
+            link.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function printDetails() {
+            window.print();
+        }
+    </script>
+}

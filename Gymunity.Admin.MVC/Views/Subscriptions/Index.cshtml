@@ -1,0 +1,496 @@
+@using Gymunity.Admin.MVC.ViewModels.Subscriptions
+@model SubscriptionsListViewModel
+
+@{
+    ViewData["Title"] = "Manage Subscriptions";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="space-y-6">
+    <!-- Page Header & Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Active Subscriptions -->
+        <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg shadow-sm border border-blue-600 p-6 text-white">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm font-medium">Active</p>
+                    <h3 class="text-3xl font-bold mt-2" id="activeCount">--</h3>
+                    <p class="text-blue-100 text-xs mt-1">Currently running</p>
+                </div>
+                <i class="fas fa-check-circle text-blue-300 text-3xl opacity-50"></i>
+            </div>
+        </div>
+
+        <!-- Unpaid Subscriptions -->
+        <div class="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-lg shadow-sm border border-yellow-600 p-6 text-white">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-yellow-100 text-sm font-medium">Unpaid</p>
+                    <h3 class="text-3xl font-bold mt-2" id="unpaidCount">--</h3>
+                    <p class="text-yellow-100 text-xs mt-1">Awaiting payment</p>
+                </div>
+                <i class="fas fa-exclamation-circle text-yellow-300 text-3xl opacity-50"></i>
+            </div>
+        </div>
+
+        <!-- Canceled Subscriptions -->
+        <div class="bg-gradient-to-br from-red-600 to-red-700 rounded-lg shadow-sm border border-red-600 p-6 text-white">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-red-100 text-sm font-medium">Canceled</p>
+                    <h3 class="text-3xl font-bold mt-2" id="canceledCount">--</h3>
+                    <p class="text-red-100 text-xs mt-1">Inactive</p>
+                </div>
+                <i class="fas fa-times-circle text-red-300 text-3xl opacity-50"></i>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-lg shadow-sm border border-green-600 p-6 text-white">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-green-100 text-sm font-medium">Total Revenue</p>
+                    <h3 class="text-3xl font-bold mt-2" id="totalRevenue">--</h3>
+                    <p class="text-green-100 text-xs mt-1">From active subscriptions</p>
+                </div>
+                <i class="fas fa-dollar-sign text-green-300 text-3xl opacity-50"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <i class="fas fa-filter text-gray-600"></i>
+            <h3 class="text-lg font-semibold text-gray-900">Advanced Filters</h3>
+        </div>
+        
+        <form id="filterForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <!-- Status Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="statusFilter" name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        <option value="">All Subscriptions</option>
+                        <option value="1">Active</option>
+                        <option value="2">Canceled</option>
+                        <option value="4">Unpaid</option>
+                    </select>
+                </div>
+
+                <!-- Search Term -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" id="searchTerm" name="search" placeholder="Client name, email, or package" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                </div>
+
+                <!-- Date Range -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input type="date" id="endDate" name="endDate"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                </div>
+
+                <!-- Filter Button -->
+                <div>
+                    <button type="button" id="applyFilterBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center justify-center gap-2">
+                        <i class="fas fa-search"></i>
+                        <span>Apply</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div class="flex items-center gap-2 pt-2 border-t border-gray-200">
+                <button type="button" id="resetFilterBtn" class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition border border-gray-300">
+                    <i class="fas fa-redo mr-2"></i>Reset Filters
+                </button>
+                <button type="button" id="quickFilterActive" class="px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 rounded-lg transition border border-green-300">
+                    <i class="fas fa-check-circle mr-2"></i>Active Only
+                </button>
+                <button type="button" id="quickFilterUnpaid" class="px-4 py-2 text-sm font-medium text-yellow-700 hover:bg-yellow-50 rounded-lg transition border border-yellow-300">
+                    <i class="fas fa-exclamation-circle mr-2"></i>Unpaid Only
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="hidden">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+            <div class="animate-spin">
+                <i class="fas fa-spinner text-blue-600"></i>
+            </div>
+            <p class="text-sm text-blue-700">Applying filters...</p>
+        </div>
+    </div>
+
+    <!-- Subscriptions Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div id="subscriptionsTableContainer">
+            @await Html.PartialAsync("_SubscriptionsTablePartial", Model.Subscriptions)
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div id="paginationContainer" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-sm text-gray-600">
+                    Showing page <span class="font-semibold" id="currentPage">@Model.PageNumber</span> of 
+                    <span class="font-semibold" id="totalPages">@Model.TotalPages</span>
+                    (<span class="font-semibold" id="totalCount">@Model.TotalCount</span> total subscriptions)
+                </p>
+                
+                <div class="flex items-center gap-2" id="paginationControls">
+                    <!-- Pagination will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Load statistics on page load
+            loadSubscriptionStats();
+
+            // Apply filters on button click
+            $('#applyFilterBtn').click(function() {
+                applyFilters();
+            });
+
+            // Reset filters
+            $('#resetFilterBtn').click(function() {
+                resetFilters();
+            });
+
+            // Quick filters
+            $('#quickFilterActive').click(function() {
+                $('#statusFilter').val('1');  // Active = 1
+                $('#searchTerm').val('');
+                $('#startDate').val('');
+                $('#endDate').val('');
+                applyFilters();
+            });
+
+            $('#quickFilterUnpaid').click(function() {
+                $('#statusFilter').val('4');  // Unpaid = 4
+                $('#searchTerm').val('');
+                $('#startDate').val('');
+                $('#endDate').val('');
+                applyFilters();
+            });
+
+            // Cancel subscription
+            $(document).on('click', '.cancel-subscription-btn', function() {
+                const subscriptionId = $(this).data('subscription-id');
+                if (confirm('Are you sure you want to cancel this subscription?')) {
+                    cancelSubscription(subscriptionId);
+                }
+            });
+
+            // Select all checkboxes
+            $('#selectAll').change(function() {
+                $('.subscription-checkbox').prop('checked', this.checked);
+            });
+
+            // Individual checkbox change
+            $(document).on('change', '.subscription-checkbox', function() {
+                const allChecked = $('.subscription-checkbox').length === $('.subscription-checkbox:checked').length;
+                $('#selectAll').prop('checked', allChecked);
+            });
+        });
+
+        function loadSubscriptionStats() {
+            $.ajax({
+                url: '/admin/subscriptions/stats',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $('#activeCount').text(response.data.activeCount);
+                        $('#unpaidCount').text(response.data.unpaidCount);
+                        $('#canceledCount').text(response.data.canceledCount);
+                        $('#totalRevenue').text(formatCurrency(response.data.totalRevenue));
+                    }
+                },
+                error: function() {
+                    console.error('Failed to load statistics');
+                }
+            });
+        }
+
+        function applyFilters() {
+            const filterRequest = {
+                status: $('#statusFilter').val() ? parseInt($('#statusFilter').val()) : null,
+                searchTerm: $('#searchTerm').val() || null,
+                startDate: $('#startDate').val() ? new Date($('#startDate').val()) : null,
+                endDate: $('#endDate').val() ? new Date($('#endDate').val()) : null,
+                pageNumber: 1,
+                pageSize: 10
+            };
+
+            $('#loadingIndicator').removeClass('hidden');
+
+            $.ajax({
+                url: '/admin/subscriptions/filter',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(filterRequest),
+                success: function(response) {
+                    if (response.success) {
+                        updateTable(response.data.subscriptions);
+                        updatePagination(response.data);
+                        
+                        // Show success message
+                        showSuccessMessage(`Found ${response.data.totalCount} subscriptions`);
+                    }
+                },
+                error: function(xhr) {
+                    showErrorMessage('Error applying filters');
+                    console.error('Filter error:', xhr);
+                },
+                complete: function() {
+                    $('#loadingIndicator').addClass('hidden');
+                }
+            });
+        }
+
+        function resetFilters() {
+            $('#statusFilter').val('');
+            $('#searchTerm').val('');
+            $('#startDate').val('');
+            $('#endDate').val('');
+            applyFilters();
+        }
+
+        function cancelSubscription(subscriptionId) {
+            const reason = prompt('Enter cancellation reason (optional):');
+            if (reason !== null) {
+                $.ajax({
+                    url: `/admin/subscriptions/${subscriptionId}/cancel`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ reason: reason }),
+                    success: function(response) {
+                        if (response.success) {
+                            showSuccessMessage('Subscription canceled successfully');
+                            applyFilters(); // Refresh the list
+                        }
+                    },
+                    error: function(xhr) {
+                        showErrorMessage('Error canceling subscription');
+                    }
+                });
+            }
+        }
+
+        function updateTable(subscriptions) {
+            // Build table HTML
+            let html = `
+                <div class="overflow-x-auto">
+                    <table id="subscriptionsTable" class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300" />
+                                </th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">ID</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Client</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Package</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Trainer</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Amount</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
+                                <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Duration</th>
+                                <th class="px-6 py-4 text-right text-sm font-semibold text-gray-900">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">`;
+
+            if (subscriptions.length === 0) {
+                html += `<tr><td colspan="9" class="px-6 py-12 text-center text-gray-500">No subscriptions found</td></tr>`;
+            } else {
+                subscriptions.forEach(sub => {
+                    const statusString = getStatusString(sub.status);
+                    const statusClass = getStatusClass(statusString);
+                    const statusIcon = getStatusIcon(statusString);
+                    html += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4"><input type="checkbox" class="subscription-checkbox" value="${sub.id}" /></td>
+                            <td class="px-6 py-4 text-sm font-mono">#${String(sub.id).padStart(6, '0')}</td>
+                            <td class="px-6 py-4 text-sm">
+                                <div>
+                                    <p class="font-medium">${sub.clientName || 'Unknown'}</p>
+                                    <p class="text-xs text-gray-500">${sub.clientEmail || ''}</p>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium">${sub.packageName || 'N/A'}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">${sub.trainerName || 'N/A'}</td>
+                            <td class="px-6 py-4 text-sm font-semibold">${formatCurrency(sub.amount)}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center gap-2 px-3 py-1 ${statusClass} rounded-full text-sm font-medium">
+                                    <i class="${statusIcon}"></i>
+                                    ${statusString}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                ${formatDate(sub.startDate)} → ${formatDate(sub.currentPeriodEnd)}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="/admin/subscriptions/${sub.id}" class="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    ${statusString === 'Active' ? `
+                                        <button class="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition cancel-subscription-btn" data-subscription-id="${sub.id}">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </td>
+                        </tr>`;
+                });
+            }
+
+            html += `</tbody></table></div>`;
+            $('#subscriptionsTableContainer').html(html);
+        }
+
+        function getStatusString(statusValue) {
+            // Map enum value (number) to status string
+            const statusMap = {
+                1: 'Active',
+                2: 'Canceled',
+                3: 'PastDue',
+                4: 'Unpaid'
+            };
+            return statusMap[statusValue] || 'Unknown';
+        }
+
+        function updatePagination(filterResponse) {
+            $('#currentPage').text(filterResponse.pageNumber);
+            $('#totalPages').text(filterResponse.totalPages);
+            $('#totalCount').text(filterResponse.totalCount);
+
+            let paginationHtml = '';
+            
+            if (filterResponse.hasPreviousPage) {
+                paginationHtml += `<button type="button" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium page-btn" data-page="${filterResponse.pageNumber - 1}">
+                    <i class="fas fa-chevron-left mr-2"></i>Previous
+                </button>`;
+            }
+
+            // Add page numbers
+            for (let i = 1; i <= filterResponse.totalPages; i++) {
+                if (i === filterResponse.pageNumber) {
+                    paginationHtml += `<span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">${i}</span>`;
+                } else {
+                    paginationHtml += `<button type="button" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium page-btn" data-page="${i}">${i}</button>`;
+                }
+            }
+
+            if (filterResponse.hasNextPage) {
+                paginationHtml += `<button type="button" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium page-btn" data-page="${filterResponse.pageNumber + 1}">
+                    Next<i class="fas fa-chevron-right ml-2"></i>
+                </button>`;
+            }
+
+            $('#paginationControls').html(paginationHtml);
+
+            // Pagination click handler
+            $(document).on('click', '.page-btn', function() {
+                const page = $(this).data('page');
+                const filterRequest = {
+                    status: $('#statusFilter').val() ? parseInt($('#statusFilter').val()) : null,
+                    searchTerm: $('#searchTerm').val() || null,
+                    startDate: $('#startDate').val() ? new Date($('#startDate').val()) : null,
+                    endDate: $('#endDate').val() ? new Date($('#endDate').val()) : null,
+                    pageNumber: page,
+                    pageSize: 10
+                };
+
+                $.ajax({
+                    url: '/admin/subscriptions/filter',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(filterRequest),
+                    success: function(response) {
+                        if (response.success) {
+                            updateTable(response.data.subscriptions);
+                            updatePagination(response.data);
+                            window.scrollTo(0, 0);
+                        }
+                    },
+                    error: function() {
+                        showErrorMessage('Error loading page');
+                    }
+                });
+            });
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'Active': return 'bg-green-50 text-green-700';
+                case 'Canceled': return 'bg-red-50 text-red-700';
+                case 'Unpaid': return 'bg-yellow-50 text-yellow-700';
+                default: return 'bg-gray-50 text-gray-700';
+            }
+        }
+
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'Active': return 'fas fa-check-circle';
+                case 'Canceled': return 'fas fa-times-circle';
+                case 'Unpaid': return 'fas fa-exclamation-circle';
+                default: return 'fas fa-question-circle';
+            }
+        }
+
+        function formatCurrency(value) {
+            // Handle null, undefined, or empty values
+            if (value === null || value === undefined || value === '') {
+                return '$0.00';
+            }
+
+            // Convert to number if it's a string
+            const numValue = typeof value === 'string' ? parseFloat(value) : value;
+
+            // Check if conversion was successful
+            if (isNaN(numValue)) {
+                return '$0.00';
+            }
+
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(numValue);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function showSuccessMessage(message) {
+            // Implement based on your alert system
+            console.log('Success:', message);
+        }
+
+        function showErrorMessage(message) {
+            // Implement based on your alert system
+            console.error('Error:', message);
+        }
+    </script>
+}

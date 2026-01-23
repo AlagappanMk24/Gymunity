@@ -37,7 +37,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Manage Clients");
-                SetBreadcrumbs("Dashboard", "Clients");
+                SetBreadcrumbs("Clients");
 
                 var specs = new ClientFilterSpecs(
                     isActive: isActive,
@@ -94,7 +94,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Client Details");
-                SetBreadcrumbs("Dashboard", "Clients", "Details");
+                SetBreadcrumbs("Clients", "Details");
 
                 var clientData = await _clientService.GetClientByIdAsync(id);
                 if (clientData == null)
@@ -226,7 +226,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Active Clients");
-                SetBreadcrumbs("Dashboard", "Clients", "Active");
+                SetBreadcrumbs("Clients", "Active");
 
                 var clients = await _clientService.GetActiveClientsAsync(pageNumber, pageSize);
                 var totalCount = await _clientService.GetClientCountAsync(
@@ -261,7 +261,7 @@ namespace Gymunity.Admin.MVC.Controllers
             try
             {
                 SetPageTitle("Suspended Clients");
-                SetBreadcrumbs("Dashboard", "Clients", "Suspended");
+                SetBreadcrumbs("Clients", "Suspended");
 
                 var clients = await _clientService.GetInactiveClientsAsync(pageNumber, pageSize);
                 var totalCount = await _clientService.GetClientCountAsync(
