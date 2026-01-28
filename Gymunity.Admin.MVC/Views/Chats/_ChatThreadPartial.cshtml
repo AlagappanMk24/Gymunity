@@ -1,0 +1,129 @@
+﻿@using Gymunity.Admin.MVC.ViewModels.Chat
+@model ChatThreadViewModel
+
+@{
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+
+@if (Model.Messages != null && Model.Messages.Any())
+{
+    var groupedMessages = Model.Messages
+        .OrderBy(m => m.CreatedAt)
+        .GroupBy(m => m.CreatedAt.Date);
+
+    @foreach (var dayGroup in groupedMessages)
+    {
+        <div class="text-center my-6">
+            <span class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                @dayGroup.Key.ToString("MMMM d, yyyy")
+            </span>
+        </div>
+
+        @foreach (var message in dayGroup)
+        {
+            <div class="flex @(message.SenderId == currentUserId ? "justify-end" : "justify-start") message-enter">
+                <div class="chat-bubble @(message.SenderId == currentUserId ? "sent" : "received")">
+                    @if (!string.IsNullOrEmpty(message.Content))
+                    {
+                        <div class="message-content whitespace-pre-wrap">@message.Content</div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(message.MediaUrl))
+                    {
+                        <div class="mt-2">
+                            @if (message.Type == 2) // Image
+                            {
+                                <img src="@message.MediaUrl"
+                                     alt="Attachment"
+                                     class="max-w-full rounded-lg max-h-64 cursor-pointer"
+                                     onclick="openMediaModal('@message.MediaUrl', 'image')">
+                            }
+                            else if (message.Type == 3) // Video
+                            {
+                                <video src="@message.MediaUrl"
+                                       controls
+                                       class="max-w-full rounded-lg max-h-64"></video>
+                            }
+                            else if (message.Type == 4) // Audio
+                            {
+                                <div class="flex items-center gap-3 p-3 bg-gray-900 rounded-lg">
+                                    <i class="fas fa-music text-white"></i>
+                                    <audio src="@message.MediaUrl" controls class="flex-1"></audio>
+                                </div>
+                            }
+                            else if (message.Type == 5) // File
+                            {
+                                <div class="file-attachment">
+                                    <i class="fas fa-file text-blue-500"></i>
+                                    <div class="flex-1">
+                                        <a href="@message.MediaUrl"
+                                           target="_blank"
+                                           class="text-sm font-medium hover:underline">
+                                            Download File
+                                        </a>
+                                        <div class="text-xs text-gray-500">Document</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="timestamp text-xs opacity-70">
+                            @message.CreatedAt.ToString("h:mm tt")
+                        </span>
+                        @if (message.SenderId == currentUserId)
+                        {
+                            <div class="message-status ml-2">
+                                @if (message.IsRead)
+                                {
+                                    <i class="fas fa-check-double text-blue-500" title="Read"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-check text-gray-400" title="Sent"></i>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}
+else
+{
+    <div class="text-center py-12">
+        <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-comment-slash text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
+        <p class="text-gray-600 max-w-md mx-auto">
+            Start the conversation by sending your first message. This is the beginning of your chat history.
+        </p>
+    </div>
+}
+
+<!-- Media Modal -->
+<div id="mediaModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 hidden">
+    <div class="relative max-w-4xl max-h-[90vh] mx-4">
+        <button class="absolute top-4 right-4 text-white hover:text-gray-300 z-10" onclick="closeMediaModal()">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+        <img id="modalImage" class="max-w-full max-h-[90vh] object-contain" src="" alt="">
+    </div>
+</div>
+
+<script>
+    function openMediaModal(url, type) {
+        if (type === 'image') {
+            document.getElementById('modalImage').src = url;
+            document.getElementById('mediaModal').classList.remove('hidden');
+        }
+    }
+
+    function closeMediaModal() {
+        document.getElementById('mediaModal').classList.add('hidden');
+        document.getElementById('modalImage').src = '';
+    }
+</script>
