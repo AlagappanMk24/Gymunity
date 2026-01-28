@@ -1,0 +1,637 @@
+@using Gymunity.Admin.MVC.ViewModels.Notifications
+@model NotificationsListViewModel
+
+@{
+    ViewData["Title"] = "Notifications";
+
+    // Helper function to get CSS class for notification color
+    string GetColorClass(string color) => color switch
+    {
+        "blue" => "bg-blue-50",
+        "purple" => "bg-purple-50",
+        "cyan" => "bg-cyan-50",
+        "green" => "bg-green-50",
+        "red" => "bg-red-50",
+        "yellow" => "bg-yellow-50",
+        "emerald" => "bg-emerald-50",
+        "amber" => "bg-amber-50",
+        "indigo" => "bg-indigo-50",
+        "teal" => "bg-teal-50",
+        "orange" => "bg-orange-50",
+        _ => "bg-gray-50"
+    };
+
+    string GetIconBgClass(string color) => color switch
+    {
+        "blue" => "bg-blue-100",
+        "purple" => "bg-purple-100",
+        "cyan" => "bg-cyan-100",
+        "green" => "bg-green-100",
+        "red" => "bg-red-100",
+        "yellow" => "bg-yellow-100",
+        "emerald" => "bg-emerald-100",
+        "amber" => "bg-amber-100",
+        "indigo" => "bg-indigo-100",
+        "teal" => "bg-teal-100",
+        "orange" => "bg-orange-100",
+        _ => "bg-gray-100"
+    };
+
+    string GetIconColorClass(string color) => color switch
+    {
+        "blue" => "text-blue-600",
+        "purple" => "text-purple-600",
+        "cyan" => "text-cyan-600",
+        "green" => "text-green-600",
+        "red" => "text-red-600",
+        "yellow" => "text-yellow-600",
+        "emerald" => "text-emerald-600",
+        "amber" => "text-amber-600",
+        "indigo" => "text-indigo-600",
+        "teal" => "text-teal-600",
+        "orange" => "text-orange-600",
+        _ => "text-gray-600"
+    };
+
+    string GetCategoryBadgeClass(string color) => color switch
+    {
+        "blue" => "bg-blue-100 text-blue-700",
+        "purple" => "bg-purple-100 text-purple-700",
+        "cyan" => "bg-cyan-100 text-cyan-700",
+        "green" => "bg-green-100 text-green-700",
+        "red" => "bg-red-100 text-red-700",
+        "yellow" => "bg-yellow-100 text-yellow-700",
+        "emerald" => "bg-emerald-100 text-emerald-700",
+        "amber" => "bg-amber-100 text-amber-700",
+        "indigo" => "bg-indigo-100 text-indigo-700",
+        "teal" => "bg-teal-100 text-teal-700",
+        "orange" => "bg-orange-100 text-orange-700",
+        _ => "bg-gray-100 text-gray-700"
+    };
+
+    string GetMarkAsReadButtonClass(string color) => color switch
+    {
+        "blue" => "text-blue-600 hover:text-blue-700 hover:bg-blue-50",
+        "purple" => "text-purple-600 hover:text-purple-700 hover:bg-purple-50",
+        "cyan" => "text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50",
+        "green" => "text-green-600 hover:text-green-700 hover:bg-green-50",
+        "red" => "text-red-600 hover:text-red-700 hover:bg-red-50",
+        "yellow" => "text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50",
+        "emerald" => "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50",
+        "amber" => "text-amber-600 hover:text-amber-700 hover:bg-amber-50",
+        "indigo" => "text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50",
+        "teal" => "text-teal-600 hover:text-teal-700 hover:bg-teal-50",
+        "orange" => "text-orange-600 hover:text-orange-700 hover:bg-orange-50",
+        _ => "text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+    };
+}
+
+<div class="flex flex-col gap-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Notifications</h1>
+            <p class="text-gray-600 text-sm mt-1">
+                @Model.TotalCount notification@(Model.TotalCount != 1 ? "s" : "") 
+                <span class="text-blue-600">(@Model.UnreadCount unread)</span>
+            </p>
+        </div>
+        
+        @if (Model.UnreadCount > 0)
+        {
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm" 
+                    onclick="markAllAsRead()" 
+                    type="button">
+                <i class="fas fa-check mr-2"></i> Mark All as Read
+            </button>
+        }
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <label class="text-sm font-medium text-gray-700">Filter by:</label>
+            <select id="categoryFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterNotifications()">
+                <option value="">All Categories</option>
+                <option value="Registrations">Registrations</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Payments">Payments</option>
+                <option value="Profiles">Profiles</option>
+                <option value="Moderation">Moderation</option>
+                <option value="Account Management">Account Management</option>
+                <option value="Security">Security</option>
+                <option value="System">System</option>
+            </select>
+            
+            <select id="readFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterNotifications()">
+                <option value="">All Status</option>
+                <option value="unread">Unread Only</option>
+                <option value="read">Read Only</option>
+            </select>
+            
+            <button type="button" onclick="resetFilters()" class="px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                <i class="fas fa-redo mr-1"></i> Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    @if (Model.Notifications.Any())
+    {
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div id="notificationsList" class="divide-y divide-gray-200">
+                @foreach (var notification in Model.Notifications.OrderByDescending(n => n.CreatedAt))
+                {
+                    var colorClass = notification.NotificationColor;
+                    var bgClass = GetColorClass(colorClass);
+                    var iconBgClass = GetIconBgClass(colorClass);
+                    var iconColorClass = GetIconColorClass(colorClass);
+                    var categoryBadgeClass = GetCategoryBadgeClass(colorClass);
+                    var buttonClass = GetMarkAsReadButtonClass(colorClass);
+                    var opacityClass = notification.IsRead ? "opacity-70" : "";
+                    
+                    <div class="notification-item p-4 hover:bg-gray-50 transition @opacityClass @bgClass" 
+                         data-notification-id="@notification.Id"
+                         data-notification-type="@notification.Type"
+                         data-notification-category="@notification.NotificationCategory"
+                         data-is-read="@notification.IsRead.ToString().ToLower()">
+                        <div class="flex items-start gap-4">
+                            <!-- Icon -->
+                            <div class="flex-shrink-0 w-12 h-12 rounded-xl @iconBgClass flex items-center justify-center">
+                                <i class="@notification.NotificationIcon @iconColorClass text-lg"></i>
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between gap-4 mb-2">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h3 class="font-bold text-gray-900 text-base">@notification.Title</h3>
+                                            @if (notification.IsHighPriority)
+                                            {
+                                                <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+                                                    High Priority
+                                                </span>
+                                            }
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                            <span class="inline-block px-2.5 py-1 @categoryBadgeClass rounded-md text-xs font-medium">
+                                                @notification.NotificationCategory
+                                            </span>
+                                            @if (!notification.IsRead)
+                                            {
+                                                <span class="inline-block px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
+                                                    <i class="fas fa-circle text-blue-600 text-xs mr-1"></i>Unread
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <button class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition" 
+                                            onclick="dismissNotification(this)" 
+                                            title="Dismiss"
+                                            type="button">
+                                        <i class="fas fa-times text-lg"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Message -->
+                                <p class="text-gray-700 text-sm mb-3 line-clamp-2">@notification.Message</p>
+                                
+                                <!-- Footer -->
+                                <div class="flex items-center justify-between gap-3 text-xs">
+                                    <span class="text-gray-500">
+                                        <i class="fas fa-clock mr-1"></i>@notification.FormattedTime
+                                    </span>
+                                    
+                                    <div class="flex gap-2">
+                                        @if (!notification.IsRead)
+                                        {
+                                            <button class="px-3 py-1.5 @buttonClass rounded transition font-medium" 
+                                                    onclick="markAsRead(@notification.Id)" 
+                                                    type="button">
+                                                <i class="fas fa-check mr-1"></i>Mark as read
+                                            </button>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(notification.RelatedEntityId))
+                                        {
+                                            <button class="px-3 py-1.5 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded transition font-medium" 
+                                                    onclick="viewRelatedEntity('@notification.Type', '@notification.RelatedEntityId')" 
+                                                    type="button">
+                                                <i class="fas fa-external-link-alt mr-1"></i>View
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="fas fa-bell-slash text-gray-400 text-2xl"></i>
+                </div>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">No notifications yet</h3>
+            <p class="text-gray-500 text-sm">All caught up! You'll see important updates here.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+    <script>
+        // ============================================
+        // SIGNALR NOTIFICATION HUB CONNECTION
+        // ============================================
+        
+        const adminNotificationConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/admin-notifications", {
+                accessTokenFactory: () => localStorage.getItem('authToken') || ''
+            })
+            .withAutomaticReconnect()
+            .build();
+
+        adminNotificationConnection.start()
+            .then(() => {
+                console.log('✓ Admin Notification Hub connected');
+                adminNotificationConnection.invoke("GetUnreadCount").catch(err => console.error(err));
+            })
+            .catch(err => console.error('Admin Notification Hub connection error:', err));
+
+        // ============================================
+        // NOTIFICATION HUB EVENT HANDLERS
+        // ============================================
+
+        adminNotificationConnection.on("ReceiveNotification", (notification) => {
+            console.log("Admin notification received:", notification);
+            addNewNotificationToList(notification);
+            showNotificationToast(notification);
+        });
+
+        adminNotificationConnection.on("UpdateNotificationCount", (count) => {
+            updateUnreadCount(count);
+        });
+
+        adminNotificationConnection.on("ReceiveCriticalAlert", (alert) => {
+            showCriticalAlert(alert);
+        });
+
+        // ============================================
+        // NOTIFICATION MANAGEMENT FUNCTIONS
+        // ============================================
+
+        function markAsRead(notificationId) {
+            fetch(`/admin/notifications/mark-as-read/${notificationId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const element = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                    if (element) {
+                        element.dataset.isRead = 'true';
+                        element.classList.add('opacity-70');
+                        // Remove the background color by removing the color class
+                        const colorClasses = ['bg-blue-50', 'bg-purple-50', 'bg-cyan-50', 'bg-green-50', 'bg-red-50', 'bg-yellow-50', 'bg-emerald-50', 'bg-amber-50', 'bg-indigo-50', 'bg-teal-50', 'bg-orange-50', 'bg-gray-50'];
+                        colorClasses.forEach(cls => element.classList.remove(cls));
+                        
+                        const button = element.querySelector('button[onclick*="markAsRead"]');
+                        if (button) {
+                            button.remove();
+                        }
+                    }
+                    adminNotificationConnection.invoke("MarkAsRead", notificationId).catch(err => console.error(err));
+                }
+            })
+            .catch(error => console.error('Error marking notification as read:', error));
+        }
+
+        function markAllAsRead() {
+            fetch('/admin/notifications/mark-all-as-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('[name="__RequestVerificationToken"]')?.value || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelectorAll('[data-notification-id]').forEach(item => {
+                        item.dataset.isRead = 'true';
+                        item.classList.add('opacity-70');
+                        // Remove background color classes
+                        const colorClasses = ['bg-blue-50', 'bg-purple-50', 'bg-cyan-50', 'bg-green-50', 'bg-red-50', 'bg-yellow-50', 'bg-emerald-50', 'bg-amber-50', 'bg-indigo-50', 'bg-teal-50', 'bg-orange-50', 'bg-gray-50'];
+                        colorClasses.forEach(cls => item.classList.remove(cls));
+                        
+                        const buttons = item.querySelectorAll('button[onclick*="markAsRead"]');
+                        buttons.forEach(btn => btn.remove());
+                    });
+                    updateUnreadCount(0);
+                    adminNotificationConnection.invoke("MarkAllAsRead").catch(err => console.error(err));
+                }
+            })
+            .catch(error => console.error('Error marking all as read:', error));
+        }
+
+        function dismissNotification(button) {
+            const notificationElement = button.closest('[data-notification-id]');
+            if (notificationElement) {
+                notificationElement.style.opacity = '0';
+                notificationElement.style.transform = 'translateX(100%)';
+                setTimeout(() => notificationElement.remove(), 300);
+            }
+        }
+
+        function addNewNotificationToList(notification) {
+            const list = document.getElementById('notificationsList');
+            if (!list) return;
+
+            // Remove empty state if showing
+            const emptyState = list.parentElement.querySelector('.text-center');
+            if (emptyState) emptyState.parentElement.remove();
+
+            // Create notification element
+            const div = document.createElement('div');
+            div.className = 'notification-item p-4 hover:bg-gray-50 transition bg-blue-50 border-b border-gray-200';
+            div.dataset.notificationId = notification.id;
+            div.dataset.notificationType = notification.type;
+            div.dataset.isRead = 'false';
+            
+            div.innerHTML = `
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-bell text-blue-600 text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-4 mb-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-gray-900 text-base">${escapeHtml(notification.title)}</h3>
+                                </div>
+                                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span class="inline-block px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
+                                        New Notification
+                                    </span>
+                                    <span class="inline-block px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
+                                        <i class="fas fa-circle text-blue-600 text-xs mr-1"></i>Unread
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition" 
+                                    onclick="dismissNotification(this)" 
+                                    title="Dismiss"
+                                    type="button">
+                                <i class="fas fa-times text-lg"></i>
+                            </button>
+                        </div>
+                        <p class="text-gray-700 text-sm mb-3 line-clamp-2">${escapeHtml(notification.message)}</p>
+                        <div class="flex items-center justify-between gap-3 text-xs">
+                            <span class="text-gray-500">
+                                <i class="fas fa-clock mr-1"></i>Just now
+                            </span>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition font-medium" 
+                                        onclick="markAsRead(${notification.id})">
+                                    <i class="fas fa-check mr-1"></i>Mark as read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            list.insertBefore(div, list.firstChild);
+        }
+
+        function showNotificationToast(notification) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-white border-l-4 border-blue-600 rounded-lg shadow-lg p-4 max-w-md animate-slideIn z-50';
+            toast.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-check-circle text-blue-600 mt-0.5 flex-shrink-0"></i>
+                    <div class="flex-1">
+                        <h6 class="font-semibold text-gray-900 text-sm">${escapeHtml(notification.title)}</h6>
+                        <p class="text-gray-600 text-xs mt-1">${escapeHtml(notification.message)}</p>
+                    </div>
+                    <button class="text-gray-400 hover:text-gray-600" onclick="this.closest('div').remove()" type="button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function showCriticalAlert(alert) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'fixed top-4 right-4 bg-red-50 border-l-4 border-red-600 rounded-lg shadow-lg p-4 max-w-md animate-slideIn z-50';
+            alertDiv.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-exclamation-circle text-red-600 mt-0.5 flex-shrink-0"></i>
+                    <div class="flex-1">
+                        <h6 class="font-semibold text-red-900 text-sm">${escapeHtml(alert.title)}</h6>
+                        <p class="text-red-700 text-xs mt-1">${escapeHtml(alert.message)}</p>
+                    </div>
+                    <button class="text-red-400 hover:text-red-600" onclick="this.closest('div').remove()" type="button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remove after 7 seconds
+            setTimeout(() => alertDiv.remove(), 7000);
+        }
+
+        function updateUnreadCount(count) {
+            const countSpan = document.querySelector('[data-unread-count]');
+            if (countSpan) {
+                countSpan.textContent = count;
+                countSpan.style.display = count > 0 ? 'inline' : 'none';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================
+        // FILTER FUNCTIONS
+        // ============================================
+
+        function filterNotifications() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const readFilter = document.getElementById('readFilter').value;
+            const items = document.querySelectorAll('[data-notification-category]');
+
+            items.forEach(item => {
+                let show = true;
+
+                if (categoryFilter && item.dataset.notificationCategory !== categoryFilter) {
+                    show = false;
+                }
+
+                if (readFilter === 'unread' && item.dataset.isRead === 'true') {
+                    show = false;
+                } else if (readFilter === 'read' && item.dataset.isRead === 'false') {
+                    show = false;
+                }
+
+                item.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('readFilter').value = '';
+            filterNotifications();
+        }
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+
+        function viewRelatedEntity(type, entityId) {
+            const entityMap = {
+                'NewClientRegistration': `/admin/clients/${entityId}`,
+                'NewTrainerRegistration': `/admin/trainers/${entityId}`,
+                'NewGuestRegistration': `/admin/guests/${entityId}`,
+                'NewSubscription': `/admin/subscriptions/${entityId}`,
+                'SubscriptionCancelled': `/admin/subscriptions/${entityId}`,
+                'SubscriptionExpiring': `/admin/subscriptions/${entityId}`,
+                'SubscriptionDeleted': `/admin/subscriptions/${entityId}`,
+                'NewPayment': `/admin/payments/${entityId}`,
+                'PaymentFailure': `/admin/payments/${entityId}`,
+                'RefundProcessed': `/admin/payments/${entityId}`,
+                'PaymentReconciliation': `/admin/payments/${entityId}`,
+                'TrainerProfileCreated': `/admin/trainers/${entityId}`,
+                'TrainerProfileUpdated': `/admin/trainers/${entityId}`,
+                'TrainerProfileDeleted': `/admin/trainers/${entityId}`,
+                'ClientProfileCreated': `/admin/clients/${entityId}`,
+                'ClientProfileUpdated': `/admin/clients/${entityId}`,
+                'TrainerVerificationRequired': `/admin/trainers/${entityId}`,
+                'ReviewCreated': `/admin/reviews/${entityId}`,
+                'ReviewFlaggedForModeration': `/admin/reviews/${entityId}`,
+                'ReviewDeleted': `/admin/reviews/${entityId}`,
+                'ContentViolationDetected': `/admin/reviews/${entityId}`,
+                'UserAccountDeleted': `/admin/users/${entityId}`,
+                'AccountSuspended': `/admin/users/${entityId}`,
+                'AccountReactivated': `/admin/users/${entityId}`,
+                'UnusualActivityDetected': `/admin/users/${entityId}`,
+                'SecurityIssueDetected': `/admin/users/${entityId}`,
+            };
+
+            const url = entityMap[type];
+            if (url) {
+                window.location.href = url;
+            }
+        }
+
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .animate-slideIn {
+                animation: slideIn 0.3s ease-out;
+            }
+
+            .line-clamp-2 {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+    <style>
+        .notification-item {
+            transition: all 0.3s ease;
+        }
+
+        .notification-item:hover {
+            background-color: rgba(249, 250, 251, 0.8);
+        }
+
+        .notification-item.opacity-70 {
+            opacity: 0.7;
+        }
+
+        /* Color utility classes for consistency */
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-blue-100 { background-color: #dbeafe; }
+        .text-blue-600 { color: #2563eb; }
+
+        .bg-purple-50 { background-color: #faf5ff; }
+        .bg-purple-100 { background-color: #f3e8ff; }
+        .text-purple-700 { color: #7e22ce; }
+
+        .bg-cyan-50 { background-color: #ecf8ff; }
+        .bg-cyan-100 { background-color: #cffafe; }
+        .text-cyan-700 { color: #0891b2; }
+
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-green-100 { background-color: #dcfce7; }
+        .text-green-700 { color: #15803d; }
+
+        .bg-red-50 { background-color: #fef2f2; }
+        .bg-red-100 { background-color: #fee2e2; }
+        .text-red-700 { color: #b91c1c; }
+
+        .bg-yellow-50 { background-color: #fffbeb; }
+        .bg-yellow-100 { background-color: #fef3c7; }
+        .text-yellow-700 { color: #b45309; }
+
+        .bg-emerald-50 { background-color: #f0fdf4; }
+        .bg-emerald-100 { background-color: #d1fae5; }
+        .text-emerald-700 { color: #047857; }
+
+        .bg-amber-50 { background-color: #fffbeb; }
+        .bg-amber-100 { background-color: #fef3c7; }
+        .text-amber-700 { color: #b45309; }
+
+        .bg-indigo-50 { background-color: #eef2ff; }
+        .bg-indigo-100 { background-color: #e0e7ff; }
+        .text-indigo-700 { color: #4338ca; }
+
+        .bg-teal-50 { background-color: #f0fdfa; }
+        .bg-teal-100 { background-color: #ccfbf1; }
+        .text-teal-700 { color: #0d9488; }
+
+        .bg-orange-50 { background-color: #fff7ed; }
+        .bg-orange-100 { background-color: #fed7aa; }
+        .text-orange-700 { color: #b45309; }
+
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .text-gray-700 { color: #374151; }
+    </style>
+}
