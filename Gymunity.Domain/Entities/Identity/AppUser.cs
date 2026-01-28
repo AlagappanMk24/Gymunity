@@ -2,6 +2,8 @@
 using Gymunity.Domain.Entities.Trainer;
 using Gymunity.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gymunity.Domain.Entities.Identity
 {
@@ -15,6 +17,8 @@ namespace Gymunity.Domain.Entities.Identity
         public string? StripeConnectAccountId { get; set; } // Only for trainers
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
+        [NotMapped]
+        public int LoginCount { get; set; } = 0;
 
         // Navigation
         public TrainerProfile? TrainerProfile { get; set; }

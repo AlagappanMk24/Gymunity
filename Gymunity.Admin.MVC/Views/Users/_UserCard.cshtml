@@ -1,0 +1,125 @@
+@using Gymunity.Admin.MVC.ViewModels.Users
+@model UserItemViewModel
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition">
+    <div class="p-6">
+        <div class="flex justify-between items-start mb-4">
+            <div class="flex items-center gap-3">
+                @if (!string.IsNullOrEmpty(Model.ProfilePhotoUrl))
+                {
+                    <img src="@Model.ProfilePhotoUrl" 
+                         class="w-12 h-12 rounded-full object-cover" 
+                         alt="@Model.FullName" />
+                }
+                else
+                {
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-medium">
+                        @Model.FullName.Substring(0, 2).ToUpper()
+                    </div>
+                }
+                <h6 class="font-bold text-gray-900">@Model.FullName</h6>
+            </div>
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium @GetRoleBadgeClass(Model.Role.ToString())">
+                @Html.Raw(GetRoleIcon(Model.Role.ToString()))
+                @Model.Role
+            </span>
+        </div>
+
+        <p class="text-gray-600 text-sm mb-4 break-all">
+            <i class="fas fa-envelope mr-2 text-gray-400"></i>
+            <code class="bg-gray-100 px-2 py-1 rounded">@Model.Email</code>
+        </p>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+            @if (Model.EmailConfirmed)
+            {
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                    <i class="fas fa-check-circle"></i> Email Verified
+                </span>
+            }
+            else
+            {
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
+                    <i class="fas fa-exclamation-circle"></i> Email Pending
+                </span>
+            }
+
+            @if (Model.IsVerified)
+            {
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                    <i class="fas fa-shield-alt"></i> Verified
+                </span>
+            }
+
+            @if (Model.IsLockedOut)
+            {
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+                    <i class="fas fa-lock"></i> Locked
+                </span>
+            }
+        </div>
+
+        <div class="space-y-1 text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200">
+            <p class="flex items-center gap-2">
+                <i class="fas fa-calendar text-gray-400"></i>
+                <span>Joined: <strong>@Model.CreatedAt.ToShortDateString()</strong></span>
+            </p>
+            @if (Model.LastLoginAt.HasValue)
+            {
+                <p class="flex items-center gap-2">
+                    <i class="fas fa-sign-in-alt text-gray-400"></i>
+                    <span>Last Login: <strong>@Model.LastLoginAt.Value.ToShortDateString()</strong></span>
+                </p>
+            }
+            else
+            {
+                <p class="flex items-center gap-2">
+                    <i class="fas fa-sign-in-alt text-gray-400"></i>
+                    <span><strong>Never logged in</strong></span>
+                </p>
+            }
+        </div>
+
+        <div class="flex gap-2">
+            <a href="@Url.Action("Details", new { userId = Model.Id })" 
+               class="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-center text-sm font-medium" 
+               title="View Details">
+                <i class="fas fa-eye mr-1"></i>View
+            </a>
+            <a href="@Url.Action("Edit", new { userId = Model.Id })" 
+               class="flex-1 px-3 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition text-center text-sm font-medium" 
+               title="Edit User">
+                <i class="fas fa-edit mr-1"></i>Edit
+            </a>
+            <button class="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-center text-sm font-medium" 
+                    onclick="deleteUser('@Model.Id', '@Model.FullName')" 
+                    title="Delete User">
+                <i class="fas fa-trash mr-1"></i>Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetRoleBadgeClass(string role)
+    {
+        return role switch
+        {
+            "Admin" => "bg-red-100 text-red-700",
+            "Trainer" => "bg-amber-100 text-amber-700",
+            "Client" => "bg-blue-100 text-blue-700",
+            _ => "bg-gray-100 text-gray-700"
+        };
+    }
+
+    private string GetRoleIcon(string role)
+    {
+        return role switch
+        {
+            "Admin" => "<i class=\"fas fa-shield-alt\"></i>",
+            "Trainer" => "<i class=\"fas fa-dumbbell\"></i>",
+            "Client" => "<i class=\"fas fa-user-circle\"></i>",
+            _ => "<i class=\"fas fa-user\"></i>"
+        };
+    }
+}

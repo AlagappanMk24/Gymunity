@@ -75,6 +75,15 @@
                     </a>
                 </li>
 
+                <!-- Users -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600"
+                       asp-area="" asp-controller="Users" asp-action="Index">
+                        <i class="nav-icon fas fa-users w-5 text-center"></i>
+                        <span class="nav-text flex-1">Users</span>
+                    </a>
+                </li>
+
                 <!-- Content Management Section |
                 <li class="mt-4 mb-2 px-4">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Content Management</p>
@@ -172,7 +181,7 @@
 
                             <nav aria-label="breadcrumb" class="hidden md:block">
                                 <ol class="flex items-center gap-2 text-sm">
-                                    <li><a href="/admin/dashboard" class="text-blue-600 hover:text-blue-700">Dashboard</a></li>
+                                    <li><a href="/admin/dashboard" class="text-blue-600 hover:text-blue-700">Gymunity</a></li>
                                     @if (ViewBag.BreadcrumbItems != null)
                                     {
                                         @foreach (var item in ViewBag.BreadcrumbItems)

@@ -1,0 +1,77 @@
+@{
+    // Helper component for displaying user status
+}
+
+@{
+    var roleEnum = ViewBag.Role;
+    var isVerified = ViewBag.IsVerified ?? false;
+    var isLockedOut = ViewBag.IsLockedOut ?? false;
+    var emailConfirmed = ViewBag.EmailConfirmed ?? false;
+}
+
+<!-- Role Badge -->
+@{
+    string roleBadgeClass = roleEnum switch
+    {
+        "Admin" => "bg-red-100 text-red-700",
+        "Trainer" => "bg-amber-100 text-amber-700",
+        "Client" => "bg-blue-100 text-blue-700",
+        _ => "bg-gray-100 text-gray-700"
+    };
+}
+
+<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium @roleBadgeClass">
+    @switch (roleEnum)
+    {
+        case "Admin":
+            <i class="fas fa-shield-alt"></i>
+            break;
+        case "Trainer":
+            <i class="fas fa-dumbbell"></i>
+            break;
+        case "Client":
+            <i class="fas fa-user-circle"></i>
+            break;
+    }
+    @roleEnum
+</span>
+
+<!-- Status Badges -->
+@if (isVerified)
+{
+    <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+        <i class="fas fa-check-circle"></i>Verified
+    </span>
+}
+else
+{
+    <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+        <i class="fas fa-exclamation-circle"></i>Unverified
+    </span>
+}
+
+@if (isLockedOut)
+{
+    <span class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+        <i class="fas fa-lock"></i>Locked
+    </span>
+}
+else
+{
+    <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+        <i class="fas fa-unlock"></i>Active
+    </span>
+}
+
+@if (emailConfirmed)
+{
+    <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+        <i class="fas fa-envelope"></i>Email Verified
+    </span>
+}
+else
+{
+    <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+        <i class="fas fa-envelope-open"></i>Email Pending
+    </span>
+}

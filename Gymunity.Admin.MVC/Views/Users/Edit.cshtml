@@ -1,0 +1,337 @@
+@using Gymunity.Admin.MVC.ViewModels.Users
+@model UserEditViewModel
+
+@{
+    ViewData["Title"] = $"Edit User - {Model.User.FullName}";
+}
+
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-user-edit text-blue-600"></i>
+                <span>Edit User</span>
+            </h1>
+            <p class="text-gray-500 mt-1">Update user profile and account settings</p>
+        </div>
+        <a href="@Url.Action("Details", new { userId = Model.User.Id })" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form Area -->
+        <div class="lg:col-span-2 space-y-6">
+            <form method="post" action="@Url.Action("Edit", new { userId = Model.User.Id })" enctype="multipart/form-data">
+                <!-- Validation Errors -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-start gap-3">
+                        <i class="fas fa-exclamation-triangle flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <strong>Validation Error!</strong>
+                            <p class="text-sm mt-1">Please fix the errors below.</p>
+                        </div>
+                    </div>
+                }
+
+                <!-- Personal Information -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <i class="fas fa-user"></i>
+                            <span>Personal Information</span>
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label for="fullName" class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                            <input type="text" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                   id="fullName" 
+                                   name="fullName" 
+                                   value="@Model.User.FullName" 
+                                   required>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                                <input type="email" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                       id="email" 
+                                       name="email" 
+                                       value="@Model.User.Email" 
+                                       required>
+                            </div>
+                            <div>
+                                <label for="userName" class="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                                <input type="text" 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                       id="userName" 
+                                       name="userName" 
+                                       value="@Model.User.UserName" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="phoneNumber" class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                   id="phoneNumber" 
+                                   name="phoneNumber" 
+                                   value="@Model.User.PhoneNumber">
+                        </div>
+
+                        <!-- Profile Photo -->
+                        <div>
+                            <label for="profilePhoto" class="block text-sm font-semibold text-gray-700 mb-2">Profile Photo</label>
+                            @if (!string.IsNullOrEmpty(Model.User.ProfilePhotoUrl))
+                            {
+                                <div class="mb-4">
+                                    <img src="@Model.User.ProfilePhotoUrl" class="w-32 h-32 rounded-lg border border-gray-300 object-cover" alt="Current profile photo">
+                                </div>
+                            }
+                            <input type="file" 
+                                   class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                                   id="profilePhoto" 
+                                   name="profilePhoto" 
+                                   accept="image/*">
+                            <small class="text-gray-500 text-sm mt-2 block">Upload a new photo (optional). Max size: 5MB. Formats: JPG, PNG, GIF</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Account Settings</span>
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="role" class="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed" id="role" name="role" required disabled>
+                                    @{
+                                        var currentRole = Model.User.Role.ToString();
+                                    }
+                                    <option value="Client" selected="@(currentRole == "Client")">Client</option>
+                                    <option value="Trainer" selected="@(currentRole == "Trainer")">Trainer</option>
+                                    <option value="Admin" selected="@(currentRole == "Admin")">Admin</option>
+                                </select>
+                                <small class="text-gray-500 text-sm mt-2 block">Role cannot be changed from edit view. Use change role action instead.</small>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                <div class="space-y-2 mt-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" 
+                                               class="w-4 h-4 rounded border-gray-300 cursor-not-allowed" 
+                                               id="emailConfirmed" 
+                                               name="emailConfirmed" 
+                                               @(Model.User.EmailConfirmed ? "checked" : "")
+                                               disabled>
+                                        <label for="emailConfirmed" class="ml-2 text-sm text-gray-700">Email Confirmed</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" 
+                                               class="w-4 h-4 rounded border-gray-300 cursor-not-allowed" 
+                                               id="isVerified" 
+                                               name="isVerified" 
+                                               @(Model.User.IsVerified ? "checked" : "")
+                                               disabled>
+                                        <label for="isVerified" class="ml-2 text-sm text-gray-700">Account Verified</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-200">
+                            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <strong class="text-blue-700">Account Status:</strong>
+                                @if (Model.User.IsLockedOut)
+                                {
+                                    <span class="inline-block ml-2 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium"><i class="fas fa-lock mr-1"></i> Currently Locked</span>
+                                }
+                                else
+                                {
+                                    <span class="inline-block ml-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"><i class="fas fa-unlock mr-1"></i> Active</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Additional Information</span>
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label for="bio" class="block text-sm font-semibold text-gray-700 mb-2">Bio / Description</label>
+                            <textarea class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition" 
+                                      id="bio" 
+                                      name="bio" 
+                                      rows="4" 
+                                      placeholder="Add a bio or description...">@Model.User.Bio</textarea>
+                            <small class="text-gray-500 text-sm mt-2 block">Optional. Maximum 500 characters.</small>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Created At</label>
+                                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700" value="@Model.User.CreatedAt.ToString("f")" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Last Updated</label>
+                                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700" value="@(Model.User.UpdatedAt?.ToString("f") ?? "N/A")" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i>
+                        <span>Save Changes</span>
+                    </button>
+                    <a href="@Url.Action("Details", new { userId = Model.User.Id })" class="flex-1 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium flex items-center justify-center gap-2">
+                        <i class="fas fa-times"></i>
+                        <span>Cancel</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Help Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-question-circle text-blue-600"></i>
+                        <span>Help</span>
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <h6 class="font-semibold text-gray-900 mb-3">Role Information</h6>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex gap-2">
+                            <span class="font-medium text-blue-600 min-w-fit">Client:</span>
+                            <span>Regular user with access to gym facilities</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="font-medium text-amber-600 min-w-fit">Trainer:</span>
+                            <span>Professional trainer managing clients</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="font-medium text-red-600 min-w-fit">Admin:</span>
+                            <span>Administrator with full system access</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Account Overview -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-eye text-blue-600"></i>
+                        <span>Account Overview</span>
+                    </h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="pb-4 border-b border-gray-200">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Current Role</p>
+                        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium @GetRoleBadgeClass(Model.User.Role.ToString())">
+                            @Html.Raw(GetRoleIcon(Model.User.Role.ToString()))
+                            @Model.User.Role
+                        </span>
+                    </div>
+                    <div class="pb-4 border-b border-gray-200">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Email Status</p>
+                        @if (Model.User.EmailConfirmed)
+                        {
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"><i class="fas fa-check"></i> Confirmed</span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium"><i class="fas fa-exclamation"></i> Pending</span>
+                        }
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Account Status</p>
+                        @if (Model.User.IsLockedOut)
+                        {
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium"><i class="fas fa-lock"></i> Locked</span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium"><i class="fas fa-check-circle"></i> Active</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dangerous Actions -->
+            <div class="bg-white rounded-xl shadow-sm border-2 border-red-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
+                    <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Dangerous Actions</span>
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-gray-700 mb-4">These actions may have significant consequences.</p>
+                    <div class="space-y-2">
+                        <a href="@Url.Action("ResetPassword", new { userId = Model.User.Id })" 
+                           class="block w-full px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition text-center font-medium text-sm" 
+                           onclick="return confirm('Reset password? The user will need to reset it on next login.');">
+                            <i class="fas fa-key mr-2"></i>Reset Password
+                        </a>
+                        <a href="@Url.Action("Delete", new { userId = Model.User.Id })" 
+                           class="block w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-center font-medium text-sm" 
+                           onclick="return confirm('Delete user? This action cannot be undone.');">
+                            <i class="fas fa-trash mr-2"></i>Delete Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetRoleBadgeClass(string role)
+    {
+        return role switch
+        {
+            "Admin" => "bg-red-100 text-red-700",
+            "Trainer" => "bg-amber-100 text-amber-700",
+            "Client" => "bg-blue-100 text-blue-700",
+            _ => "bg-gray-100 text-gray-700"
+        };
+    }
+
+    private string GetRoleIcon(string role)
+    {
+        return role switch
+        {
+            "Admin" => "<i class=\"fas fa-shield-alt\"></i>",
+            "Trainer" => "<i class=\"fas fa-dumbbell\"></i>",
+            "Client" => "<i class=\"fas fa-user-circle\"></i>",
+            _ => "<i class=\"fas fa-user\"></i>"
+        };
+    }
+}

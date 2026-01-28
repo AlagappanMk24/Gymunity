@@ -1,0 +1,144 @@
+<!-- Bulk Actions Modal -->
+<div id="bulkActionsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target === this) this.style.display = 'none'">
+    <div class="bg-white rounded-xl shadow-lg max-w-xl w-full mx-4 max-h-96 overflow-y-auto">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 sticky top-0">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                    <i class="fas fa-cogs"></i>
+                    <span>Bulk User Actions</span>
+                </h3>
+                <button type="button" class="text-white hover:text-gray-200 transition" onclick="document.getElementById('bulkActionsModal').style.display = 'none'">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <form method="post" action="@Url.Action("BulkAction")">
+            <div class="p-6 space-y-4">
+                <!-- Selected Users Count -->
+                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 flex items-start gap-3">
+                    <i class="fas fa-info-circle flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <strong id="selectedCount">0</strong> user(s) selected for bulk action
+                    </div>
+                </div>
+
+                <!-- Action Selection -->
+                <div>
+                    <label for="bulkActionSelect" class="block text-sm font-semibold text-gray-700 mb-2">Select Action</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="bulkActionSelect" name="action" required onchange="toggleActionFields()">
+                        <option value="">-- Choose Action --</option>
+                        <option value="change-role">Change Role</option>
+                        <option value="verify">Verify Accounts</option>
+                        <option value="confirm-email">Confirm Email</option>
+                        <option value="lock">Lock Accounts</option>
+                        <option value="unlock">Unlock Accounts</option>
+                        <option value="delete">Delete Users</option>
+                    </select>
+                </div>
+
+                <!-- Role Selection (shown for change-role) -->
+                <div id="roleFieldGroup" class="hidden">
+                    <label for="newRole" class="block text-sm font-semibold text-gray-700 mb-2">Select New Role</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="newRole" name="newRole">
+                        <option value="">-- Select Role --</option>
+                        <option value="Client">Client</option>
+                        <option value="Trainer">Trainer</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+
+                <!-- Lock Duration (shown for lock action) -->
+                <div id="durationFieldGroup" class="hidden">
+                    <label for="lockDuration" class="block text-sm font-semibold text-gray-700 mb-2">Lock Duration (minutes)</label>
+                    <input type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="lockDuration" name="durationMinutes" value="30" min="1">
+                </div>
+
+                <!-- Confirmation Message -->
+                <div id="confirmationMessage" class="hidden p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-700 flex items-start gap-3">
+                    <i class="fas fa-exclamation-triangle flex-shrink-0 mt-0.5"></i>
+                    <span id="confirmationText" class="text-sm"></span>
+                </div>
+
+                <!-- Hidden input for selected user IDs -->
+                <input type="hidden" id="userIds" name="userIds" value="">
+            </div>
+
+            <div class="border-t border-gray-200 px-6 py-4 flex gap-3 justify-end sticky bottom-0 bg-white">
+                <button type="button" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition" onclick="document.getElementById('bulkActionsModal').style.display = 'none'">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed" id="submitBulkAction" disabled>
+                    Apply Action
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleActionFields() {
+            var action = document.getElementById('bulkActionSelect').value;
+            var roleGroup = document.getElementById('roleFieldGroup');
+            var durationGroup = document.getElementById('durationFieldGroup');
+            var confirmationMessage = document.getElementById('confirmationMessage');
+            var confirmationText = document.getElementById('confirmationText');
+            var submitBtn = document.getElementById('submitBulkAction');
+
+            // Reset display
+            roleGroup.classList.add('hidden');
+            durationGroup.classList.add('hidden');
+            confirmationMessage.classList.add('hidden');
+            confirmationMessage.classList.remove('border-red-200', 'bg-red-50', 'text-red-700');
+            confirmationMessage.classList.add('border-amber-200', 'bg-amber-50', 'text-amber-700');
+            submitBtn.disabled = !action;
+
+            // Show appropriate fields
+            switch (action) {
+                case 'change-role':
+                    roleGroup.classList.remove('hidden');
+                    confirmationText.innerHTML = 'Change role for <strong id="userCountText">0</strong> user(s)?';
+                    confirmationMessage.classList.remove('hidden');
+                    break;
+                case 'verify':
+                    confirmationText.innerHTML = 'Verify <strong id="userCountText">0</strong> account(s)?';
+                    confirmationMessage.classList.remove('hidden');
+                    break;
+                case 'confirm-email':
+                    confirmationText.innerHTML = 'Confirm email for <strong id="userCountText">0</strong> user(s)?';
+                    confirmationMessage.classList.remove('hidden');
+                    break;
+                case 'lock':
+                    durationGroup.classList.remove('hidden');
+                    confirmationText.innerHTML = 'Lock <strong id="userCountText">0</strong> account(s)?';
+                    confirmationMessage.classList.remove('hidden');
+                    break;
+                case 'unlock':
+                    confirmationText.innerHTML = 'Unlock <strong id="userCountText">0</strong> account(s)?';
+                    confirmationMessage.classList.remove('hidden');
+                    break;
+                case 'delete':
+                    confirmationText.innerHTML = '<strong class="text-red-700">Delete <span id="userCountText">0</span> user(s)? This action cannot be undone!</strong>';
+                    confirmationMessage.classList.remove('border-amber-200', 'bg-amber-50', 'text-amber-700');
+                    confirmationMessage.classList.add('border-red-200', 'bg-red-50', 'text-red-700');
+                    confirmationMessage.classList.remove('hidden');
+                    break;
+            }
+
+            // Update user count in confirmation
+            document.getElementById('userCountText').textContent = document.getElementById('selectedCount').textContent;
+        }
+
+        function openBulkActionsModal(selectedIds) {
+            if (selectedIds.length === 0) {
+                alert('Please select at least one user');
+                return;
+            }
+
+            document.getElementById('selectedCount').textContent = selectedIds.length;
+            document.getElementById('userIds').value = selectedIds.join(',');
+            document.getElementById('bulkActionSelect').value = '';
+            toggleActionFields();
+
+            document.getElementById('bulkActionsModal').style.display = 'flex';
+        }
+    </script>
+}
