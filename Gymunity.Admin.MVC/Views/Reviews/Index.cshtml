@@ -1,0 +1,391 @@
+@using Gymunity.Admin.MVC.ViewModels.Reviews
+@model ReviewsListViewModel
+
+@{
+    ViewData["Title"] = "Manage Reviews";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="space-y-6">
+    <!-- Page Header & Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Pending Reviews -->
+        <div class="bg-gradient-to-br from-yellow-600 to-yellow-700 rounded-lg shadow-sm border border-yellow-600 p-6 text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-yellow-100 text-sm font-medium">Pending Reviews</p>
+                    <h3 class="text-3xl font-bold mt-2">@Model.PendingCount</h3>
+                    <p class="text-yellow-100 text-xs mt-1">Awaiting approval</p>
+                </div>
+                <i class="fas fa-hourglass-half text-yellow-300 text-3xl opacity-50"></i>
+            </div>
+        </div>
+
+        <!-- Average Rating -->
+        <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg shadow-sm border border-blue-600 p-6 text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm font-medium">Average Rating</p>
+                    <h3 class="text-3xl font-bold mt-2">@Model.AverageRating.ToString("F1")</h3>
+                    <p class="text-blue-100 text-xs mt-1">From displayed reviews</p>
+                </div>
+                <i class="fas fa-star text-blue-300 text-3xl opacity-50"></i>
+            </div>
+        </div>
+
+        <!-- Total Reviews -->
+        <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-lg shadow-sm border border-green-600 p-6 text-white hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-green-100 text-sm font-medium">Total Reviews</p>
+                    <h3 class="text-3xl font-bold mt-2">@Model.TotalCount</h3>
+                    <p class="text-green-100 text-xs mt-1">All time</p>
+                </div>
+                <i class="fas fa-comments text-green-300 text-3xl opacity-50"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="space-y-4">
+        @if (Model.Reviews.Any())
+        {
+            @foreach (var review in Model.Reviews)
+            {
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
+                    <div class="space-y-4">
+                        <!-- Review Header -->
+                        <div class="flex flex-col md:flex-row justify-between items-start gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                        C
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">Client Review</p>
+                                        <p class="text-sm text-gray-500">@review.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-500 mb-2">Trainer ID: <span class="font-semibold text-gray-900">@review.TrainerId</span></p>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <div class="text-center">
+                                    <div class="flex items-center gap-1 mb-1 justify-end">
+                                        @for (int i = 0; i < 5; i++)
+                                        {
+                                            @if (i < (int)review.Rating)
+                                            {
+                                                <i class="fas fa-star text-yellow-400"></i>
+                                            }
+                                            else if (i < review.Rating)
+                                            {
+                                                <i class="fas fa-star-half-alt text-yellow-400"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-star text-gray-300"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <p class="text-sm font-semibold text-gray-900">@review.Rating.ToString("F1")</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review Content -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-700 text-sm">@(review.Comment ?? "No comment provided")</p>
+                        </div>
+
+                        <!-- Review Status & Actions -->
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pt-4 border-t border-gray-200">
+                            <div>
+                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full text-sm font-medium">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    Pending Approval
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium text-sm flex items-center gap-2 approve-btn"
+                                        data-review-id="@review.Id"
+                                        data-review-rating="@review.Rating"
+                                        data-review-date="@review.CreatedAt.ToString("MMMM dd, yyyy")">
+                                    <i class="fas fa-check"></i>
+                                    <span>Approve</span>
+                                </button>
+                                
+                                <button type="button" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium text-sm flex items-center gap-2 reject-btn"
+                                        data-review-id="@review.Id"
+                                        data-review-rating="@review.Rating"
+                                        data-review-date="@review.CreatedAt.ToString("MMMM dd, yyyy")">
+                                    <i class="fas fa-times"></i>
+                                    <span>Reject</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                <div class="flex flex-col items-center justify-center gap-3">
+                    <i class="fas fa-inbox text-4xl text-gray-300"></i>
+                    <p class="text-gray-500 font-medium">No reviews found</p>
+                    <p class="text-sm text-gray-400">There are no pending reviews awaiting approval</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-sm text-gray-600">
+                    Showing page <span class="font-semibold">@Model.PageNumber</span> of 
+                    <span class="font-semibold">@Model.TotalPages</span>
+                    (<span class="font-semibold">@Model.TotalCount</span> total reviews)
+                </p>
+                
+                <div class="flex items-center gap-2">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a href="@Url.Action("Index", new { pageNumber = Model.PageNumber - 1 })" 
+                           class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                            <i class="fas fa-chevron-left mr-2"></i>Previous
+                        </a>
+                    }
+
+                    <div class="flex items-center gap-1">
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            @if (i == Model.PageNumber)
+                            {
+                                <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">@i</span>
+                            }
+                            else if (i <= 3 || i > Model.TotalPages - 2 || (i > Model.PageNumber - 2 && i < Model.PageNumber + 2))
+                            {
+                                <a href="@Url.Action("Index", new { pageNumber = i })" 
+                                   class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">@i</a>
+                            }
+                            else if (i == 4 || i == Model.TotalPages - 3)
+                            {
+                                <span class="px-2">...</span>
+                            }
+                        }
+                    </div>
+
+                    @if (Model.HasNextPage)
+                    {
+                        <a href="@Url.Action("Index", new { pageNumber = Model.PageNumber + 1 })" 
+                           class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                            Next<i class="fas fa-chevron-right ml-2"></i>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-300" style="backdrop-filter: blur(4px);">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full transform scale-95 transition-all duration-300" id="modalContent">
+        <!-- Modal Header -->
+        <div id="modalHeader" class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <h3 id="modalTitle" class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <i id="modalIcon" class="fas fa-question-circle"></i>
+                <span id="modalTitleText">Confirmation</span>
+            </h3>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-6 py-4 space-y-3">
+            <div id="reviewInfo" class="bg-gray-50 rounded-lg p-4 space-y-2">
+                <p class="text-sm"><span class="font-semibold text-gray-700">Rating:</span> <span id="reviewRating" class="text-gray-600">--</span></p>
+                <p class="text-sm"><span class="font-semibold text-gray-700">Date:</span> <span id="reviewDate" class="text-gray-600">--</span></p>
+            </div>
+            <p id="modalMessage" class="text-gray-700 text-center font-medium py-2">
+                Are you sure you want to continue?
+            </p>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end bg-gray-50">
+            <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </button>
+            <button type="button" id="confirmBtn" class="px-4 py-2 text-white font-medium rounded-lg transition flex items-center gap-2">
+                <i id="confirmIcon" class="fas fa-check"></i>
+                <span id="confirmText">Confirm</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modal = document.getElementById('confirmationModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalTitle = document.getElementById('modalTitleText');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalMessage = document.getElementById('modalMessage');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const confirmIcon = document.getElementById('confirmIcon');
+        const confirmText = document.getElementById('confirmText');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const reviewRating = document.getElementById('reviewRating');
+        const reviewDate = document.getElementById('reviewDate');
+
+        let currentAction = null;
+        let currentReviewId = null;
+
+        // Show modal with animation
+        function showModal(action, reviewId, rating, date) {
+            currentAction = action;
+            currentReviewId = reviewId;
+            
+            // Update modal content based on action
+            if (action === 'approve') {
+                modalHeader.className = 'px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50';
+                modalTitle.className = 'text-lg font-bold text-green-900 flex items-center gap-2';
+                modalIcon.className = 'fas fa-check-circle text-green-600';
+                modalTitle.textContent = 'Approve Review';
+                modalMessage.textContent = 'Are you sure you want to approve this review?';
+                confirmBtn.className = 'px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition flex items-center gap-2';
+                confirmIcon.className = 'fas fa-check';
+                confirmText.textContent = 'Approve';
+            } else if (action === 'reject') {
+                modalHeader.className = 'px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-red-50 to-rose-50';
+                modalTitle.className = 'text-lg font-bold text-red-900 flex items-center gap-2';
+                modalIcon.className = 'fas fa-times-circle text-red-600';
+                modalTitle.textContent = 'Reject Review';
+                modalMessage.textContent = 'Are you sure you want to reject this review? It will be permanently deleted.';
+                confirmBtn.className = 'px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition flex items-center gap-2';
+                confirmIcon.className = 'fas fa-times';
+                confirmText.textContent = 'Reject';
+            }
+
+            reviewRating.textContent = rating;
+            reviewDate.textContent = date;
+
+            // Show modal with animation
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+        }
+
+        // Hide modal with animation
+        function hideModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            currentAction = null;
+            currentReviewId = null;
+        }
+
+        // Use event delegation for approve buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.approve-btn')) {
+                e.preventDefault();
+                const btn = e.target.closest('.approve-btn');
+                const reviewId = btn.dataset.reviewId;
+                const rating = btn.dataset.reviewRating;
+                const date = btn.dataset.reviewDate;
+                showModal('approve', reviewId, rating, date);
+            }
+        });
+
+        // Use event delegation for reject buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.reject-btn')) {
+                e.preventDefault();
+                const btn = e.target.closest('.reject-btn');
+                const reviewId = btn.dataset.reviewId;
+                const rating = btn.dataset.reviewRating;
+                const date = btn.dataset.reviewDate;
+                showModal('reject', reviewId, rating, date);
+            }
+        });
+
+        // Confirm action
+        confirmBtn.addEventListener('click', async function() {
+            if (!currentReviewId || !currentAction) return;
+
+            const endpoint = currentAction === 'approve' 
+                ? `/admin/reviews/${currentReviewId}/approve` 
+                : `/admin/reviews/${currentReviewId}/reject`;
+
+            try {
+                const response = await fetch(endpoint, { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show success feedback
+                    showSuccessAnimation();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1200);
+                } else {
+                    showErrorToast(data.message || 'An error occurred');
+                    hideModal();
+                }
+            } catch (err) {
+                showErrorToast('Error processing review');
+                hideModal();
+            }
+        });
+
+        // Cancel button
+        cancelBtn.addEventListener('click', hideModal);
+
+        // Close modal on background click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
+
+        // Success animation
+        function showSuccessAnimation() {
+            hideModal();
+            const successOverlay = document.createElement('div');
+            successOverlay.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none';
+            successOverlay.innerHTML = `
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4 animate-pulse">
+                        <i class="fas fa-check text-4xl text-green-600"></i>
+                    </div>
+                    <p class="text-xl font-bold text-green-600">Success!</p>
+                </div>
+            `;
+            document.body.appendChild(successOverlay);
+        }
+
+        // Error toast
+        function showErrorToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-bounce';
+            toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+    </script>
+}

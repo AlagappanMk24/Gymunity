@@ -4,14 +4,13 @@ using Gymunity.Application.Mapping;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Application.Services.Packages;
 using ITI.Gymunity.FP.Application.Services.Admin;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gymunity.Application.DI
 {
     public static class DependancyInjection
     {
-        public static IServiceCollection AddApplicationServices( this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddApplicationServices( this IServiceCollection services)
         {
 
             // ===========================
@@ -27,7 +26,7 @@ namespace Gymunity.Application.DI
             services.AddScoped<IProgramAdminService, ProgramAdminService>();
             services.AddScoped<ISubscriptionAdminService, SubscriptionAdminService>();
             services.AddScoped<IPaymentAdminService, PaymentAdminService>();
-
+            services.AddScoped<IReviewAdminService, ReviewAdminService>();
             services.AddScoped<IPackageService, PackageService>();
 
             return services;
