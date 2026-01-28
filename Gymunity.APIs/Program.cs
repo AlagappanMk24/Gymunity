@@ -46,7 +46,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     // --- Database & Infrastructure ---
     services.AddDbContextServices(configuration);
-    services.AddApplicationServices(builder.Configuration);
+    services.AddApplicationServices();
     services.AddInfrastructureServices();
 
     // Required for DI scope in background tasks or seeding

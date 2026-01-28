@@ -91,6 +91,7 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
 
             services.AddScoped<IPackageRepository, PackageRepository>();
+            services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();
             return services;
         }
     }

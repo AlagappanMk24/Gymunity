@@ -43,7 +43,7 @@ namespace Gymunity.Admin.MVC
                     config.LoginPath = "/Auth/Login";
                 });
             builder.Services.AddDbContextServices(builder.Configuration);
-            builder.Services.AddApplicationServices(builder.Configuration);
+            builder.Services.AddApplicationServices();
             builder.Services.AddInfrastructureServices();
 
             // Add Dashboard Service
