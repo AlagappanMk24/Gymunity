@@ -87,6 +87,8 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
             services.AddScoped<IFileUploadService, FileUploadService>();
+
+            services.AddScoped<IChatService, ChatService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
 

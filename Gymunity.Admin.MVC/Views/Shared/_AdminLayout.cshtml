@@ -153,7 +153,15 @@
                     </a>
                 </li>
 
-                
+                <!-- Chats -->
+                <li class="sidebar-item">
+                    <a class="nav-link flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition border-l-4 border-transparent hover:border-blue-600"
+                       asp-area="" asp-controller="Chats" asp-action="Index">
+                        <i class="nav-icon fas fa-comments w-5 text-center"></i>
+                        <span class="nav-text flex-1">Chats</span>
+                        <span id="chatBadge" class="hidden px-2 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded-full">0</span>
+                    </a>
+                </li>
             </ul>
                 
 
