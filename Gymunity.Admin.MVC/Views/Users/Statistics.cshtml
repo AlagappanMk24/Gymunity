@@ -1,0 +1,444 @@
+@using Gymunity.Admin.MVC.ViewModels.Users
+@model UserStatisticsViewModel
+
+@{
+    ViewData["Title"] = "User Statistics";
+}
+
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="fas fa-chart-line text-blue-600"></i>
+                <span>User Statistics</span>
+            </h1>
+            <p class="text-gray-500 mt-1">Analytics and insights about user accounts</p>
+        </div>
+        <a href="@Url.Action("Index")" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </a>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Users -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm border border-blue-200 p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-600 text-sm font-semibold uppercase tracking-wider">
+                        <i class="fas fa-users mr-2"></i>Total Users
+                    </p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@Model.TotalUsers</p>
+                    @if (Model.TotalUsers > 0)
+                    {
+                        <small class="text-blue-600 text-sm mt-1 block">
+                            @((Model.VerifiedUsers * 100 / Model.TotalUsers))% verified
+                        </small>
+                    }
+                </div>
+                <div class="w-16 h-16 rounded-lg bg-blue-200 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-users text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Users -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm border border-green-200 p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-600 text-sm font-semibold uppercase tracking-wider">
+                        <i class="fas fa-check-circle mr-2"></i>Active Users
+                    </p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@Model.ActiveUsers</p>
+                    <small class="text-green-600 text-sm mt-1 block">
+                        @((Model.ActiveUsers * 100 / (Model.TotalUsers > 0 ? Model.TotalUsers : 1)))% of total
+                    </small>
+                </div>
+                <div class="w-16 h-16 rounded-lg bg-green-200 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verified Users -->
+        <div class="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl shadow-sm border border-cyan-200 p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-cyan-600 text-sm font-semibold uppercase tracking-wider">
+                        <i class="fas fa-shield-alt mr-2"></i>Verified Users
+                    </p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@Model.VerifiedUsers</p>
+                    <small class="text-cyan-600 text-sm mt-1 block">Confirmed identity</small>
+                </div>
+                <div class="w-16 h-16 rounded-lg bg-cyan-200 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-shield-alt text-cyan-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Locked Accounts -->
+        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl shadow-sm border border-red-200 p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-red-600 text-sm font-semibold uppercase tracking-wider">
+                        <i class="fas fa-lock mr-2"></i>Locked Accounts
+                    </p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@Model.LockedUsers</p>
+                    <small class="text-red-600 text-sm mt-1 block">Requires attention</small>
+                </div>
+                <div class="w-16 h-16 rounded-lg bg-red-200 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-lock text-red-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Users by Role Chart -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                    <i class="fas fa-pie-chart"></i>
+                    <span>Users by Role</span>
+                </h3>
+            </div>
+            <div class="p-6">
+                <canvas id="roleChart" height="300"></canvas>
+            </div>
+            <div class="bg-gray-50 border-t border-gray-200 p-6 grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-2">Clients</span>
+                    <p class="text-2xl font-bold text-gray-900">@Model.ClientCount</p>
+                </div>
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold mb-2">Trainers</span>
+                    <p class="text-2xl font-bold text-gray-900">@Model.TrainerCount</p>
+                </div>
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold mb-2">Admins</span>
+                    <p class="text-2xl font-bold text-gray-900">@Model.AdminCount</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Status Chart -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Account Status</span>
+                </h3>
+            </div>
+            <div class="p-6">
+                <canvas id="statusChart" height="300"></canvas>
+            </div>
+            <div class="bg-gray-50 border-t border-gray-200 p-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center pb-4 border-b border-gray-200 lg:border-b-0 lg:border-r">
+                        <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-2">Verified</span>
+                        <p class="text-2xl font-bold text-gray-900">@Model.VerifiedUsers</p>
+                    </div>
+                    <div class="text-center pb-4 border-b border-gray-200 lg:border-b-0">
+                        <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold mb-2">Unverified</span>
+                        <p class="text-2xl font-bold text-gray-900">@(Model.TotalUsers - Model.VerifiedUsers)</p>
+                    </div>
+                    <div class="text-center pt-4 col-span-2 lg:col-span-1">
+                        <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-semibold mb-2">Locked</span>
+                        <p class="text-2xl font-bold text-gray-900">@Model.LockedUsers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Activity Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-history"></i>
+                <span>User Activity</span>
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                    <h6 class="text-sm font-semibold text-gray-700 uppercase mb-2">New Users (This Month)</h6>
+                    <p class="text-3xl font-bold text-blue-600">@Model.NewUsersThisMonth</p>
+                </div>
+                <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                    <h6 class="text-sm font-semibold text-gray-700 uppercase mb-2">Active (Last 7 Days)</h6>
+                    <p class="text-3xl font-bold text-green-600">@Model.ActiveLastSevenDays</p>
+                </div>
+                <div class="text-center p-6 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl">
+                    <h6 class="text-sm font-semibold text-gray-700 uppercase mb-2">Inactive (30+ Days)</h6>
+                    <p class="text-3xl font-bold text-amber-600">@Model.InactiveOverThirtyDays</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Verification Status -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
+            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-envelope"></i>
+                <span>Email Verification Status</span>
+            </h3>
+        </div>
+        <div class="p-6">
+            <canvas id="emailChart" height="300"></canvas>
+            <div class="mt-6 flex justify-center gap-8">
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold mb-2">Confirmed</span>
+                    <p class="text-2xl font-bold text-gray-900">@Model.EmailConfirmedCount</p>
+                </div>
+                <div class="text-center">
+                    <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold mb-2">Pending</span>
+                    <p class="text-2xl font-bold text-gray-900">@(Model.TotalUsers - Model.EmailConfirmedCount)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Active Users -->
+    @if (Model.TopActiveUsers.Any())
+    {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-yellow-600 to-yellow-700 px-6 py-4">
+                <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                    <i class="fas fa-star"></i>
+                    <span>Most Active Users</span>
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr class="text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                            <th class="px-6 py-3">User</th>
+                            <th class="px-6 py-3">Role</th>
+                            <th class="px-6 py-3">Last Login</th>
+                            <th class="px-6 py-3">Login Count</th>
+                            <th class="px-6 py-3">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach (var user in Model.TopActiveUsers.Take(10))
+                        {
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4">
+                                    <a href="@Url.Action("Details", new { userId = user.Id })" class="text-blue-600 hover:text-blue-700 font-medium">
+                                        @user.FullName
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium @GetRoleBadgeClass(user.Role.ToString())">
+                                        @Html.Raw(GetRoleIcon(user.Role.ToString()))
+                                        @user.Role
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm">
+                                    @if (user.LastLoginAt.HasValue)
+                                    {
+                                        <small class="text-gray-600">@user.LastLoginAt.Value.ToShortDateString()</small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-gray-400">Never</small>
+                                    }
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">@user.LoginCount</span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">@user.CreatedAt.ToShortDateString()</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- Export Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
+            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-download"></i>
+                <span>Export Data</span>
+            </h3>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-700 mb-4">Download user statistics and reports in various formats:</p>
+            <div class="flex flex-wrap gap-3">
+                <a href="@Url.Action("ExportCsv")" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-file-csv"></i>
+                    <span>CSV</span>
+                </a>
+                <a href="@Url.Action("ExportExcel")" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Excel</span>
+                </a>
+                <a href="@Url.Action("ExportPdf")" class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>PDF</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Statistics Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <i class="fas fa-chart-pie"></i>
+                <span>Export Statistics Report</span>
+            </h3>
+        </div>
+        <div class="p-6">
+            <p class="text-gray-700 mb-4">Download comprehensive statistics reports:</p>
+            <div class="flex flex-wrap gap-3">
+                <a href="@Url.Action("ExportStatisticsPdf")" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Statistics PDF Report</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Role Distribution Chart
+        const roleCtx = document.getElementById('roleChart').getContext('2d');
+        new Chart(roleCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Clients', 'Trainers', 'Admins'],
+                datasets: [{
+                    data: [@Model.ClientCount, @Model.TrainerCount, @Model.AdminCount],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#f59e0b',
+                        '#ef4444'
+                    ],
+                    borderColor: [
+                        '#ffffff',
+                        '#ffffff',
+                        '#ffffff'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Status Distribution Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Active', 'Locked', 'Verified', 'Unverified'],
+                datasets: [{
+                    label: 'Count',
+                    data: [@Model.ActiveUsers, @Model.LockedUsers, @Model.VerifiedUsers, @(Model.TotalUsers - Model.VerifiedUsers)],
+                    backgroundColor: [
+                        '#10b981',
+                        '#ef4444',
+                        '#06b6d4',
+                        '#f59e0b'
+                    ],
+                    borderColor: [
+                        '#10b981',
+                        '#ef4444',
+                        '#06b6d4',
+                        '#f59e0b'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Email Verification Chart
+        const emailCtx = document.getElementById('emailChart').getContext('2d');
+        new Chart(emailCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Email Confirmed', 'Email Pending'],
+                datasets: [{
+                    data: [@Model.EmailConfirmedCount, @(Model.TotalUsers - Model.EmailConfirmedCount)],
+                    backgroundColor: [
+                        '#10b981',
+                        '#f59e0b'
+                    ],
+                    borderColor: [
+                        '#ffffff',
+                        '#ffffff'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+}
+
+@functions {
+    private string GetRoleBadgeClass(string role)
+    {
+        return role switch
+        {
+            "Admin" => "bg-red-100 text-red-700",
+            "Trainer" => "bg-amber-100 text-amber-700",
+            "Client" => "bg-blue-100 text-blue-700",
+            _ => "bg-gray-100 text-gray-700"
+        };
+    }
+
+    private string GetRoleIcon(string role)
+    {
+        return role switch
+        {
+            "Admin" => "<i class=\"fas fa-shield-alt\"></i>",
+            "Trainer" => "<i class=\"fas fa-dumbbell\"></i>",
+            "Client" => "<i class=\"fas fa-user-circle\"></i>",
+            _ => "<i class=\"fas fa-user\"></i>"
+        };
+    }
+}

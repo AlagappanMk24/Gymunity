@@ -1,6 +1,7 @@
 using Gymunity.Admin.MVC.Hubs;
 using Gymunity.Admin.MVC.Services;
 using Gymunity.Admin.MVC.Services.Interfaces;
+using Gymunity.Application.Contracts.Admin;
 using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.DI;
@@ -56,6 +57,7 @@ namespace Gymunity.Admin.MVC
             builder.Services.AddScoped<ITrainerAdminService, TrainerAdminService>();
             builder.Services.AddScoped<ISubscriptionAdminService, SubscriptionAdminService>();
             builder.Services.AddScoped<IPaymentAdminService, PaymentAdminService>();
+            builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
             // ✅ Register AccountService (from Infrastructure layer)
             builder.Services.AddScoped<IAccountService, AccountService>();
