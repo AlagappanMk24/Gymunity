@@ -2,7 +2,7 @@
 using Gymunity.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
 
-namespace ITI.Gymunity.FP.Application.Specefications.Subscriptions
+namespace Gymunity.Application.Specifications.Subscriptions
 {
     /// <summary>
     /// Get single subscription by ID for a specific client
