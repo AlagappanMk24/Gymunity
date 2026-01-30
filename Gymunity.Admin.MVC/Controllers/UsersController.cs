@@ -517,14 +517,14 @@ namespace Gymunity.Admin.MVC.Controllers
         /// View pending trainer verifications
         /// </summary>
         [HttpGet("trainers/pending")]
-        public async Task<IActionResult> PendingTrainerVerifications()
+        public IActionResult PendingTrainerVerifications()
         {
             try
             {
                 SetPageTitle("Pending Trainer Verifications");
                 SetBreadcrumbs("Trainers", "Pending Verifications");
 
-                var pendingTrainers = await _userManagementService.GetPendingTrainerVerificationsAsync();
+                var pendingTrainers = _userManagementService.GetPendingTrainerVerifications();
                 return View(pendingTrainers);
             }
             catch (Exception ex)

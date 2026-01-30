@@ -517,12 +517,12 @@ namespace Gymunity.Application.Services.Admin
             }
         }
 
-        public async Task<IEnumerable<PendingTrainerVerificationResponse>> GetPendingTrainerVerificationsAsync()
+        public IEnumerable<PendingTrainerVerificationResponse> GetPendingTrainerVerifications()
         {
             try
             {
                 // This would query TrainerProfile where IsVerified = false
-                return new List<PendingTrainerVerificationResponse>();
+                return [];
             }
             catch (Exception ex)
             {

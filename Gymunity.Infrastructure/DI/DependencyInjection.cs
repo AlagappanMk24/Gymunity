@@ -8,16 +8,19 @@ using Gymunity.Application.Services;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Client;
 using Gymunity.Infrastructure.Data.Context;
 using Gymunity.Infrastructure.Data.Initializers;
 using Gymunity.Infrastructure.ExternalServices;
 using Gymunity.Infrastructure.Repositories;
+using Gymunity.Infrastructure.Repositories.Client;
 using Gymunity.Infrastructure.Services;
 using Gymunity.Infrastructure.Services.ExternalAuth.Google;
 using Gymunity.Infrastructure.Services.Identity;
 using ITI.Gymunity.FP.Infrastructure.Repositories;
 using KS_Sweets.Infrastructure.Data.Initializers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,10 +32,30 @@ namespace Gymunity.Infrastructure.DI
 {
     public static class DependencyInjection
     {
+        // ===========================
+        // Data Access & Identity Configuration
+        // ===========================
+        public static IServiceCollection AddDbContextServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            //Configure Context Services
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("GymunityDbConnection"));
+            });
+
+            services.AddIdentity<AppUser, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+            }).AddEntityFrameworkStores<AppDbContext>();
+
+            return services;
+        }
+
+        // ===========================
+        // Security & Token Configuration
+        // ===========================
         public static IServiceCollection AddAuthenticationServices(this IServiceCollection services, IConfiguration _configuration)
         {
-
-            // Adding Authintication Schema Bearer
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -52,48 +75,73 @@ namespace Gymunity.Infrastructure.DI
 
                     ClockSkew = TimeSpan.Zero,
                 };
+                // ADD THIS: Configure events to return 401 instead of 404
+                options.Events = new JwtBearerEvents
+                {
+                    OnChallenge = context =>
+                    {
+                        // Handle challenge (no token or invalid token)
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
 
+                        var response = new
+                        {
+                            StatusCode = 401,
+                            Message = "Unauthorized. Please provide a valid token."
+                        };
+
+                        return context.Response.WriteAsJsonAsync(response);
+                    },
+                    OnForbidden = context =>
+                    {
+                        // Handle forbidden (valid token but insufficient permissions)
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/json";
+
+                        var response = new
+                        {
+                            StatusCode = 403,
+                            Message = "Forbidden. You don't have permission to access this resource."
+                        };
+
+                        return context.Response.WriteAsJsonAsync(response);
+                    }
+                };
             });
 
             return services;
         }
-        public static IServiceCollection AddDbContextServices(this IServiceCollection services, IConfiguration configuration)
-        {
-            //Configure Context Services
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetConnectionString("GymunityDbConnection"));
-            });
 
-            services.AddIdentity<AppUser, IdentityRole>(options =>
-            {
-                options.User.RequireUniqueEmail = true;
-            }).AddEntityFrameworkStores<AppDbContext>();
-            return services;
-        }
+        // ===========================
+        // Repository & Infrastructure Services
+        // ===========================
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
+            // Core Persistence
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDbInitializer, DbInitializer>();
 
             // Register Repositories 
+            services.AddScoped<IClientProfileRepository, ClientProfileRepository>();
+            services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
-  
-            // Register External Services
-            services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();
+
+            // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+            services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IPasswordService, PasswordService>();
+
+            // Communication & Utility Services
+            services.AddScoped<IChatService, ChatService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
             services.AddScoped<IFileUploadService, FileUploadService>();
-
-            services.AddScoped<IChatService, ChatService>();
-            services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
+            services.AddScoped<INotificationService, NotificationService>();
 
-            services.AddScoped<IPackageRepository, PackageRepository>();
-            services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();
             return services;
         }
     }
