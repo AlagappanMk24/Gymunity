@@ -6,6 +6,7 @@ using Gymunity.Application.Services.Admin;
 using Gymunity.Application.Services.Client;
 using Gymunity.Application.Services.Packages;
 using ITI.Gymunity.FP.Application.Services.Admin;
+using ITI.Gymunity.FP.Application.Services.ClientServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gymunity.Application.DI
@@ -39,6 +40,7 @@ namespace Gymunity.Application.DI
             services.AddScoped<IClientProgramsService, ClientProgramsService>();
             services.AddScoped<IWorkoutLogService, WorkoutLogService>();
             services.AddScoped<IBodyStateLogService, BodyStateLogService>();
+            services.AddScoped<IClientTrainersService, ClientTrainersService>();
             return services;
         }
     }
