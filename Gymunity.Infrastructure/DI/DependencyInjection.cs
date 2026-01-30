@@ -124,6 +124,7 @@ namespace Gymunity.Infrastructure.DI
 
             // Register Repositories 
             services.AddScoped<IClientProfileRepository, ClientProfileRepository>();
+            services.AddScoped<IReviewClientRepository, ReviewClientRepository>();
             services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();

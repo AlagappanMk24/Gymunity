@@ -41,6 +41,7 @@ namespace Gymunity.Application.DI
             services.AddScoped<IWorkoutLogService, WorkoutLogService>();
             services.AddScoped<IBodyStateLogService, BodyStateLogService>();
             services.AddScoped<IClientTrainersService, ClientTrainersService>();
+            services.AddScoped<IReviewClientService, ReviewClientService>();
             return services;
         }
     }
