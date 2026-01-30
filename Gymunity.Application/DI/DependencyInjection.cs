@@ -37,6 +37,7 @@ namespace Gymunity.Application.DI
             services.AddScoped<IClientProfileService, ClientProfileService>();
             services.AddScoped<IOnboardingService, OnboardingService>();
             services.AddScoped<IClientProgramsService, ClientProgramsService>();
+            services.AddScoped<IWorkoutLogService, WorkoutLogService>();
             return services;
         }
     }

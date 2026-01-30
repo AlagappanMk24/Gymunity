@@ -127,6 +127,7 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();
+            services.AddScoped<IWorkoutLogRepository, WorkoutLogRepository>();
 
             // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();
