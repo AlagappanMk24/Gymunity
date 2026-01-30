@@ -1,5 +1,5 @@
 using ClosedXML.Excel;
-using Gymunity.Application.Contracts.Admin;
+using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.DTOs.Admin;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Enums;

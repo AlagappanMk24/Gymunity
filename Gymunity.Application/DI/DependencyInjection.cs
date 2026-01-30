@@ -1,5 +1,5 @@
-﻿using Gymunity.Application.Contracts.Client;
-using Gymunity.Application.Contracts.Services.Admin;
+﻿using Gymunity.Application.Contracts.Services.Admin;
+using Gymunity.Application.Contracts.Services.Client;
 using Gymunity.Application.Contracts.Services.Packages;
 using Gymunity.Application.Mapping;
 using Gymunity.Application.Services.Admin;
@@ -35,7 +35,7 @@ namespace Gymunity.Application.DI
             // Client Feature Services
             // ===========================
             services.AddScoped<IClientProfileService, ClientProfileService>();
-
+            services.AddScoped<IOnboardingService, OnboardingService>();
             return services;
         }
     }

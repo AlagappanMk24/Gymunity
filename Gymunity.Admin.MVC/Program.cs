@@ -1,7 +1,6 @@
 using Gymunity.Admin.MVC.Hubs;
 using Gymunity.Admin.MVC.Services;
 using Gymunity.Admin.MVC.Services.Interfaces;
-using Gymunity.Application.Contracts.Admin;
 using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.DI;

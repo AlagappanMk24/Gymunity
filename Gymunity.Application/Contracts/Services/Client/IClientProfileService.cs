@@ -1,6 +1,6 @@
 ﻿using Gymunity.Application.DTOs.ClientDto;
 
-namespace Gymunity.Application.Contracts.Client
+namespace Gymunity.Application.Contracts.Services.Client
 {
     public interface IClientProfileService
     {

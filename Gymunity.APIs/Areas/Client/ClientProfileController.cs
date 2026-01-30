@@ -1,6 +1,6 @@
 ﻿using Gymunity.APIs.Responses;
 using Gymunity.APIs.Responses.Errors;
-using Gymunity.Application.Contracts.Client;
+using Gymunity.Application.Contracts.Services.Client;
 using Gymunity.Application.DTOs.ClientDto;
 using Gymunity.Domain.Entities.Client;
 using Microsoft.AspNetCore.Mvc;

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Gymunity.Application.Contracts.Client;
+using Gymunity.Application.Contracts.Services.Client;
 using Gymunity.Application.DTOs.ClientDto;
 using Gymunity.Application.Specifications.ClientSpecification;
 using Gymunity.Domain;
