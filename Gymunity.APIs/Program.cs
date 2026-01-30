@@ -1,17 +1,19 @@
+using Gymunity.APIs.Middlewares;
 using Gymunity.Application.DI;
 using Gymunity.Infrastructure.Data.DbExtension;
 using Gymunity.Infrastructure.DI;
-using KS_Sweets.Infrastructure.Data.Initializers;
 using Microsoft.OpenApi.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 // =========================================================
-// 1. WEB APPLICATION BUILDER
+// WEB APPLICATION BUILDER
 // =========================================================
 var builder = WebApplication.CreateBuilder(args);
 
-// Group all service registrations
+// =========================================================
+// 1. SERVICE REGISTRATION
+// =========================================================
 ConfigureServices(builder.Services, builder.Configuration);
 
 var app = builder.Build();
@@ -19,10 +21,8 @@ var app = builder.Build();
 // =========================================================
 // 2. MIDDLEWARE CONFIGURATION
 // =========================================================
-ConfigureMiddleware(app);
+await ConfigureMiddlewareAsync(app);
 
-// Data Seeding
-await app.SeedDatabaseAsync();
 
 await app.RunAsync();
 
@@ -34,25 +34,70 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 {
     // --- Controller & JSON Configuration ---
     services.AddControllers()
-         .AddJsonOptions(options =>
-         {
+    .AddJsonOptions(options =>
+     {
              options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
              options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
              options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-         });
+     });
 
     // --- Swagger / OpenAPI Configuration ---
     ConfigureSwagger(services);
 
     // --- Database & Infrastructure ---
     services.AddDbContextServices(configuration);
-    services.AddApplicationServices();
+
     services.AddInfrastructureServices();
+
+    services.AddApplicationServices();
+
+    services.AddAuthenticationServices(builder.Configuration);
 
     // Required for DI scope in background tasks or seeding
     services.AddEndpointsApiExplorer();
+
+    // Add CORS for SignalR
+    services.AddCors(options =>
+    {
+        options.AddPolicy("wepPolicy", policyBuilder =>
+        {
+            policyBuilder
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()
+                .SetIsOriginAllowed(origin => true);
+        });
+    });
 }
 
+// =========================================================
+// 4. MIDDLEWARE PIPELINE HELPERS
+// =========================================================
+async Task ConfigureMiddlewareAsync(WebApplication app)
+{
+    app.UseMiddleware<ExceptionMiddleware>();
+
+    app.UseStatusCodePagesWithReExecute("/errors/{0}");
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gymunity APIs v1"));
+    }
+
+    app.UseHttpsRedirection();
+    app.UseStaticFiles();
+
+    app.UseRouting();
+    app.UseCors("wepPolicy");
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    await app.SeedDatabaseAsync();
+
+    app.MapControllers();
+}
 void ConfigureSwagger(IServiceCollection services)
 {
     services.AddSwaggerGen(options =>
@@ -90,24 +135,3 @@ void ConfigureSwagger(IServiceCollection services)
     });
 }
 
-// =========================================================
-// 4. MIDDLEWARE PIPELINE HELPERS
-// =========================================================
-void ConfigureMiddleware(WebApplication app)
-{
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gymunity APIs v1"));
-    }
-
-    app.UseHttpsRedirection();
-
-    // Routing must come before Auth
-    app.UseRouting();
-
-    app.UseAuthentication();
-    app.UseAuthorization();
-
-    app.MapControllers();
-}

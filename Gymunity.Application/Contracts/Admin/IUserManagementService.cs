@@ -91,7 +91,7 @@ namespace Gymunity.Application.Contracts.Admin
         /// <summary>
         /// Get pending trainer verifications
         /// </summary>
-        Task<IEnumerable<PendingTrainerVerificationResponse>> GetPendingTrainerVerificationsAsync();
+        IEnumerable<PendingTrainerVerificationResponse> GetPendingTrainerVerifications();
 
         /// <summary>
         /// Bulk update user roles
