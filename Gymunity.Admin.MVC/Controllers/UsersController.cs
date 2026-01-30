@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Gymunity.Application.Contracts.Admin;
 using Gymunity.Domain.Enums;
 using Gymunity.Application.DTOs.Admin;
 using UserDetailResponse = Gymunity.Admin.MVC.ViewModels.Users.UserDetailResponse;
 using AppUserDetailResponse = Gymunity.Application.DTOs.Admin.UserDetailResponse;
 using Gymunity.Admin.MVC.ViewModels.Users;
+using Gymunity.Application.Contracts.Services.Admin;
 
 namespace Gymunity.Admin.MVC.Controllers
 {

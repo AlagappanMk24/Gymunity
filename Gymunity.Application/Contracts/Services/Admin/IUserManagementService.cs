@@ -1,7 +1,7 @@
 using Gymunity.Application.DTOs.Admin;
 using Gymunity.Domain.Enums;
 
-namespace Gymunity.Application.Contracts.Admin
+namespace Gymunity.Application.Contracts.Services.Admin
 {
     /// <summary>
     /// Interface for managing users and their roles in the admin panel
