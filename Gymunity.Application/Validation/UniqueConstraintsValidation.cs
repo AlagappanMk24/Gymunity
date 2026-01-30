@@ -5,7 +5,7 @@ namespace Gymunity.Application.Validation
 {
     public class UniqueTrainerHandleAttribute : ValidationAttribute
     {
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
             var handle = value as string;
             if (string.IsNullOrWhiteSpace(handle)) return ValidationResult.Success!;
@@ -23,7 +23,7 @@ namespace Gymunity.Application.Validation
 
     public class UniquePackageNameAttribute : ValidationAttribute
     {
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
             var name = value as string;
             if (string.IsNullOrWhiteSpace(name)) return ValidationResult.Success!;
@@ -53,7 +53,7 @@ namespace Gymunity.Application.Validation
 
     public class UniqueProgramTitleAttribute : ValidationAttribute
     {
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
             var title = value as string;
             if (string.IsNullOrWhiteSpace(title)) return ValidationResult.Success!;
