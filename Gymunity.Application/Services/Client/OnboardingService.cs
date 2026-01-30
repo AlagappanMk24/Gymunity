@@ -1,6 +1,6 @@
 ﻿using Gymunity.Application.Contracts.Services.Client;
 using Gymunity.Application.DTOs.ClientDto;
-using Gymunity.Application.Specifications.ClientSpecification;
+using Gymunity.Application.Specifications.Client;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.Client;
 using Gymunity.Domain.Interfaces.Client;

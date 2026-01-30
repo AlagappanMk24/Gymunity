@@ -1,7 +1,7 @@
 ﻿using Gymunity.Domain.Entities.Trainer;
 using Gymunity.Domain.Specification;
 
-namespace Gymunity.Application.Specifications.ClientSpecification.TrainerDiscovery
+namespace Gymunity.Application.Specifications.Client.TrainerDiscovery
 {
     public class TrainersWithProfilesSpecification : BaseSpecification<TrainerProfile>
     {

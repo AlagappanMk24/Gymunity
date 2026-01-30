@@ -3,7 +3,7 @@ using Gymunity.Domain.Enums;
 using Gymunity.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
 
-namespace Gymunity.Application.Specifications.ClientSpecification
+namespace Gymunity.Application.Specifications.Client
 {
     internal class ActiveSubscriptionsWithProgramsByUserIdSpecification : BaseSpecification<Subscription>
     {

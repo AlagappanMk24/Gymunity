@@ -1,7 +1,9 @@
+using Gymunity.APIs.Conventions;
 using Gymunity.APIs.Middlewares;
 using Gymunity.Application.DI;
 using Gymunity.Infrastructure.Data.DbExtension;
 using Gymunity.Infrastructure.DI;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -39,7 +41,21 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
              options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
              options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
              options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-     });
+     })
+    .AddMvcOptions(options =>
+    {
+        // Enable kebab-case transformation for controller names
+        options.Conventions.Add(new RouteTokenTransformerConvention(
+            new SlugifyParameterTransformer()));
+    });
+
+    // Add routing services with lowercase URLs
+    services.AddRouting(options =>
+    {
+        options.LowercaseUrls = true;               // Converts URLs to lowercase
+        options.LowercaseQueryStrings = true;       // Optional: lowercase query strings too
+        options.AppendTrailingSlash = false;        // Optional: no trailing slash
+    });
 
     // --- Swagger / OpenAPI Configuration ---
     ConfigureSwagger(services);
@@ -102,7 +118,12 @@ void ConfigureSwagger(IServiceCollection services)
 {
     services.AddSwaggerGen(options =>
     {
-        options.SwaggerDoc("v1", new OpenApiInfo { Title = "Gymunity APIs", Version = "v1" });
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Gymunity APIs",
+            Version = "v1",
+            Description = "API endpoints for Gymunity application"
+        });
 
         // XML Comments
         var xmlFile = Path.Combine(AppContext.BaseDirectory, "Gymunity.APIs.xml");
@@ -134,4 +155,3 @@ void ConfigureSwagger(IServiceCollection services)
         });
     });
 }
-

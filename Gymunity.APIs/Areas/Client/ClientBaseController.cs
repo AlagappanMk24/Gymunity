@@ -9,7 +9,7 @@ namespace Gymunity.APIs.Areas.Client
     /// </summary>
     [ApiController]
     [Authorize(Roles = "Client")]
-    [Route("api/v1/clients")]
+    [Route("api/v1/clients/[controller]")]
     public class ClientBaseController : ControllerBase
     {
        

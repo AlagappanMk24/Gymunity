@@ -11,7 +11,7 @@ namespace Gymunity.APIs.Areas.Client
     /// <summary>
     /// Controller for managing client-specific profile data and dashboard metrics.
     /// </summary>   
-    public class ClientProfileController(IClientProfileService clientProfileService, ILogger<ClientProfile> logger) : ClientBaseController
+    public class ProfileController(IClientProfileService clientProfileService, ILogger<ClientProfile> logger) : ClientBaseController
     {
         private readonly IClientProfileService _clientProfileService = clientProfileService;
         private readonly ILogger _logger = logger;
