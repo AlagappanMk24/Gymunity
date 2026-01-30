@@ -2,7 +2,7 @@
 using Gymunity.Domain.Specification;
 using System.Linq.Expressions;
 
-namespace ITI.Gymunity.FP.Application.Specefications.ClientSpecification
+namespace Gymunity.Application.Specifications.Client
 {
     public class SubscriptionsWithClientAndProgramSpecs : BaseSpecification<Subscription>
     {

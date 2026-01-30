@@ -5,13 +5,13 @@ using Gymunity.Application.DTOs.Packages;
 using Gymunity.Application.DTOs.Program;
 using Gymunity.Application.DTOs.Trainers;
 using Gymunity.Application.Specifications.Admin;
+using Gymunity.Application.Specifications.Client;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities;
 using Gymunity.Domain.Entities.ProgramAggregate;
 using Gymunity.Domain.Entities.Trainer;
 using Gymunity.Domain.Enums;
 using Gymunity.Domain.Interfaces;
-using ITI.Gymunity.FP.Application.Specefications.ClientSpecification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gymunity.Application.Services.Packages

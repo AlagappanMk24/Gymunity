@@ -1,7 +1,7 @@
 ﻿using Gymunity.Domain.Entities.Client;
 using Gymunity.Domain.Specification;
 
-namespace Gymunity.Application.Specifications.ClientSpecification
+namespace Gymunity.Application.Specifications.Client
 {
     public class WorkoutLogsByClientSpecs : BaseSpecification<WorkoutLog>
     {

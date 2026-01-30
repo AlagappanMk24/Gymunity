@@ -2,7 +2,7 @@
 using Gymunity.Domain.Specification;
 using System.Linq.Expressions;
 
-namespace Gymunity.Application.Specifications.ClientSpecification
+namespace Gymunity.Application.Specifications.Client
 {
     public class WorkoutLogWithDetailsSpecs : BaseSpecification<WorkoutLog>
     {
