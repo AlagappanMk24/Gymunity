@@ -5,8 +5,6 @@ using Gymunity.Application.Mapping;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Application.Services.Client;
 using Gymunity.Application.Services.Packages;
-using ITI.Gymunity.FP.Application.Services.Admin;
-using ITI.Gymunity.FP.Application.Services.ClientServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gymunity.Application.DI
@@ -21,6 +19,7 @@ namespace Gymunity.Application.DI
             // ===========================
             services.AddAutoMapper((opt) => { }, typeof(MappingProfile).Assembly);
 
+            services.AddHttpClient();
             // ===========================
             // Admin Feature Services
             // ===========================
@@ -42,6 +41,7 @@ namespace Gymunity.Application.DI
             services.AddScoped<IBodyStateLogService, BodyStateLogService>();
             services.AddScoped<IClientTrainersService, ClientTrainersService>();
             services.AddScoped<IReviewClientService, ReviewClientService>();
+            services.AddScoped<IPaymentService, PaymentService>();
             return services;
         }
     }

@@ -1,6 +1,7 @@
 using Gymunity.Domain.Entities;
 using Gymunity.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
+using DomainPayment = Gymunity.Domain.Entities.Payment;
 
 namespace Gymunity.Application.Specifications.Admin
 {
@@ -9,7 +10,7 @@ namespace Gymunity.Application.Specifications.Admin
     /// Includes client, subscription, package, and trainer information
     /// Optimized for admin details view
     /// </summary>
-    public class PaymentDetailWithClientSpecs : BaseSpecification<Payment>
+    public class PaymentDetailWithClientSpecs : BaseSpecification<DomainPayment>
     {
         public PaymentDetailWithClientSpecs(int paymentId)
         {

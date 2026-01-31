@@ -7,7 +7,7 @@ using Gymunity.Domain.Entities;
 using Gymunity.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace ITI.Gymunity.FP.Application.Services.Admin
+namespace Gymunity.Application.Services.Admin
 {
     /// <summary>
     /// Admin service for managing subscriptions and subscription lifecycle

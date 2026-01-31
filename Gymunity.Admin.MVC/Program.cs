@@ -7,7 +7,6 @@ using Gymunity.Application.DI;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Infrastructure.DI;
 using Gymunity.Infrastructure.Services.Identity;
-using ITI.Gymunity.FP.Application.Services.Admin;
 
 namespace Gymunity.Admin.MVC
 {
