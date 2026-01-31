@@ -2,6 +2,7 @@ using Gymunity.Domain.Entities;
 using Gymunity.Domain.Enums;
 using Gymunity.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
+using DomainPayment = Gymunity.Domain.Entities.Payment;
 
 namespace Gymunity.Application.Specifications.Admin
 {
@@ -9,7 +10,7 @@ namespace Gymunity.Application.Specifications.Admin
     /// Specification for dashboard payment analytics
     /// Includes subscription and trainer information for complete payment analysis
     /// </summary>
-    public class DashboardPaymentAnalyticsSpecs : BaseSpecification<Payment>
+    public class DashboardPaymentAnalyticsSpecs : BaseSpecification<DomainPayment>
     {
         /// <summary>
         /// Get all payments with related subscription, package, and trainer data

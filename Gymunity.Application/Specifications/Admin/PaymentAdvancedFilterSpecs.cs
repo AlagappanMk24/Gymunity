@@ -3,6 +3,7 @@ using Gymunity.Domain.Enums;
 using Gymunity.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using DomainPayment = Gymunity.Domain.Entities.Payment;
 
 namespace Gymunity.Application.Specifications.Admin
 {
@@ -11,7 +12,7 @@ namespace Gymunity.Application.Specifications.Admin
     /// Supports status, client, trainer, amount range, and date range filters
     /// Includes eager loading of all related entities
     /// </summary>
-    public class PaymentAdvancedFilterSpecs : BaseSpecification<Payment>
+    public class PaymentAdvancedFilterSpecs : BaseSpecification<DomainPayment>
     {
         public PaymentAdvancedFilterSpecs(
             PaymentStatus? status = null,
@@ -25,7 +26,7 @@ namespace Gymunity.Application.Specifications.Admin
             int pageSize = 10)
         {
             // Build dynamic criteria
-            Expression<Func<Payment, bool>>? criteria = p => !p.IsDeleted;
+            Expression<Func<DomainPayment, bool>>? criteria = p => !p.IsDeleted;
 
             // Status filter
             if (status.HasValue)
@@ -39,7 +40,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (!string.IsNullOrWhiteSpace(clientSearch))
             {
                 var search = clientSearch.ToLower();
-                var searchCriteria = (Expression<Func<Payment, bool>>)(p =>
+                var searchCriteria = (Expression<Func<DomainPayment, bool>>)(p =>
                     p.Subscription != null && p.Subscription.Client != null && (
                         p.Subscription.Client.FullName.ToLower().Contains(search) ||
                         p.Subscription.Client.Email.ToLower().Contains(search)
@@ -60,7 +61,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (trainerProfileId.HasValue)
             {
                 var trainerId = trainerProfileId.Value;
-                var trainerCriteria = (Expression<Func<Payment, bool>>)(p =>
+                var trainerCriteria = (Expression<Func<DomainPayment, bool>>)(p =>
                     p.Subscription != null && p.Subscription.Package != null &&
                     p.Subscription.Package.Trainer != null && p.Subscription.Package.Trainer.Id == trainerId);
 
@@ -79,7 +80,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (minAmount.HasValue)
             {
                 var min = minAmount.Value;
-                var minCriteria = (Expression<Func<Payment, bool>>)(p => p.Amount >= min);
+                var minCriteria = (Expression<Func<DomainPayment, bool>>)(p => p.Amount >= min);
 
                 if (criteria != null)
                 {
@@ -96,7 +97,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (maxAmount.HasValue)
             {
                 var max = maxAmount.Value;
-                var maxCriteria = (Expression<Func<Payment, bool>>)(p => p.Amount <= max);
+                var maxCriteria = (Expression<Func<DomainPayment, bool>>)(p => p.Amount <= max);
 
                 if (criteria != null)
                 {
@@ -113,7 +114,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (startDate.HasValue)
             {
                 var start = startDate.Value;
-                var startCriteria = (Expression<Func<Payment, bool>>)(p => p.CreatedAt >= start);
+                var startCriteria = (Expression<Func<DomainPayment, bool>>)(p => p.CreatedAt >= start);
 
                 if (criteria != null)
                 {
@@ -130,7 +131,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (endDate.HasValue)
             {
                 var end = endDate.Value.AddDays(1); // Include the entire last day
-                var endCriteria = (Expression<Func<Payment, bool>>)(p => p.CreatedAt < end);
+                var endCriteria = (Expression<Func<DomainPayment, bool>>)(p => p.CreatedAt < end);
 
                 if (criteria != null)
                 {

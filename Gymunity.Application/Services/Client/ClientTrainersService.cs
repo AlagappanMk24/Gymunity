@@ -6,7 +6,7 @@ using Gymunity.Domain;
 using Gymunity.Domain.Entities;
 using Gymunity.Domain.Enums;
 
-namespace ITI.Gymunity.FP.Application.Services.ClientServices
+namespace Gymunity.Application.Services.Client
 {
     public class ClientTrainersService(IUnitOfWork unitOfWork, IMapper mapper) : IClientTrainersService
     {

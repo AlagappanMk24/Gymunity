@@ -2,7 +2,6 @@ using Gymunity.Admin.MVC.ViewModels.Subscriptions;
 using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Specifications.Admin;
 using Gymunity.Domain.Enums;
-using ITI.Gymunity.FP.Application.Services.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

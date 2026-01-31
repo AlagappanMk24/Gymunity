@@ -144,6 +144,9 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
             services.AddScoped<INotificationService, NotificationService>();
 
+            // Payment Gateway Services
+            services.AddScoped<IStripePaymentService, StripePaymentService>();
+            services.AddScoped<IPayPalService, PayPalService>();
             return services;
         }
     }

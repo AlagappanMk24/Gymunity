@@ -3,6 +3,7 @@ using Gymunity.Domain.Enums;
 using Gymunity.Domain.Specification;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using DomainPayment = Gymunity.Domain.Entities.Payment;
 
 namespace Gymunity.Application.Specifications.Admin
 {
@@ -10,7 +11,7 @@ namespace Gymunity.Application.Specifications.Admin
     /// Specification for filtering and retrieving payment records with pagination
     /// Supports filtering by payment status and date range
     /// </summary>
-    public class PaymentFilterSpecs : BaseSpecification<Payment>
+    public class PaymentFilterSpecs : BaseSpecification<DomainPayment>
     {
         public PaymentFilterSpecs(
             PaymentStatus? status = null,
@@ -20,7 +21,7 @@ namespace Gymunity.Application.Specifications.Admin
             int pageSize = 10)
         {
             // Build criteria based on filters
-            Expression<Func<Payment, bool>>? criteria = null;
+            Expression<Func<DomainPayment, bool>>? criteria = null;
 
             // Status filter
             if (status.HasValue)
@@ -32,7 +33,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (startDate.HasValue)
             {
                 var start = startDate.Value;
-                var startCriteria = (Expression<Func<Payment, bool>>)(p => p.CreatedAt >= start);
+                var startCriteria = (Expression<Func<DomainPayment, bool>>)(p => p.CreatedAt >= start);
 
                 if (criteria != null)
                 {
@@ -49,7 +50,7 @@ namespace Gymunity.Application.Specifications.Admin
             if (endDate.HasValue)
             {
                 var end = endDate.Value;
-                var endCriteria = (Expression<Func<Payment, bool>>)(p => p.CreatedAt <= end);
+                var endCriteria = (Expression<Func<DomainPayment, bool>>)(p => p.CreatedAt <= end);
 
                 if (criteria != null)
                 {
