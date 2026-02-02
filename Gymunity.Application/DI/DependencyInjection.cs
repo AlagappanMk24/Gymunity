@@ -53,6 +53,7 @@ namespace Gymunity.Application.DI
             services.AddScoped<ITrainerProgramService, TrainerProgramService>();
             services.AddScoped<IWeekService, WeekService>();
             services.AddScoped<IDayService, DayService>();
+            services.AddScoped<IDayExerciseService, DayExerciseService>();
             return services;
         }
     }
