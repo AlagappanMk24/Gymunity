@@ -14,6 +14,7 @@ using Gymunity.Infrastructure.Data.Initializers;
 using Gymunity.Infrastructure.ExternalServices;
 using Gymunity.Infrastructure.Repositories;
 using Gymunity.Infrastructure.Repositories.Client;
+using Gymunity.Infrastructure.Repositories.Trainer;
 using Gymunity.Infrastructure.Services;
 using Gymunity.Infrastructure.Services.ExternalAuth.Google;
 using Gymunity.Infrastructure.Services.Identity;
@@ -122,13 +123,16 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDbInitializer, DbInitializer>();
 
-            // Register Repositories 
+            // Register Client Repositories 
             services.AddScoped<IClientProfileRepository, ClientProfileRepository>();
             services.AddScoped<IReviewClientRepository, ReviewClientRepository>();
             services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();
             services.AddScoped<IWorkoutLogRepository, WorkoutLogRepository>();
+
+            // Register Trainer Repositories 
+            services.AddScoped<ITrainerProfileRepository, TrainerProfileRepository>();
 
             // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();
