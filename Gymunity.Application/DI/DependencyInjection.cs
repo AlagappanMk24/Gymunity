@@ -1,10 +1,12 @@
 ﻿using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Contracts.Services.Client;
 using Gymunity.Application.Contracts.Services.Packages;
+using Gymunity.Application.Contracts.Services.Trainer;
 using Gymunity.Application.Mapping;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Application.Services.Client;
 using Gymunity.Application.Services.Packages;
+using Gymunity.Application.Services.Trainer;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gymunity.Application.DI
@@ -42,6 +44,13 @@ namespace Gymunity.Application.DI
             services.AddScoped<IClientTrainersService, ClientTrainersService>();
             services.AddScoped<IReviewClientService, ReviewClientService>();
             services.AddScoped<IPaymentService, PaymentService>();
+
+
+            // ===========================
+            // Trainer Feature Services
+            // ===========================
+            services.AddScoped<ITrainerProfileService, TrainerProfileService>();
+
             return services;
         }
     }
