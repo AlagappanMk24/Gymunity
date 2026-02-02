@@ -1,5 +1,5 @@
 ﻿using Gymunity.Domain.Entities.Trainer;
-using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Trainer;
 using Gymunity.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 

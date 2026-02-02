@@ -13,7 +13,7 @@ namespace Gymunity.Application.DI
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddApplicationServices( this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
 
             // ===========================
@@ -50,7 +50,8 @@ namespace Gymunity.Application.DI
             // Trainer Feature Services
             // ===========================
             services.AddScoped<ITrainerProfileService, TrainerProfileService>();
-
+            services.AddScoped<ITrainerProgramService, TrainerProgramService>();
+            services.AddScoped<IWeekService, WeekService>();
             return services;
         }
     }

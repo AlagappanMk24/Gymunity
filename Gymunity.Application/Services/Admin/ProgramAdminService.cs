@@ -4,7 +4,7 @@ using Gymunity.Application.DTOs.Program;
 using Gymunity.Application.Specifications.Admin;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.ProgramAggregate;
-using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Trainer;
 using Microsoft.Extensions.Logging;
 
 namespace Gymunity.Application.Services.Admin

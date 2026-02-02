@@ -11,6 +11,7 @@ using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Entities.Trainer;
 using Gymunity.Domain.Enums;
 using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Trainer;
 using Microsoft.AspNetCore.Identity;
 
 namespace Gymunity.Application.Services.Trainer

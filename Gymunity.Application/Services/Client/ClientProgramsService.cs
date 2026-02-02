@@ -7,7 +7,7 @@ using Gymunity.Application.Specifications.ProgramSpecs;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities;
 using Gymunity.Domain.Entities.ProgramAggregate;
-using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Trainer;
 using Microsoft.Extensions.Logging;
 
 namespace Gymunity.Application.Services.Client

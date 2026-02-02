@@ -1,6 +1,6 @@
 ﻿using Gymunity.Domain.Entities.Trainer;
 
-namespace Gymunity.Domain.Interfaces
+namespace Gymunity.Domain.Interfaces.Trainer
 {
     public interface ITrainerProfileRepository : IRepository<TrainerProfile>
     {

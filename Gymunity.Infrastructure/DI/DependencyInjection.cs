@@ -9,6 +9,8 @@ using Gymunity.Domain;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Interfaces;
 using Gymunity.Domain.Interfaces.Client;
+using Gymunity.Domain.Interfaces.Client.Admin;
+using Gymunity.Domain.Interfaces.Trainer;
 using Gymunity.Infrastructure.Data.Context;
 using Gymunity.Infrastructure.Data.Initializers;
 using Gymunity.Infrastructure.ExternalServices;
@@ -133,6 +135,7 @@ namespace Gymunity.Infrastructure.DI
 
             // Register Trainer Repositories 
             services.AddScoped<ITrainerProfileRepository, TrainerProfileRepository>();
+            services.AddScoped<IWeekRepository, WeekRepository>();
 
             // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();

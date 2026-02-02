@@ -3,7 +3,7 @@ using Gymunity.Application.Contracts.Services.Trainer;
 using Gymunity.Application.DTOs.Program;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.ProgramAggregate;
-using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Trainer;
 
 namespace Gymunity.Application.Services.Trainer
 {
