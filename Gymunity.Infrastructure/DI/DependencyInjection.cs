@@ -136,6 +136,7 @@ namespace Gymunity.Infrastructure.DI
             // Register Trainer Repositories 
             services.AddScoped<ITrainerProfileRepository, TrainerProfileRepository>();
             services.AddScoped<IWeekRepository, WeekRepository>();
+            services.AddScoped<IDayRepository, DayRepository>();
 
             // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();
