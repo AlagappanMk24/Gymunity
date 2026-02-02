@@ -12,6 +12,7 @@ using Gymunity.Domain.Entities.ProgramAggregate;
 using Gymunity.Domain.Entities.Trainer;
 using Gymunity.Domain.Enums;
 using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Trainer;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gymunity.Application.Services.Packages

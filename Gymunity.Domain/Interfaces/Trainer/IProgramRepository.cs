@@ -1,6 +1,6 @@
 using Gymunity.Domain.Entities.ProgramAggregate;
 
-namespace Gymunity.Domain.Interfaces
+namespace Gymunity.Domain.Interfaces.Trainer
 {
      public interface IProgramRepository : IRepository<Program>
      {

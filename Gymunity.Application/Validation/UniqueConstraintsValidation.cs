@@ -1,4 +1,5 @@
 using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Trainer;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gymunity.Application.Validation
