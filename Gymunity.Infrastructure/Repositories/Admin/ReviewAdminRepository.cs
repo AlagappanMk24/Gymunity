@@ -3,7 +3,7 @@ using Gymunity.Domain.Interfaces.Admin;
 using Gymunity.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
-namespace Gymunity.Infrastructure.Repositories
+namespace Gymunity.Infrastructure.Repositories.Admin
 {
     public class ReviewAdminRepository(AppDbContext dbContext) : Repository<TrainerReview>(dbContext), IReviewAdminRepository
     {

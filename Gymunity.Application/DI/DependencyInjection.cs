@@ -57,6 +57,7 @@ namespace Gymunity.Application.DI
             services.AddScoped<IExerciseLibraryService, ExerciseLibraryService>();
             services.AddScoped<IPackageService, PackageService>();
             services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<IReviewTrainerService, ReviewTrainerService>();
             return services;
         }
     }
