@@ -1,8 +1,10 @@
-﻿using Gymunity.Application.Contracts.Services.Admin;
+﻿using Gymunity.Application.Contracts.Services;
+using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Contracts.Services.Client;
 using Gymunity.Application.Contracts.Services.Packages;
 using Gymunity.Application.Contracts.Services.Trainer;
 using Gymunity.Application.Mapping;
+using Gymunity.Application.Services;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Application.Services.Client;
 using Gymunity.Application.Services.Packages;
@@ -58,6 +60,10 @@ namespace Gymunity.Application.DI
             services.AddScoped<IPackageService, PackageService>();
             services.AddScoped<IClientService, ClientService>();
             services.AddScoped<IReviewTrainerService, ReviewTrainerService>();
+
+            // Home Client Service
+            services.AddScoped<IHomeClientService, HomeClientService>();
+
             return services;
         }
     }
