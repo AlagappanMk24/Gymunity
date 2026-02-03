@@ -4,7 +4,7 @@ using Gymunity.Application.DTOs.Admin;
 using Gymunity.Application.DTOs.Trainers;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.Trainer;
-using Gymunity.Domain.Interfaces.Client.Admin;
+using Gymunity.Domain.Interfaces.Admin;
 
 namespace Gymunity.Application.Services.Admin
 {
