@@ -64,6 +64,7 @@ namespace Gymunity.Application.DI
             // Home Client Service
             services.AddScoped<IHomeClientService, HomeClientService>();
 
+            services.AddScoped<IGuestReviewService, GuestReviewService>();
             return services;
         }
     }

@@ -144,6 +144,8 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IExerciseLibraryRepository, ExerciseLibraryRepository>();
             services.AddScoped<IReviewTrainerRepository, ReviewTrainerRepository>();
 
+            services.AddScoped<IGuestReviewRepository, GuestReviewRepository>();
+
             // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IGoogleAuthService, GoogleAuthService>();
