@@ -15,6 +15,7 @@ using Gymunity.Infrastructure.Data.Context;
 using Gymunity.Infrastructure.Data.Initializers;
 using Gymunity.Infrastructure.ExternalServices;
 using Gymunity.Infrastructure.Repositories;
+using Gymunity.Infrastructure.Repositories.Admin;
 using Gymunity.Infrastructure.Repositories.Client;
 using Gymunity.Infrastructure.Repositories.Trainer;
 using Gymunity.Infrastructure.Services;
@@ -125,12 +126,14 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IDbInitializer, DbInitializer>();
 
+            // Register Admin Repositories
+            services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();
+
             // Register Client Repositories 
             services.AddScoped<IClientProfileRepository, ClientProfileRepository>();
             services.AddScoped<IReviewClientRepository, ReviewClientRepository>();
             services.AddScoped<IPackageRepository, PackageRepository>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
-            services.AddScoped<IReviewAdminRepository, ReviewAdminRepository>();
             services.AddScoped<IWorkoutLogRepository, WorkoutLogRepository>();
 
             // Register Trainer Repositories 
@@ -139,6 +142,7 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IDayRepository, DayRepository>();
             services.AddScoped<IDayExerciseRepository, DayExerciseRepository>();
             services.AddScoped<IExerciseLibraryRepository, ExerciseLibraryRepository>();
+            services.AddScoped<IReviewTrainerRepository, ReviewTrainerRepository>();
 
             // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();
