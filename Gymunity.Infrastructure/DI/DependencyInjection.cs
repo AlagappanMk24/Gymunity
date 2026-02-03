@@ -8,8 +8,8 @@ using Gymunity.Application.Services;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Interfaces;
+using Gymunity.Domain.Interfaces.Admin;
 using Gymunity.Domain.Interfaces.Client;
-using Gymunity.Domain.Interfaces.Client.Admin;
 using Gymunity.Domain.Interfaces.Trainer;
 using Gymunity.Infrastructure.Data.Context;
 using Gymunity.Infrastructure.Data.Initializers;
@@ -138,6 +138,8 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IWeekRepository, WeekRepository>();
             services.AddScoped<IDayRepository, DayRepository>();
             services.AddScoped<IDayExerciseRepository, DayExerciseRepository>();
+            services.AddScoped<IExerciseLibraryRepository, ExerciseLibraryRepository>();
+
             // Identity & Auth Services
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IGoogleAuthService, GoogleAuthService>();

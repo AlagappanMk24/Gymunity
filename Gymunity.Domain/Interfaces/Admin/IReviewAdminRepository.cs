@@ -1,6 +1,6 @@
 using Gymunity.Domain.Entities.Trainer;
 
-namespace Gymunity.Domain.Interfaces.Client.Admin
+namespace Gymunity.Domain.Interfaces.Admin
 {
     public interface IReviewAdminRepository : IRepository<TrainerReview>
     {
