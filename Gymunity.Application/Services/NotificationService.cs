@@ -7,10 +7,9 @@ using Gymunity.Domain.Enums;
 
 namespace Gymunity.Application.Services
 {
-    public class NotificationService(IUnitOfWork unitOfWork, IMapper mapper) : INotificationService
+    public class NotificationService(IUnitOfWork unitOfWork) : INotificationService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IMapper _mapper = mapper;
 
         public async Task<NotificationResponse> CreateNotificationAsync(string userId, string title, string message, 
             int type, string? relatedEntityId = null)
