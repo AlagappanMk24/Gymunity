@@ -7,6 +7,7 @@ using Gymunity.Application.DI;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Infrastructure.DI;
 using Gymunity.Infrastructure.Services.Identity;
+using ITI.Gymunity.FP.Admin.MVC.Services;
 
 namespace Gymunity.Admin.MVC
 {
@@ -63,6 +64,15 @@ namespace Gymunity.Admin.MVC
             // Add Admin Notification Services
             builder.Services.AddScoped<IAdminUserResolverService, AdminUserResolverService>();
             builder.Services.AddScoped<IAdminNotificationService, AdminNotificationService>();
+
+            // ✅ Register All Admin Notification Handlers
+            // These services subscribe to events from business logic services
+            // and send real-time notifications to admins via SignalR
+            builder.Services.AddScoped<AccountNotificationService>();      // User registrations
+            builder.Services.AddScoped<PaymentNotificationService>();      // Payment events
+            builder.Services.AddScoped<SubscriptionNotificationService>(); // Subscription events
+            builder.Services.AddScoped<UserNotificationService>();         // User management events
+            builder.Services.AddScoped<TrainerNotificationService>();      // Trainer management events
 
             var app = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using Gymunity.Application.DTOs.Account;
+using Gymunity.Domain.Enums;
 
 namespace Gymunity.Application.Contracts.ExternalServices.Auth
 {
@@ -6,6 +7,7 @@ namespace Gymunity.Application.Contracts.ExternalServices.Auth
     {
         Task<AuthResponse> GoogleAuthAsync(GoogleAuthRequest request);
         Task<GoogleUserInfo?> ValidateGoogleTokenAsync(string idToken);
+        event Func<string, string, string, UserRole, Task>? NewGoogleUserRegisteredAsync;
     }
 
     public class GoogleUserInfo

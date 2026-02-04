@@ -1,8 +1,11 @@
 using Gymunity.APIs.Conventions;
+using Gymunity.APIs.Hubs;
 using Gymunity.APIs.Middlewares;
+using Gymunity.APIs.Services;
 using Gymunity.Application.DI;
 using Gymunity.Infrastructure.Data.DbExtension;
 using Gymunity.Infrastructure.DI;
+using ITI.Gymunity.FP.APIs.Hubs;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi.Models;
 using System.Text.Json;
@@ -69,6 +72,14 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     services.AddAuthenticationServices(builder.Configuration);
 
+    // Register Admin Notification Service for API
+    // This allows API controllers to send real-time notifications to admins
+    // NOTE: Only register IAdminNotificationService and AdminUserResolverService here
+    // The notification HANDLERS (PaymentNotificationService, etc.) are only needed in Admin.MVC
+    // where they subscribe to events from business logic services
+    services.AddScoped<IAdminNotificationService, AdminNotificationService>();
+    services.AddScoped<AdminUserResolverService>();
+
     // Required for DI scope in background tasks or seeding
     services.AddEndpointsApiExplorer();
 
@@ -84,6 +95,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
                 .SetIsOriginAllowed(origin => true);
         });
     });
+
+    services.AddMemoryCache();
 }
 
 // =========================================================
@@ -104,11 +117,16 @@ async Task ConfigureMiddlewareAsync(WebApplication app)
     app.UseHttpsRedirection();
     app.UseStaticFiles();
 
+    // Map SignalR Hubs
+    app.MapHub<ChatHub>("/hubs/chat");
+    app.MapHub<NotificationHub>("/hubs/notifications");
+    app.MapHub<AdminNotificationHub>("/hubs/admin-notifications");
+
     app.UseRouting();
     app.UseCors("wepPolicy");
 
     app.UseAuthentication();
-    app.UseAuthorization();
+    app.UseWebhookSecurity();
 
     await app.SeedDatabaseAsync();
 
