@@ -9,7 +9,7 @@ using Gymunity.Application.DTOs.Messaging;
 using Gymunity.Domain.Entities.Messaging;
 using Gymunity.Application.Specifications.Chat;
 
-namespace Gymunity.Application.Services
+namespace Gymunity.Application.Services.Communication
 {
     public class ChatService(IUnitOfWork unitOfWork, 
             UserManager<AppUser> userManager, 
