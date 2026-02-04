@@ -5,7 +5,7 @@ using Gymunity.Domain;
 using Gymunity.Domain.Entities;
 using Gymunity.Domain.Enums;
 
-namespace Gymunity.Application.Services
+namespace Gymunity.Application.Services.Communication
 {
     public class NotificationService(IUnitOfWork unitOfWork) : INotificationService
     {

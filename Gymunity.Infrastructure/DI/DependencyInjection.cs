@@ -5,6 +5,7 @@ using Gymunity.Application.Contracts.Services;
 using Gymunity.Application.Contracts.Services.Communication;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.Services;
+using Gymunity.Application.Services.Communication;
 using Gymunity.Domain;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Interfaces;
@@ -159,6 +160,7 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IFileUploadService, FileUploadService>();
             services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IChatBotService, ChatBotService>();
 
             // Payment Gateway Services
             services.AddScoped<IStripePaymentService, StripePaymentService>();
