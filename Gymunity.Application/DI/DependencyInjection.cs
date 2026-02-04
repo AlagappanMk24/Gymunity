@@ -24,6 +24,7 @@ namespace Gymunity.Application.DI
             services.AddAutoMapper((opt) => { }, typeof(MappingProfile).Assembly);
 
             services.AddHttpClient();
+
             // ===========================
             // Admin Feature Services
             // ===========================
@@ -47,10 +48,9 @@ namespace Gymunity.Application.DI
             services.AddScoped<IReviewClientService, ReviewClientService>();
             services.AddScoped<IPaymentService, PaymentService>();
 
-
             // ===========================
             // Trainer Feature Services
-            // ===========================
+            // =========================== 
             services.AddScoped<ITrainerProfileService, TrainerProfileService>();
             services.AddScoped<ITrainerProgramService, TrainerProgramService>();
             services.AddScoped<IWeekService, WeekService>();
