@@ -1,6 +1,7 @@
 ﻿using Gymunity.Application.Contracts.ExternalServices;
 using Gymunity.Application.Contracts.ExternalServices.Auth;
 using Gymunity.Application.Contracts.ExternalServices.Email;
+using Gymunity.Application.Contracts.ExternalServices.RealTime;
 using Gymunity.Application.Contracts.Services;
 using Gymunity.Application.Contracts.Services.Communication;
 using Gymunity.Application.Contracts.Services.Identity;
@@ -165,6 +166,15 @@ namespace Gymunity.Infrastructure.DI
             // Payment Gateway Services
             services.AddScoped<IStripePaymentService, StripePaymentService>();
             services.AddScoped<IPayPalService, PayPalService>();
+
+            services.AddScoped<IWebhookService, WebhookService>();
+
+            // ✅ Admin Notification Services (Event-Driven)
+            services.AddScoped<IAdminNotificationPublisher, AdminNotificationPublisher>();
+
+            // Register SignalR Services
+            services.AddSingleton<ISignalRConnectionManager, SignalRConnectionManager>();
+
             return services;
         }
     }

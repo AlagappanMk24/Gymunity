@@ -50,6 +50,9 @@ namespace Gymunity.APIs.Controllers
         /// </summary>
         public class ChatBotRequest
         {
+            /// <summary>
+            /// Gets or sets the text of the question asked by the user.
+            /// </summary>
             public string Question { get; set; } = string.Empty;
         }
 
@@ -58,9 +61,15 @@ namespace Gymunity.APIs.Controllers
         /// </summary>
         public class ChatBotResponse
         {
+            /// <summary>
+            /// Gets or sets the original question asked.
+            /// </summary>
             public string Question { get; set; } = string.Empty;
+
+            /// <summary>
+            /// Gets or sets the generated answer from the AI service.
+            /// </summary>
             public string Answer { get; set; } = string.Empty;
         }
     }
 }
-
