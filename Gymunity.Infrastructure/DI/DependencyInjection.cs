@@ -153,6 +153,7 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IGoogleAuthService, GoogleAuthService>();
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IPasswordService, PasswordService>();
+            services.AddScoped<IOtpService, OtpService>();
 
             // Communication & Utility Services
             services.AddScoped<IChatService, ChatService>();

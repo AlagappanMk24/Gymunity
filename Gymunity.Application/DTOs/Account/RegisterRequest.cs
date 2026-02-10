@@ -34,5 +34,12 @@ namespace Gymunity.Application.DTOs.Account
         [Required]
         [Range(1,2)]
         public byte Role { get; set; }
+
+        [Description("OTP code for registration verification")]
+        [StringLength(6, MinimumLength = 6)]
+        public string? OtpCode { get; set; }
+
+        [Description("Indicates if OTP is verified")]
+        public bool IsOtpVerified { get; set; } = false;
     }
 }

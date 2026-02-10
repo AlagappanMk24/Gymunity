@@ -1,29 +1,27 @@
-using Gymunity.Admin.MVC.Services;
 using Gymunity.Admin.MVC.Services.Interfaces;
 using Gymunity.Application.Contracts.ExternalServices.Auth;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Domain.Enums;
-using Gymunity.Infrastructure.Services.Identity;
 
-namespace ITI.Gymunity.FP.Admin.MVC.Services
+namespace Gymunity.Admin.MVC.Services
 {
     /// <summary>
     /// Handles user registration notifications
     /// Subscribes to events from AccountService and sends notifications to admins
     /// </summary>
-    public class AccountNotificationService
+    public class AccountNotificationService : IAccountNotificationService
     {
         private readonly IAdminNotificationService _notificationService;
         private readonly IIdentityService _identityService;
         private readonly IGoogleAuthService _googleAuthService;
-        private readonly AdminUserResolverService _adminUserResolver;
+        private readonly IAdminUserResolverService _adminUserResolver;
         private readonly ILogger<AccountNotificationService> _logger;
 
         public AccountNotificationService(
             IAdminNotificationService notificationService,
             IIdentityService identityService, 
             IGoogleAuthService googleAuthService, 
-            AdminUserResolverService adminUserResolver,
+            IAdminUserResolverService adminUserResolver,
             ILogger<AccountNotificationService> logger)
         {
             _notificationService = notificationService;

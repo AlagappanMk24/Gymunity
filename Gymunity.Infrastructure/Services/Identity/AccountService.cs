@@ -56,9 +56,10 @@ namespace Gymunity.Infrastructure.Services.Identity
                 throw new Exception($"Profile update failed: {errors}");
             }
 
-            var token = await _identityService.CreateTokenAsync(user, userManager);
+            //var token = await _identitCreateTokenAsync(user, userManager);
             await SendStatusEmailAsync(user, "Profile Update Success", "You succesfully Updated your profile in Gymunity!.");
-            return  PrepareAuthResponseAsync(user, token);
+            //return  PrepareAuthResponseAsync(user, token);
+            return null;
         }
         public async Task<AuthResponse> ChangePasswordAsync(string userId, ChangePasswordRequest request)
         {
@@ -71,9 +72,10 @@ namespace Gymunity.Infrastructure.Services.Identity
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new Exception($"Password update failed: {errors}");
             }
-            var token = await _identityService.CreateTokenAsync(user, userManager);
+            //var token = await _identityService.CreateTokenAsync(user, userManager);
             await SendStatusEmailAsync(user, "Password Change Success", "You succesfully Changed your password in Gymunity!.");
-            return PrepareAuthResponseAsync(user, token);
+            //return PrepareAuthResponseAsync(user, token);
+            return null;
         }
     }
 }

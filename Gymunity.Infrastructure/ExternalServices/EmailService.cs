@@ -50,6 +50,7 @@ namespace Gymunity.Infrastructure.ExternalServices
         {
             return new SmtpClient(_settings.SmtpHost, _settings.SmtpPort)
             {
+                UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(_settings.FromEmail, _settings.Password),
                 EnableSsl = _settings.EnableSsl,
                 DeliveryMethod = SmtpDeliveryMethod.Network

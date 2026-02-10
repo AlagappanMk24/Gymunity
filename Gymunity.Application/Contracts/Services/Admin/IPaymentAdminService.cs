@@ -1,5 +1,6 @@
 ﻿using Gymunity.Application.DTOs.User.Payment;
 using Gymunity.Application.Specifications.Admin;
+using Gymunity.Domain.Entities;
 using Gymunity.Domain.Enums;
 
 namespace Gymunity.Application.Contracts.Services.Admin
@@ -46,5 +47,9 @@ namespace Gymunity.Application.Contracts.Services.Admin
             DateTime? startDate = null,
             DateTime? endDate = null);
         Task<(int totalPayments, decimal totalRevenue, int completedCount, int failedCount)> GetPaymentStatsAsync();
+
+        event Func<int, Payment, Task>? RefundCompletedAsync;
+
+        event Func<int, Payment, Task>? PaymentMarkedAsFailedAsync;
     }
 }

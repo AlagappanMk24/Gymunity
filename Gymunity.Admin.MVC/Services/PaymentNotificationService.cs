@@ -1,5 +1,6 @@
 using Gymunity.Admin.MVC.Services.Interfaces;
 using Gymunity.Application.Contracts.Services;
+using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Domain.Entities;
 using Gymunity.Domain.Enums;
@@ -14,17 +15,17 @@ namespace Gymunity.Admin.MVC.Services
     /// 2. AdminNotificationPublisher (webhook payment events)
     /// Sends notifications to admins via both local events and infrastructure events
     /// </summary>
-    public class PaymentNotificationService
+    public class PaymentNotificationService : IPaymentNotificationService
     {
         private readonly IAdminNotificationService _notificationService;
-        private readonly PaymentAdminService _paymentAdminService;
-        private readonly AdminUserResolverService _adminUserResolver;
+        private readonly IPaymentAdminService _paymentAdminService;
+        private readonly IAdminUserResolverService _adminUserResolver;
         private readonly ILogger<PaymentNotificationService> _logger;
 
         public PaymentNotificationService(
             IAdminNotificationService notificationService,
-            PaymentAdminService paymentAdminService,
-            AdminUserResolverService adminUserResolver,
+            IPaymentAdminService paymentAdminService,
+            IAdminUserResolverService adminUserResolver,
             IAdminNotificationPublisher notificationPublisher,
             ILogger<PaymentNotificationService> logger)
         {

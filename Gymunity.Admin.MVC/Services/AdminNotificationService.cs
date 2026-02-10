@@ -11,21 +11,14 @@ namespace Gymunity.Admin.MVC.Services
     /// Service for managing admin notifications
     /// Handles creation, retrieval, and real-time notification delivery to admin users
     /// </summary>
-    public class AdminNotificationService : IAdminNotificationService
+    public class AdminNotificationService(
+        IHubContext<AdminNotificationHub> hubContext,
+        ILogger<AdminNotificationService> logger,
+        INotificationService notificationService) : IAdminNotificationService
     {
-        private readonly IHubContext<AdminNotificationHub> _hubContext;
-        private readonly ILogger<AdminNotificationService> _logger;
-        private readonly INotificationService _notificationService;
-
-        public AdminNotificationService(
-            IHubContext<AdminNotificationHub> hubContext,
-            ILogger<AdminNotificationService> logger,
-            INotificationService notificationService)
-        {
-            _hubContext = hubContext;
-            _logger = logger;
-            _notificationService = notificationService;
-        }
+        private readonly IHubContext<AdminNotificationHub> _hubContext = hubContext;
+        private readonly ILogger<AdminNotificationService> _logger = logger;
+        private readonly INotificationService _notificationService = notificationService;
 
         /// <summary>
         /// Create and broadcast admin notification

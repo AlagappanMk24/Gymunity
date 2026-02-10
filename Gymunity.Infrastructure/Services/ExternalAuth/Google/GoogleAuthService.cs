@@ -115,7 +115,7 @@ namespace Gymunity.Infrastructure.Services.ExternalAuth.Google
             }
 
             // Generate JWT token
-            var token = await _identityService.CreateTokenAsync(user, _userManager);
+            var token = await _identityService.CreateTokenAsync(user);
 
             var emailRequset = new EmailRequest()
             {

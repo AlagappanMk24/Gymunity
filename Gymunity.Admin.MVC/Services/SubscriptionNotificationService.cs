@@ -1,4 +1,5 @@
 using Gymunity.Admin.MVC.Services.Interfaces;
+using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Domain.Entities;
 
@@ -8,17 +9,17 @@ namespace Gymunity.Admin.MVC.Services
     /// Handles subscription-related notifications
     /// Subscribes to events from SubscriptionAdminService and sends notifications to admins
     /// </summary>
-    public class SubscriptionNotificationService
+    public class SubscriptionNotificationService : ISubscriptionNotificationService
     {
         private readonly IAdminNotificationService _notificationService;
-        private readonly SubscriptionAdminService _subscriptionAdminService;
-        private readonly AdminUserResolverService _adminUserResolver;
+        private readonly ISubscriptionAdminService _subscriptionAdminService;
+        private readonly IAdminUserResolverService _adminUserResolver;
         private readonly ILogger<SubscriptionNotificationService> _logger;
 
         public SubscriptionNotificationService(
             IAdminNotificationService notificationService,
-            SubscriptionAdminService subscriptionAdminService,
-            AdminUserResolverService adminUserResolver,
+            ISubscriptionAdminService subscriptionAdminService,
+            IAdminUserResolverService adminUserResolver,
             ILogger<SubscriptionNotificationService> logger)
         {
             _notificationService = notificationService;

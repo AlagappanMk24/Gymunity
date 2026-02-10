@@ -21,5 +21,9 @@ namespace Gymunity.Application.Contracts.Services.Admin
         Task<IEnumerable<TrainerProfileDetailResponse>> GetSuspendedTrainersAsync(int pageNumber = 1, int pageSize = 10);
         Task<int> GetSuspendedTrainerCountAsync();
         Task<IEnumerable<TrainerProfileDetailResponse>> SearchTrainersAsync(string searchTerm, int pageNumber = 1, int pageSize = 10);
+        event Func<int, TrainerProfile, Task>? TrainerVerifiedAsync;
+        event Func<int, TrainerProfile, Task>? TrainerRejectedAsync;
+        event Func<int, TrainerProfile, Task>? TrainerSuspendedAsync;
+        event Func<int, TrainerProfile, Task>? TrainerReactivatedAsync;
     }
 }

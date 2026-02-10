@@ -1,5 +1,6 @@
 ﻿using Gymunity.Application.DTOs.User.Subscriptions;
 using Gymunity.Application.Specifications.Admin;
+using Gymunity.Domain.Entities;
 using Gymunity.Domain.Enums;
 
 namespace Gymunity.Application.Contracts.Services.Admin
@@ -39,5 +40,9 @@ namespace Gymunity.Application.Contracts.Services.Admin
             DateTime? startDate = null,
             DateTime? endDate = null);
         Task<(int activeCount, int unpaidCount, int canceledCount, decimal totalRevenue)> GetSubscriptionStatsAsync();
+
+        event Func<int, Subscription, Task>? SubscriptionCancelledByAdminAsync;
+
+        event Func<int, Subscription, Task>? SubscriptionCreatedAsync;
     }
 }

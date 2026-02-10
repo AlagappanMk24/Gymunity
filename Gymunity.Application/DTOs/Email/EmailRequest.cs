@@ -9,5 +9,7 @@
         public bool IsHtml { get; set; } = true;
         public string? CcEmail { get; set; }
         public string? BccEmail { get; set; }
+        public string? FromEmail { get; set; }
+        public string? FromName { get; set; }
     }
 }

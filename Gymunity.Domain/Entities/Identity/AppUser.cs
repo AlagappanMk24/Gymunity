@@ -13,6 +13,7 @@ namespace Gymunity.Domain.Entities.Identity
         public string? ProfilePhotoUrl { get; set; }
         public UserRole Role { get; set; } = UserRole.Client;
         public bool IsVerified { get; set; } = false;
+        //public bool IsActive { get; set; } = true;
         public string? StripeCustomerId { get; set; }
         public string? StripeConnectAccountId { get; set; } // Only for trainers
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

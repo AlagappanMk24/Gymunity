@@ -5,6 +5,7 @@ using Gymunity.APIs.Services;
 using Gymunity.Application.DI;
 using Gymunity.Infrastructure.Data.DbExtension;
 using Gymunity.Infrastructure.DI;
+using Gymunity.Infrastructure.Utilities;
 using ITI.Gymunity.FP.APIs.Hubs;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi.Models;
@@ -41,9 +42,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddControllers()
     .AddJsonOptions(options =>
      {
-             options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
      })
     .AddMvcOptions(options =>
     {
@@ -83,20 +84,50 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Required for DI scope in background tasks or seeding
     services.AddEndpointsApiExplorer();
 
-    // Add CORS for SignalR
+    services.AddSignalR();
+
+    // --- CORS Configuration for Development ---
     services.AddCors(options =>
     {
-        options.AddPolicy("wepPolicy", policyBuilder =>
+        options.AddPolicy("DevelopmentPolicy", policyBuilder =>
         {
+            // Allow specific origins for development
             policyBuilder
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials()
-                .SetIsOriginAllowed(origin => true);
+                .WithOrigins(
+                    "http://localhost:4200",    // Angular default
+                    "https://localhost:4200",   // Angular with HTTPS
+                    "http://localhost:3000",    // React default
+                    "https://localhost:3000"    // React with HTTPS
+                )
+                .AllowAnyMethod()               // Allow all HTTP methods
+                .AllowAnyHeader()               // Allow all headers
+                .AllowCredentials()             // Allow credentials (cookies, auth headers)
+                .SetPreflightMaxAge(TimeSpan.FromHours(1)); // Cache preflight requests
+
+            // Enable detailed CORS logging for debugging
+            policyBuilder.SetIsOriginAllowedToAllowWildcardSubdomains();
+
+            // Staging/Production policy
+            options.AddPolicy("StagingPolicy", policyBuilder =>
+            {
+                var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                    ?? [];
+
+                policyBuilder
+                    .WithOrigins(allowedOrigins)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
         });
     });
 
     services.AddMemoryCache();
+
+    // Add health checks
+    services.AddHealthChecks();
+
+    services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 }
 
 // =========================================================
@@ -104,33 +135,63 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 // =========================================================
 async Task ConfigureMiddlewareAsync(WebApplication app)
 {
+    // 1. Global Exception Handling
     app.UseMiddleware<ExceptionMiddleware>();
 
+    // 2. Custom error pages
     app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
+    // 3. Swagger for Development
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gymunity APIs v1"));
     }
 
+    // 4. HTTPS Redirection (optional for dev, required for prod)
     app.UseHttpsRedirection();
+
+    // 5. Static Files
     app.UseStaticFiles();
 
-    // Map SignalR Hubs
+    // 6. ROUTING 
+    app.UseRouting();
+
+    // 7. CORS - Must come after Routing, before Auth
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseCors("DevelopmentPolicy");
+        app.Logger.LogInformation("Development CORS policy enabled");
+    }
+    else if (app.Environment.IsStaging())
+    {
+        app.UseCors("StagingPolicy");
+    }
+    else
+    {
+        app.UseCors("ProductionPolicy");
+    }
+
+    // 8. Authentication & Authorization
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    // 9. Webhook Security Middleware
+    app.UseWebhookSecurity();
+
+    // 10. Map SignalR Hubs
     app.MapHub<ChatHub>("/hubs/chat");
     app.MapHub<NotificationHub>("/hubs/notifications");
     app.MapHub<AdminNotificationHub>("/hubs/admin-notifications");
 
-    app.UseRouting();
-    app.UseCors("wepPolicy");
+    // 11. Health Check Endpoint
+    app.MapHealthChecks("/health").AllowAnonymous();
 
-    app.UseAuthentication();
-    app.UseWebhookSecurity();
-
-    await app.SeedDatabaseAsync();
-
+    // 12. Map Controllers
     app.MapControllers();
+
+    // 13. Database Seeding (last step)
+    await app.SeedDatabaseAsync();
 }
 void ConfigureSwagger(IServiceCollection services)
 {

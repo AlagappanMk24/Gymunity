@@ -1,4 +1,5 @@
 using Gymunity.Admin.MVC.Services.Interfaces;
+using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Enums;
@@ -10,18 +11,18 @@ namespace Gymunity.Admin.MVC.Services
     /// Handles user management-related notifications
     /// Subscribes to events from UserManagementService and sends notifications to admins
     /// </summary>
-    public class UserNotificationService
+    public class UserNotificationService : IUserNotificationService
     {
         private readonly IAdminNotificationService _notificationService;
-        private readonly UserManagementService _userManagementService;
-        private readonly AdminUserResolverService _adminUserResolver;
+        private readonly IUserManagementService _userManagementService;
+        private readonly IAdminUserResolverService _adminUserResolver;
         private readonly UserManager<AppUser> _userManager;
         private readonly ILogger<UserNotificationService> _logger;
 
         public UserNotificationService(
             IAdminNotificationService notificationService,
-            UserManagementService userManagementService,
-            AdminUserResolverService adminUserResolver,
+            IUserManagementService userManagementService,
+            IAdminUserResolverService adminUserResolver,
             UserManager<AppUser> userManager,
             ILogger<UserNotificationService> logger)
         {

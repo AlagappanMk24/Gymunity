@@ -41,7 +41,7 @@ namespace Gymunity.Infrastructure.Services.Identity
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new Exception($"Password reset failed: {errors}");
             }
-            var token = await _identityService.CreateTokenAsync(user, userManager);
+            var token = await _identityService.CreateTokenAsync(user);
             await SendStatusEmailAsync(user, "Password Reset Success", "You succesfully Reset your password in Gymunity!.");
             return PrepareAuthResponseAsync(user, token);
         }

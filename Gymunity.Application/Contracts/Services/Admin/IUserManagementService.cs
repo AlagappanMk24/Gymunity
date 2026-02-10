@@ -104,5 +104,13 @@ namespace Gymunity.Application.Contracts.Services.Admin
         Task<byte[]> ExportUsersAsync(string format = "csv");
 
         Task<byte[]> ExportStatisticsPdfAsync();
+
+        event Func<string, Task>? UserSuspendedAsync;
+
+        event Func<string, Task>? UserReactivatedAsync;
+
+        event Func<string, Task>? UserDeletedAsync;
+
+        event Func<string, UserRole, Task>? UserRoleChangedAsync;
     }
 }

@@ -1,4 +1,5 @@
 using Gymunity.Admin.MVC.Services.Interfaces;
+using Gymunity.Application.Contracts.Services.Admin;
 using Gymunity.Application.Services.Admin;
 using Gymunity.Domain.Entities.Trainer;
 using Gymunity.Domain.Enums;
@@ -9,18 +10,18 @@ namespace Gymunity.Admin.MVC.Services
     /// Handles trainer-related notifications
     /// Subscribes to events from TrainerAdminService and sends notifications to admins
     /// </summary>
-    public class TrainerNotificationService
+    public class TrainerNotificationService : ITrainerNotificationService
     {
         private readonly IAdminNotificationService _notificationService;
-        private readonly TrainerAdminService _trainerAdminService;
-        private readonly AdminUserResolverService _adminUserResolver;
+        private readonly ITrainerAdminService _trainerAdminService;
+        private readonly IAdminUserResolverService _adminUserResolver;
         private readonly ILogger<TrainerNotificationService> _logger;
 
         public TrainerNotificationService(
             IAdminNotificationService notificationService,
-            TrainerAdminService trainerAdminService,
-            AdminUserResolverService adminUserResolver,
-            ILogger<TrainerNotificationService> logger)
+            ITrainerAdminService trainerAdminService,
+            IAdminUserResolverService adminUserResolver,
+            ILogger<TrainerNotificationService> logger) 
         {
             _notificationService = notificationService;
             _trainerAdminService = trainerAdminService;

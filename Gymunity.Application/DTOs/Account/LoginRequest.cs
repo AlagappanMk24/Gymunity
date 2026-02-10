@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Gymunity.Application.DTOs.Account
 {
@@ -8,5 +9,9 @@ namespace Gymunity.Application.DTOs.Account
         public string EmailOrUserName { get; set; } = string.Empty;
         [Required]
         public string Password { get; set; } = string.Empty;
+
+        [Description("OTP code for login verification")]
+        [StringLength(6, MinimumLength = 6)]
+        public string? OtpCode { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace Gymunity.Application.Mapping
                 Name = user.FullName,
                 UserName = user.UserName,
                 Email = user.Email,
-                Role = user.Role.ToString(),
+                Role = user.Role,
                 ProfilePhotoUrl = profilePhotoUrl,
                 Token = token,
             };
