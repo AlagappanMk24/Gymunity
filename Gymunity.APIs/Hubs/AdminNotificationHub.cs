@@ -1,3 +1,4 @@
+﻿using Gymunity.Application.Contracts.Services.Communication;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
@@ -12,6 +13,25 @@ namespace Gymunity.APIs.Hubs
         private readonly ILogger<AdminNotificationHub> _logger = logger;
 
         /// <inheritdoc/>
+        //public override async Task OnConnectedAsync()
+        //{
+        //    var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //    var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown";
+
+        //    if (!string.IsNullOrEmpty(userId))
+        //    {
+        //        await Groups.AddToGroupAsync(Context.ConnectionId, $"admin_{userId}");
+
+        //        _logger.LogInformation("✅ Admin {UserName} added to admin_{UserId} and all_admins groups", userName, userId);
+        //    }
+        //    else
+        //    {
+        //        _logger.LogWarning("Connection attempt without valid user context. ConnectionId: {ConnectionId}", Context.ConnectionId);
+        //    }
+
+        //    await base.OnConnectedAsync();
+        //}
+
         public override async Task OnConnectedAsync()
         {
             var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -19,12 +39,36 @@ namespace Gymunity.APIs.Hubs
 
             if (!string.IsNullOrEmpty(userId))
             {
+                // Add to personal group
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"admin_{userId}");
-                _logger.LogInformation("Admin user {UserName} connected to notifications. ConnectionId: {ConnectionId}", userName, Context.ConnectionId);
+
+                // Add to ALL ADMINS group for broadcasts
+                await Groups.AddToGroupAsync(Context.ConnectionId, "all_admins");
+
+                _logger.LogInformation("✅ Admin {UserName} (ID: {UserId}) connected to API hub", userName, userId);
+
+                // Send initial unread count
+                try
+                {
+                    var notificationService = Context.GetHttpContext()?.RequestServices
+                        .GetRequiredService<INotificationService>();
+
+                    if (notificationService != null)
+                    {
+                        var unreadCount = await notificationService.GetUnreadNotificationCountAsync(userId);
+                        await Clients.Caller.SendAsync("UpdateNotificationCount", unreadCount);
+                        _logger.LogInformation("📊 Sent initial unread count {Count} to user {UserId}", unreadCount, userId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error sending initial unread count");
+                }
             }
             else
             {
-                _logger.LogWarning("Connection attempt without valid user context. ConnectionId: {ConnectionId}", Context.ConnectionId);
+                _logger.LogWarning("❌ Connection attempt without valid user context. ConnectionId: {ConnectionId}",
+                    Context.ConnectionId);
             }
 
             await base.OnConnectedAsync();

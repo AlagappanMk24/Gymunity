@@ -4,6 +4,7 @@ using Gymunity.Application.Contracts.ExternalServices.Auth;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.DTOs.Account;
 using Gymunity.Application.DTOs.Account.OTP;
+using Gymunity.Application.DTOs.Auth;
 using Gymunity.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ using System.Security.Claims;
 
 namespace Gymunity.APIs.Controllers
 {
-    // <summary>
+    /// <summary>
     /// Provides API endpoints for authenticated user account management operations.
     /// </summary>
     /// <remarks>

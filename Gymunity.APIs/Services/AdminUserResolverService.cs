@@ -108,5 +108,9 @@ namespace Gymunity.APIs.Services
                 return null;
             }
         }
+        public async Task<IEnumerable<AppUser>> GetAllAdminUsersAsync()
+        {
+            return await _userManager.GetUsersInRoleAsync("Admin");
+        }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using Gymunity.Application.Contracts.ExternalServices;
 using Gymunity.Application.Contracts.ExternalServices.Email;
-using Gymunity.Application.DTOs.Account;
 using Gymunity.Application.DTOs.Email;
 using Gymunity.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 using Gymunity.Application.Mapping;
+using Gymunity.Application.DTOs.Auth;
 
 namespace Gymunity.Infrastructure.Services.Identity
 {

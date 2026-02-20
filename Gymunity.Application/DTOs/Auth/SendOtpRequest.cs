@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Gymunity.Application.DTOs.Account.OTP
+namespace Gymunity.Application.DTOs.Auth
 {
     public record SendOtpRequest
     {

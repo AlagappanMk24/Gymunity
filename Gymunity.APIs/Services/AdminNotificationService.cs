@@ -1,4 +1,4 @@
-using Gymunity.APIs.Hubs;
+﻿using Gymunity.APIs.Hubs;
 using Gymunity.Application.Contracts.Services.Communication;
 using Gymunity.Application.DTOs.Notifications;
 using Gymunity.Domain.Enums;
@@ -13,49 +13,76 @@ namespace Gymunity.APIs.Services
     public class AdminNotificationService(
         IHubContext<AdminNotificationHub> hubContext,
         ILogger<AdminNotificationService> logger,
-        INotificationService notificationService) : IAdminNotificationService
+        INotificationService notificationService, AdminUserResolverService adminUserResolverService) : IAdminNotificationService
     {
         private readonly IHubContext<AdminNotificationHub> _hubContext = hubContext;
         private readonly ILogger<AdminNotificationService> _logger = logger;
         private readonly INotificationService _notificationService = notificationService;
-
+        private readonly AdminUserResolverService _adminUserResolverService = adminUserResolverService;
         /// <summary>
         /// Create and broadcast admin notification
         /// </summary>
         public async Task<NotificationResponse> CreateAdminNotificationAsync(
-            string adminUserId,
-            string title,
-            string message,
-            NotificationType type,
-            string? relatedEntityId = null,
-            bool broadcastToAll = false)
+          string adminUserId,  // Keep this parameter but don't use it for broadcast
+          string title,
+          string message,
+          NotificationType type,
+          string? relatedEntityId = null,
+          bool broadcastToAll = false)
         {
             try
             {
-                // Create notification in database
-                var notificationResponse = await _notificationService.CreateNotificationAsync(
-                    adminUserId,
-                    title,
-                    message,
-                    (int)type,
-                    relatedEntityId);
+                NotificationResponse notificationResponse = null;
 
-                // Send real-time notification via SignalR
                 if (broadcastToAll)
                 {
-                    await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+                    // Get ALL admin users
+                    var adminUsers = await _adminUserResolverService.GetAllAdminUsersAsync(); // You need this method
+
+                    foreach (var admin in adminUsers)
                     {
-                        notificationResponse.Id,
+                        // Create notification for EACH admin in database
+                        notificationResponse = await _notificationService.CreateNotificationAsync(
+                            admin.Id,
+                            title,
+                            message,
+                            (int)type,
+                            relatedEntityId);
+                    }
+
+                    _logger.LogInformation("📝 Created notifications for {Count} admins in DB", adminUsers.Count());
+
+                    // Broadcast to ALL connected admins via SignalR
+                    await _hubContext.Clients.Group("all_admins").SendAsync("ReceiveNotification", new
+                    {
+                        Id = notificationResponse?.Id ?? 0,
                         Title = title,
                         Message = message,
                         Type = type.ToString(),
                         RelatedEntityId = relatedEntityId,
-                        notificationResponse.CreatedAt,
+                        CreatedAt = DateTime.UtcNow,
                         IsRead = false
                     });
+
+                    // Also send count update to all admins
+                    foreach (var admin in adminUsers)
+                    {
+                        var unreadCount = await _notificationService.GetUnreadNotificationCountAsync(admin.Id);
+                        await _hubContext.Clients.Group($"admin_{admin.Id}").SendAsync("UpdateNotificationCount", unreadCount);
+                    }
+
+                    _logger.LogInformation("📢 Broadcast notification to all admins group");
                 }
                 else
                 {
+                    // Create for single admin
+                    notificationResponse = await _notificationService.CreateNotificationAsync(
+                        adminUserId,
+                        title,
+                        message,
+                        (int)type,
+                        relatedEntityId);
+
                     await _hubContext.Clients.Group($"admin_{adminUserId}").SendAsync("ReceiveNotification", new
                     {
                         notificationResponse.Id,
@@ -66,13 +93,17 @@ namespace Gymunity.APIs.Services
                         notificationResponse.CreatedAt,
                         IsRead = false
                     });
+
+                    // Update count for single admin
+                    var unreadCount = await _notificationService.GetUnreadNotificationCountAsync(adminUserId);
+                    await _hubContext.Clients.Group($"admin_{adminUserId}").SendAsync("UpdateNotificationCount", unreadCount);
                 }
 
                 return notificationResponse;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating admin notification for user {UserId}", adminUserId);
+                _logger.LogError(ex, "❌ Error creating admin notification");
                 throw;
             }
         }

@@ -1,4 +1,3 @@
-using AutoMapper;
 using Gymunity.Application.Contracts.Services.Communication;
 using Gymunity.Application.DTOs.Notifications;
 using Gymunity.Domain;

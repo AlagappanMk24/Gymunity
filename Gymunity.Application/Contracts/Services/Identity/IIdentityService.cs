@@ -1,20 +1,26 @@
-﻿using Gymunity.Application.DTOs.Account;
-using Gymunity.Application.DTOs.Account.OTP;
+﻿using Gymunity.Application.DTOs.Account.OTP;
+using Gymunity.Application.DTOs.Auth;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Enums;
-using Microsoft.AspNetCore.Identity;
 
 namespace Gymunity.Application.Contracts.Services.Identity
 {
     public interface IIdentityService
     {
-        Task<AuthResponse> RegisterAsync(RegisterRequest request);
+        // Registration Flow 
+        Task<InitiateRegistrationResponse> InitiateRegistrationAsync(RegisterRequest request);
+        Task<AuthResponse> CompleteRegistrationAsync(string email, string otpCode);
+        Task<OtpResponse> ResendRegistrationOtpAsync(string email);
+
+        // Login Flow
         Task<AuthResponse> LoginAsync(LoginRequest request);
-        Task<string> CreateTokenAsync(AppUser user);
-        Task<OtpResponse> SendRegistrationOtpAsync(string email);
-        OtpResponse VerifyRegistrationOtp(string email, string otpCode);
         Task<OtpResponse> SendLoginOtpAsync(string email);
-        Task<AuthResponse> CompleteRegistrationWithOtpAsync(CompleteRegistrationRequest request);
+
+        // OTP Verification
+        OtpResponse VerifyRegistrationOtp(string email, string otpCode);
+
+        // Token Generation
+        Task<string> CreateTokenAsync(AppUser user);
 
         event Func<string, string, string, UserRole, Task>? NewUserRegisteredAsync;
     }

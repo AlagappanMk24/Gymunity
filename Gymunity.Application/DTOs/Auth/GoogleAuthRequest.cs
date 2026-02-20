@@ -1,6 +1,6 @@
 ﻿using Gymunity.Domain.Enums;
 
-namespace Gymunity.Application.DTOs.Account
+namespace Gymunity.Application.DTOs.Auth
 {
     public record GoogleAuthRequest
     {

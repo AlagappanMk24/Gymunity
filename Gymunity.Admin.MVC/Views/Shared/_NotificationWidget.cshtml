@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Http
+﻿@using Microsoft.AspNetCore.Http
 @inject IConfiguration Configuration
 
 <!-- Notification Widget Toast Container -->
@@ -7,21 +7,21 @@
 <!-- Real-Time Notification Chat Widget -->
 <div class="relative">
     <!-- Notification Bell Button -->
-    <button id="notificationBellBtn" 
-            class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" 
+    <button id="notificationBellBtn"
+            class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
             type="button"
             title="Notifications">
         <i class="fas fa-bell text-lg"></i>
-        <span id="notificationBadge" 
+        <span id="notificationBadge"
               class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold hidden animate-pulse">
             0
         </span>
     </button>
 
     <!-- Notification Dropdown Panel -->
-    <div id="notificationPanel" 
+    <div id="notificationPanel"
          class="absolute right-0 top-12 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 hidden z-50 flex flex-col max-h-96">
-        
+
         <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 sticky top-0">
             <div>
@@ -31,15 +31,15 @@
                 </p>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" 
+                <button type="button"
                         id="markAllReadBtn"
                         class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition hidden"
                         onclick="markAllNotificationsAsRead()"
                         title="Mark all as read">
                     Mark all read
                 </button>
-                <button type="button" 
-                        class="text-gray-400 hover:text-gray-600 transition" 
+                <button type="button"
+                        class="text-gray-400 hover:text-gray-600 transition"
                         onclick="closeNotificationPanel()">
                     <i class="fas fa-times text-lg"></i>
                 </button>
@@ -57,7 +57,7 @@
 
         <!-- Footer -->
         <div class="p-3 border-t border-gray-200 bg-gray-50 sticky bottom-0">
-            <a href="/admin/notifications" 
+            <a href="/admin/notifications"
                class="block w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium hover:bg-blue-50 py-2 rounded transition">
                 View all notifications
             </a>
@@ -71,17 +71,44 @@
 </audio>
 
 <script>
-    // Configuration
+    /**
+    * ============================================================================
+    * GYMNITY ADMIN - REAL-TIME NOTIFICATION SYSTEM
+    * ============================================================================
+    * Handles real-time notifications via SignalR with toast notifications,
+    * unread badge updates, and notification panel management.
+    * ============================================================================
+    **/
+
+    // ============================================================================
+    // CONFIGURATION & GLOBAL STATE
+    // ============================================================================
+
+    /** SignalR hub endpoint URL */
+    // const ADMIN_NOTIFICATIONS_HUB = '/hubs/admin-notifications';
+
+    /** SignalR hub endpoint URL - Using API Hub */
     const BASE_API_URL = '@Configuration["BaseApiUrl"]';
     const ADMIN_NOTIFICATIONS_HUB = BASE_API_URL + '/hubs/admin-notifications';
 
-    // State
+    /** SignalR connection instance */
     let notificationConnection = null;
-    let unreadCount = 0;
-    let notifications = [];
-    const MAX_NOTIFICATIONS_IN_PANEL = 10;
 
-    // Initialize notification widget
+    /** Current unread notification count */
+    let unreadCount = 0;
+
+    /** JWT token for authentication */
+    let jwtToken = null;
+
+    // ============================================================================
+    // INITIALIZATION & LIFECYCLE
+    // ============================================================================
+
+     /**
+     * Initializes the notification widget on page load.
+     * Sets up event listeners, loads existing notifications,
+     * and establishes SignalR connection.
+     */
     function initNotificationWidget() {
         const bellBtn = document.getElementById('notificationBellBtn');
         if (bellBtn) {
@@ -97,75 +124,136 @@
             }
         });
 
+        // Load existing notifications from server
+        loadNotifications();
+
         // Initialize SignalR connection
         connectToNotificationHub();
     }
 
-    // Connect to SignalR Hub
-    function connectToNotificationHub() {
-        // Check if SignalR library is loaded
-        if (typeof signalR === 'undefined') {
-            console.error('SignalR library not loaded');
-            setTimeout(connectToNotificationHub, 2000); // Retry after 2 seconds
-            return;
+     /**
+     * Requests browser permission for desktop notifications.
+     * Called automatically on page load.
+     */
+    function requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
         }
+    }
 
-        notificationConnection = new signalR.HubConnectionBuilder()
-            .withUrl(ADMIN_NOTIFICATIONS_HUB, {
-                accessTokenFactory: () => getAuthToken()
+     /**
+     * Cleans up SignalR connection when page unloads.
+     * Prevents memory leaks and orphaned connections.
+     */
+    window.addEventListener('beforeunload', function() {
+        if (notificationConnection && notificationConnection.state === signalR.HubConnectionState.Connected) {
+            notificationConnection.stop();
+        }
+    });
+
+    // ============================================================================
+    // NOTIFICATION DATA MANAGEMENT
+    // ============================================================================
+
+    /**
+     * Loads unread notifications from server via HTTP.
+     * Stores HTML in data attribute for panel use.
+     */
+    function loadNotifications() {
+        fetch('/admin/notifications/unread')
+            .then(response => response.text())
+            .then(html => {
+                const panel = document.getElementById('notificationPanel');
+                if (panel) {
+                    panel.setAttribute('data-notifications-html', html);
+                }
+                // If panel is already open, update it immediately
+                if (panel && !panel.classList.contains('hidden')) {
+                  updateNotificationsList(html);
+                }
             })
-            .withAutomaticReconnect([0, 1000, 5000, 10000, 20000])
-            .build();
+            .catch(() => {
+                // Silently fail - will retry on next panel open
+            });
 
-        // Connection event handlers
-        notificationConnection.onreconnecting((error) => {
-            console.warn('SignalR reconnecting...', error);
-            updateConnectionStatus(false);
-        });
+        // Also fetch unread count
+        fetchUnreadCount();
+    }
 
-        notificationConnection.onreconnected((connectionId) => {
-            console.log('SignalR reconnected', connectionId);
-            updateConnectionStatus(true);
-        });
-
-        notificationConnection.onclose((error) => {
-            console.error('SignalR connection closed', error);
-            updateConnectionStatus(false);
-            // Attempt to reconnect after 5 seconds
-            setTimeout(connectToNotificationHub, 5000);
-        });
-
-        // Listen for incoming notifications
-        notificationConnection.on('ReceiveNotification', onNotificationReceived);
-        
-        // Listen for critical alerts
-        notificationConnection.on('ReceiveCriticalAlert', onCriticalAlertReceived);
-        
-        // Listen for notification count updates
-        notificationConnection.on('UpdateNotificationCount', onNotificationCountUpdated);
-        
-        // Listen for action required events
-        notificationConnection.on('ActionRequired', onActionRequired);
-
-        // Start the connection
-        notificationConnection.start()
-            .then(() => {
-                console.log('Successfully connected to notification hub');
-                updateConnectionStatus(true);
+     /**
+     * Fetches current unread notification count from server.
+     * Updates badge and unread count display.
+     */
+    function fetchUnreadCount() {
+        fetch('/admin/notifications/unread-count')
+            .then(response => response.json())
+            .then(data => {
+                if (data && typeof data.count !== 'undefined') {
+                    // Only update if count changed (prevents unnecessary badge updates)
+                    if (unreadCount !== data.count) {
+                        unreadCount = data.count;
+                        updateNotificationBadge();
+                    }
+                }
             })
-            .catch(err => {
-                console.error('Error connecting to notification hub:', err);
-                updateConnectionStatus(false);
-                // Retry connection
-                setTimeout(connectToNotificationHub, 5000);
+            .catch(() => {
+                // Silently fail - will retry on next poll
             });
     }
 
-    // Handle incoming notification
+     /**
+     * Updates the notifications list container with HTML and attaches click handlers.
+     */
+    function updateNotificationsList(html) {
+        const listContainer = document.getElementById('notificationsList');
+        if (!listContainer) return;
+
+        if (html && html.trim()) {
+            listContainer.innerHTML = html;
+
+            // Attach click handlers to notification items for navigation
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Don't navigate if clicking the mark as read button
+                    if (e.target.closest('button')) return;
+
+                    const notificationId = this.dataset.notificationId;
+                    const notificationType = this.dataset.notificationType;
+                    const isRead = this.dataset.isRead === 'true';
+
+                    // Only navigate if notification has a related entity and is read
+                    // Unread notifications should be marked as read first
+                    if (!isRead) {
+                        // Optional: Auto-mark as read when clicked
+                        markNotificationAsRead(notificationId);
+                    } else {
+                        navigateToNotificationTarget(notificationType, notificationId);
+                    }
+                });
+            });
+        } else {
+            listContainer.innerHTML = `
+                <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
+                    <p class="text-sm">No notifications yet</p>
+                </div>
+            `;
+        }
+    }
+
+    // ============================================================================
+    // NOTIFICATION EVENT HANDLERS
+    // ============================================================================
+
+     /**
+     * Handles incoming real-time notification from SignalR.
+     * FIXED: Now properly refreshes the panel if open
+     */
     function onNotificationReceived(data) {
-        console.log('Notification received:', data);
-        
-        // Add to notifications array
+        // Visual and audio feedback
+        playNotificationSound();
+
+        // Show toast notification
         const notification = {
             id: data.Id || Date.now(),
             title: data.Title || 'Notification',
@@ -175,53 +263,55 @@
             createdAt: data.CreatedAt || new Date().toISOString(),
             isRead: data.IsRead || false
         };
-
-        notifications.unshift(notification);
-        if (!notification.isRead) {
-            unreadCount++;
-        }
-
-        // Play sound
-        playNotificationSound();
-
-        // Show toast
         showNotificationToast(notification);
 
-        // Update badge
+        // Update count immediately
+        unreadCount++;
         updateNotificationBadge();
 
-        // Keep only recent notifications in panel
-        if (notifications.length > MAX_NOTIFICATIONS_IN_PANEL) {
-            notifications.pop();
-        }
+        // Also sync with server (but don't wait for it)
+        fetchUnreadCount();
 
-        // Update the panel if open
-        refreshNotificationsList();
+        // Refresh panel if open
+        const panel = document.getElementById('notificationPanel');
+        if (panel && !panel.classList.contains('hidden')) {
+             setTimeout(() => {
+            fetch('/admin/notifications/unread')
+                .then(response => response.text())
+                .then(html => updateNotificationsList(html))
+                .catch(() => {});
+        }, 500);
+        }
     }
 
-    // Handle critical alerts
+    /**
+     * Handles critical security alerts with enhanced visibility.
+     * @@param {Object} data - Critical alert data
+    */
     function onCriticalAlertReceived(data) {
-        console.warn('Critical alert received:', data);
-        
-        // Show critical alert toast with special styling
+       // Show critical alert toast with special styling
         showCriticalAlertToast(data);
-        
+
         // Also play a more prominent notification
         playNotificationSound();
     }
 
-    // Handle notification count updates
+    /**
+     * Updates unread count from SignalR broadcast.
+     * @@param {number} count - Updated unread count
+    */
     function onNotificationCountUpdated(count) {
-        unreadCount = count;
-        updateNotificationBadge();
-        refreshNotificationsList();
+        if (unreadCount !== count) {
+            unreadCount = count;
+            updateNotificationBadge();
+        }
     }
 
-    // Handle action required notifications
+     /**
+     * Handles action-required notifications that need admin attention.
+     * @@param {Object} data - Action required notification data
+     */
     function onActionRequired(data) {
-        console.log('Action required:', data);
-        
-        // Create a special action notification
         const notification = {
             id: Date.now(),
             title: 'Action Required: ' + data.Action,
@@ -231,17 +321,19 @@
             createdAt: data.Timestamp || new Date().toISOString(),
             isRead: false
         };
-
-        notifications.unshift(notification);
-        unreadCount++;
-
         playNotificationSound();
         showNotificationToast(notification);
-        updateNotificationBadge();
-        refreshNotificationsList();
+        fetchUnreadCount();
     }
 
-    // Show notification toast
+    // ============================================================================
+    // UI COMPONENTS - TOAST NOTIFICATIONS
+    // ============================================================================
+
+    /**
+     * Displays a toast notification for new notifications.
+     * @@param {Object} notification - Notification object to display
+     */
     function showNotificationToast(notification) {
         const container = document.getElementById('notificationToastContainer');
         if (!container) return;
@@ -250,9 +342,9 @@
         const toast = document.createElement('div');
         toast.id = toastId;
         toast.className = getToastClass(notification.type);
-        
+
         const timeString = formatTime(new Date(notification.createdAt));
-        
+
         toast.innerHTML = `
             <div class="flex items-start gap-3">
                 <div class="flex-shrink-0">
@@ -271,7 +363,7 @@
 
         container.appendChild(toast);
 
-        // Auto remove after 6 seconds
+        // Auto-dismiss after 6 seconds
         setTimeout(() => {
             if (document.getElementById(toastId)) {
                 document.getElementById(toastId).remove();
@@ -279,7 +371,10 @@
         }, 6000);
     }
 
-    // Show critical alert toast
+    /**
+     * Displays critical alert toast with enhanced styling.
+     * @@param {Object} data - Critical alert data
+    */
     function showCriticalAlertToast(data) {
         const container = document.getElementById('notificationToastContainer');
         if (!container) return;
@@ -288,11 +383,11 @@
         const toast = document.createElement('div');
         toast.id = toastId;
         toast.className = `
-            p-4 rounded-lg shadow-lg border-l-4 border-red-600 
+            p-4 rounded-lg shadow-lg border-l-4 border-red-600
             bg-red-50 text-red-900 animate-bounce-in
             backdrop-blur-sm
         `;
-        
+
         toast.innerHTML = `
             <div class="flex items-start gap-3">
                 <div class="flex-shrink-0">
@@ -319,15 +414,66 @@
         }, 10000);
     }
 
-    // Update notification badge
+    // ============================================================================
+    // UI COMPONENTS - NOTIFICATION PANEL
+    // ============================================================================
+
+    /**
+     * Toggles the notification dropdown panel visibility.
+     */
+      /**
+     * Toggles the notification dropdown panel visibility.
+     * CRITICAL FIX: Always fetch fresh notifications from server when opening panel
+     */
+    function toggleNotificationPanel() {
+        const panel = document.getElementById('notificationPanel');
+        if (panel) {
+            panel.classList.toggle('hidden');
+
+            // When opening panel, fetch fresh notifications from server
+            if (!panel.classList.contains('hidden')) {
+                // Directly fetch and display HTML from server
+                fetch('/admin/notifications/unread')
+                    .then(response => {
+                        return response.text();
+                    })
+                    .then(html => updateNotificationsList(html))
+                    .catch(err => {
+                        const listContainer = document.getElementById('notificationsList');
+                        if (listContainer) {
+                            listContainer.innerHTML = `
+                                <div class="p-8 text-center text-gray-500">
+                                    <i class="fas fa-exclamation-circle text-3xl mb-2 opacity-50"></i>
+                                    <p class="text-sm">Failed to load notifications</p>
+                                </div>
+                            `;
+                        }
+                    });
+            }
+        }
+    }
+
+     /**
+     * Closes the notification dropdown panel.
+     */
+    function closeNotificationPanel() {
+        const panel = document.getElementById('notificationPanel');
+        if (panel) {
+            panel.classList.add('hidden');
+        }
+    }
+
+    /**
+     * Updates the notification badge with current unread count.
+     */
     function updateNotificationBadge() {
         const badge = document.getElementById('notificationBadge');
         const unreadCountText = document.getElementById('unreadCountText');
         const markAllReadBtn = document.getElementById('markAllReadBtn');
-        
+
         if (badge && unreadCountText) {
             unreadCountText.textContent = unreadCount;
-            
+
             if (unreadCount > 0) {
                 badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
                 badge.classList.remove('hidden');
@@ -343,121 +489,44 @@
         }
     }
 
-    // Refresh notifications list
-    function refreshNotificationsList() {
-        const listContainer = document.getElementById('notificationsList');
-        if (!listContainer) return;
+    // ============================================================================
+    // NOTIFICATION ACTIONS (CRUD)
+    // ============================================================================
 
-        if (notifications.length === 0) {
-            listContainer.innerHTML = `
-                <div class="p-8 text-center text-gray-500">
-                    <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
-                    <p class="text-sm">No notifications yet</p>
-                </div>
-            `;
-            return;
-        }
+    /**
+     * Marks a single notification as read.
+     * @@param {number} notificationId - ID of notification to mark as read
+     */
+     function markNotificationAsRead(notificationId) {
+        fetch('/admin/notifications/mark-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ notificationId: notificationId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Decrease unread count immediately
+                unreadCount = Math.max(0, unreadCount - 1);
+                updateNotificationBadge();
 
-        listContainer.innerHTML = '';
-
-        notifications.forEach((notification, index) => {
-            const notifEl = createNotificationElement(notification);
-            listContainer.appendChild(notifEl);
-        });
-    }
-
-    // Create notification element
-    function createNotificationElement(notification) {
-        const div = document.createElement('div');
-        const isUnread = !notification.isRead;
-        
-        div.className = `
-            p-4 hover:bg-gray-50 transition cursor-pointer group
-            ${isUnread ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-white'}
-        `;
-        
-        const timeString = formatTime(new Date(notification.createdAt));
-        const iconClass = getNotificationIcon(notification.type);
-        const iconColor = getIconColor(notification.type);
-        const bgColor = getBgColor(notification.type);
-
-        div.innerHTML = `
-            <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center">
-                    <i class="fas fa-${iconClass} ${iconColor}"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex-1">
-                            <p class="font-semibold text-sm text-gray-900">${escapeHtml(notification.title)}</p>
-                            ${isUnread ? '<span class="inline-block ml-2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full font-medium">New</span>' : ''}
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mt-1">${escapeHtml(notification.message)}</p>
-                    <p class="text-xs text-gray-400 mt-2">${timeString}</p>
-                </div>
-                <div class="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    ${isUnread ? `<button type="button" 
-                            class="p-1 text-blue-500 hover:text-blue-600 transition"
-                            onclick="event.stopPropagation(); markNotificationAsRead(${notification.id})"
-                            title="Mark as read">
-                            <i class="fas fa-check text-sm"></i>
-                        </button>` : ''}
-                    <button type="button" 
-                            class="p-1 text-gray-400 hover:text-gray-600 transition"
-                            onclick="event.stopPropagation(); removeNotification('${notification.id}')"
-                            title="Remove">
-                        <i class="fas fa-times text-sm"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-
-        div.addEventListener('click', () => {
-            if (notification.relatedEntityId && !isUnread) {
-                navigateToNotificationTarget(notification.type, notification.relatedEntityId);
+                // Refresh notifications
+                loadNotifications();
             }
+        })
+        .catch(() => {
+            // Silently fail
         });
-
-        return div;
     }
 
-    // Mark notification as read
-    function markNotificationAsRead(notificationId) {
-        const notification = notifications.find(n => n.id == notificationId);
-        if (notification && !notification.isRead) {
-            notification.isRead = true;
-            unreadCount = Math.max(0, unreadCount - 1);
-            updateNotificationBadge();
-            refreshNotificationsList();
-
-            // Call backend API to mark as read
-            fetch('/admin/notifications/mark-read', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ notificationId: notificationId })
-            })
-            .catch(err => console.error('Error marking notification as read:', err));
-        }
-    }
-
-    // Mark all notifications as read
+     /**
+     * Marks all notifications as read.
+     */
     function markAllNotificationsAsRead() {
-        // Mark all unread notifications as read
-        notifications.forEach(n => {
-            if (!n.isRead) {
-                n.isRead = true;
-            }
-        });
-        
-        unreadCount = 0;
-        updateNotificationBadge();
-        refreshNotificationsList();
-
-        // Call backend API to mark all as read
+        // Persist to server
         fetch('/admin/notifications/mark-all-read', {
             method: 'POST',
             headers: {
@@ -465,39 +534,247 @@
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .catch(err => console.error('Error marking all notifications as read:', err));
+        .then(response => response.json())
+        .then(data => {
+             if (data.success) {
+                // Reset unread count immediately
+                unreadCount = 0;
+                updateNotificationBadge();
+
+                // Store panel state before refreshing
+                const panel = document.getElementById('notificationPanel');
+                const wasOpen = panel && !panel.classList.contains('hidden');
+
+                // Refresh notifications
+                loadNotifications();
+
+                // Restore panel state after refresh
+                if (wasOpen && panel) {
+                    // Small delay to ensure loadNotifications completes
+                    setTimeout(() => {
+                        panel.classList.remove('hidden');
+                    }, 100);
+                }
+            }
+        })
+        .catch(() => {
+        // Silently fail
+        });
     }
 
-    // Remove notification
-    function removeNotification(notificationId) {
-        notifications = notifications.filter(n => n.id != notificationId);
-        refreshNotificationsList();
+    /**
+     * Navigates to the detail page of the notification target.
+     * @@param {string} type - Notification type
+     * @@param {string} entityId - Related entity ID
+     */
+    function navigateToNotificationTarget(type, entityId) {
+        const routes = {
+            'NewPayment': `/admin/payments/${entityId}`,
+            'PaymentFailure': `/admin/payments/${entityId}`,
+            'NewClientRegistration': `/admin/clients/${entityId}`,
+            'NewTrainerRegistration': `/admin/trainers/${entityId}`,
+            'NewSubscription': `/admin/subscriptions/${entityId}`,
+            'ReviewFlaggedForModeration': `/admin/reviews/${entityId}`,
+            'AccountSuspended': `/admin/users/${entityId}`,
+            'RefundProcessed': `/admin/payments/${entityId}`
+        };
+        const route = routes[type];
+        if (route) {
+            window.location.href = route;
+        }
     }
 
-    // Toggle notification panel
-    function toggleNotificationPanel() {
-        const panel = document.getElementById('notificationPanel');
-        if (panel) {
-            panel.classList.toggle('hidden');
-            if (!panel.classList.contains('hidden')) {
-                // Refresh list when opening
-                refreshNotificationsList();
+        // ============================================================================
+    // SIGNALR CONNECTION MANAGEMENT
+    // ============================================================================
+
+    /**
+    * Establishes SignalR hub connection with automatic reconnection.
+    */
+    // function connectToNotificationHub() {
+    //     if (typeof signalR === 'undefined') {
+    //         setTimeout(connectToNotificationHub, 2000);
+    //         return;
+    //     }
+
+    //     try {
+    //           const token = getAuthToken();
+    //           console.log('🔑 Auth token available:', token ? 'Yes (length: ' + token.length + ')' : 'No');
+    //         Try WebSocket first, fall back to LongPolling
+    //         notificationConnection = new signalR.HubConnectionBuilder()
+    //             .withUrl(ADMIN_NOTIFICATIONS_HUB, {
+    //                 withCredentials: true,
+    //                  accessTokenFactory: () => token, Use JWT token
+    //             withCredentials: false Don't use cookies
+    //             })
+    //             .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+    //             .configureLogging(signalR.LogLevel.Error)
+    //             .build();
+
+    //         notificationConnection.onreconnecting(() => {
+    //               console.warn('⚠️ SignalR reconnecting...', error);
+    //            updateConnectionStatus(false);
+    //         });
+
+    //         notificationConnection.onreconnected(() => {
+    //             updateConnectionStatus(true);
+    //             fetchUnreadCount();
+    //         });
+
+    //         notificationConnection.onclose(() => {
+    //             updateConnectionStatus(false);
+    //             setTimeout(connectToNotificationHub, 5000);
+    //         });
+
+    //         Register SignalR event listeners
+
+    //         Listen for incoming notifications
+    //         notificationConnection.on('ReceiveNotification', onNotificationReceived);
+
+    //         Listen for notification count updates
+    //         notificationConnection.on('ReceiveCriticalAlert', onCriticalAlertReceived);
+
+    //             Listen for notification count updates
+    //         notificationConnection.on('UpdateNotificationCount', onNotificationCountUpdated);
+
+    //          Listen for action required events
+    //         notificationConnection.on('ActionRequired', onActionRequired);
+
+    //         Start the connection
+    //         notificationConnection.start()
+    //             .then(() => {
+    //                 console.log('✅ Connected to API notification hub with JWT token');
+    //             console.log('🔌 Connection ID:', notificationConnection.connectionId);
+    //                 updateConnectionStatus(true);
+    //                 fetchUnreadCount();
+    //             })
+    //             .catch(() => {
+    //                 updateConnectionStatus(false);
+    //                 Retry connection
+    //                 setTimeout(connectToNotificationHub, 5000);
+    //             });
+    //     } catch (err) {
+    //         updateConnectionStatus(false);
+    //         setTimeout(connectToNotificationHub, 5000);
+    //     }
+    // }
+
+    async function connectToNotificationHub() {
+        if (typeof signalR === 'undefined') {
+            setTimeout(connectToNotificationHub, 2000);
+            return;
+        }
+        // Fetch token first if we don't have one
+        if (!jwtToken) {
+            const tokenFetched = await fetchToken();
+            if (!tokenFetched) {
+                console.error('❌ Cannot connect without valid token');
+                setTimeout(connectToNotificationHub, 5000);
+                return;
             }
         }
-    }
+        try {
+            console.log('🔌 Connecting to SignalR hub at:', ADMIN_NOTIFICATIONS_HUB);
+            console.log('🔑 Using token for authentication');
+            notificationConnection = new signalR.HubConnectionBuilder()
+                .withUrl(ADMIN_NOTIFICATIONS_HUB, {
+                    accessTokenFactory: () => jwtToken,
+                    withCredentials: false
+                })
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+                .configureLogging(signalR.LogLevel.Information) // Enable for debugging
+                .build();
 
-    // Close notification panel
-    function closeNotificationPanel() {
-        const panel = document.getElementById('notificationPanel');
-        if (panel) {
-            panel.classList.add('hidden');
+            notificationConnection.onreconnecting((error) => {
+                console.warn('⚠️ SignalR reconnecting...', error);
+            });
+
+            notificationConnection.onreconnected(async (connectionId) => {
+                console.log('✅ SignalR reconnected with ID:', connectionId);
+                await fetchToken();
+                fetchUnreadCount();
+            });
+
+            notificationConnection.onclose((error) => {
+                console.error('🔌 SignalR connection closed', error);
+                setTimeout(connectToNotificationHub, 5000);
+            });
+
+            // Register SignalR event listeners
+            notificationConnection.on('ReceiveNotification', (data) => {
+                console.log('📬 Notification received:', data);
+                onNotificationReceived(data);
+            });
+
+            notificationConnection.on('UpdateNotificationCount', (count) => {
+                console.log('🔢 Count update received:', count);
+                onNotificationCountUpdated(count);
+            });
+
+            notificationConnection.on('ReceiveCriticalAlert', onCriticalAlertReceived);
+            notificationConnection.on('ActionRequired', onActionRequired);
+
+            notificationConnection.start()
+                .then(() => {
+                    console.log('✅ Connected to API notification hub with JWT token');
+                    console.log('🔌 Connection ID:', notificationConnection.connectionId);
+                    fetchUnreadCount();
+                })
+                .catch((err) => {
+                    console.error('❌ Connection failed:', err);
+                     jwtToken = null;
+                    setTimeout(connectToNotificationHub, 5000);
+                });
+        } catch (err) {
+            console.error('❌ Error creating connection:', err);
+            setTimeout(connectToNotificationHub, 5000);
+        }
+    }
+       /**
+     * Fetches JWT token from MVC server
+     */
+    async function fetchToken() {
+        try {
+            console.log('🔑 Fetching JWT token from server...');
+
+            const response = await fetch('/token', {
+                method: 'GET',
+                credentials: 'same-origin', // Send cookies
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch token: ${response.status}`);
+            }
+
+            const data = await response.json();
+            jwtToken = data.token;
+            console.log('✅ Token fetched successfully, length:', jwtToken.length);
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to fetch token:', error);
+            return false;
         }
     }
 
-    // Get toast CSS classes based on notification type
+    // Update connection status indicator
+    function updateConnectionStatus(connected) {
+
+    }
+
+    // ============================================================================
+    // UTILITY FUNCTIONS
+    // ============================================================================
+     /**
+     * Returns CSS classes for toast notification based on type.
+     * @@param {string} type - Notification type
+     * @@returns {string} CSS class string
+     */
     function getToastClass(type) {
         const baseClass = 'p-4 rounded-lg shadow-lg border-l-4 animate-slide-in-right';
-        
+
         switch (type) {
             case 'NewPayment':
                 return `${baseClass} border-l-green-500 bg-green-50 text-green-900`;
@@ -520,7 +797,11 @@
         }
     }
 
-    // Get notification icon
+     /**
+     * Returns FontAwesome icon name for notification type.
+     * @@param {string} type - Notification type
+     * @@returns {string} FontAwesome icon name
+     */
     function getNotificationIcon(type) {
         switch (type) {
             case 'NewPayment':
@@ -546,7 +827,11 @@
         }
     }
 
-    // Get icon color class
+     /**
+     * Returns icon color class for notification type.
+     * @@param {string} type - Notification type
+     * @@returns {string} Tailwind text color class
+     */
     function getIconColor(type) {
         switch (type) {
             case 'NewPayment':
@@ -566,7 +851,11 @@
         }
     }
 
-    // Get background color class
+    /**
+     * Returns background color class for notification type.
+     * @@param {string} type - Notification type
+     * @@returns {string} Tailwind background color class
+     */
     function getBgColor(type) {
         switch (type) {
             case 'NewPayment':
@@ -586,7 +875,11 @@
         }
     }
 
-    // Format time
+     /**
+     * Formats timestamp into relative time string.
+     * @@param {Date} date - Date object to format
+     * @@returns {string} Relative time string (e.g., "5m ago", "2h ago")
+     */
     function formatTime(date) {
         const now = new Date();
         const diffMs = now - date;
@@ -602,7 +895,9 @@
         return date.toLocaleDateString();
     }
 
-    // Play notification sound
+    /**
+     * Plays notification sound if permission granted.
+     */
     function playNotificationSound() {
         const audio = document.getElementById('notificationSound');
         if (audio && Notification.permission === 'granted') {
@@ -610,57 +905,17 @@
                 audio.play().catch(() => {
                     // Silent fail - browser may not allow autoplay
                 });
-            } catch (e) {
-                console.log('Could not play notification sound');
+            }
+            catch  {
             }
         }
     }
 
-    // Update connection status indicator
-    function updateConnectionStatus(connected) {
-        // You can add a visual indicator here
-        console.log('Connection status:', connected ? 'connected' : 'disconnected');
-    }
-
-    // Navigate to notification target
-    function navigateToNotificationTarget(type, entityId) {
-        const routes = {
-            'NewPayment': `/admin/payments/${entityId}`,
-            'PaymentFailure': `/admin/payments/${entityId}`,
-            'NewClientRegistration': `/admin/clients/${entityId}`,
-            'NewTrainerRegistration': `/admin/trainers/${entityId}`,
-            'NewSubscription': `/admin/subscriptions/${entityId}`,
-            'ReviewFlaggedForModeration': `/admin/reviews/${entityId}`,
-            'AccountSuspended': `/admin/users/${entityId}`,
-            'RefundProcessed': `/admin/payments/${entityId}`
-        };
-
-        const route = routes[type];
-        if (route) {
-            window.location.href = route;
-        }
-    }
-
-    // Get authentication token
-    function getAuthToken() {
-        // Try to get token from localStorage or sessionStorage
-        let token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-        
-        if (!token) {
-            // Try to extract from cookie if using cookie-based auth
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                if (cookie.includes('jwt') || cookie.includes('auth')) {
-                    token = cookie.split('=')[1];
-                    break;
-                }
-            }
-        }
-
-        return token || '';
-    }
-
-    // Escape HTML to prevent XSS
+     /**
+     * Escapes HTML special characters to prevent XSS.
+     * @@param {string} text - Raw text to escape
+     * @@returns {string} Escaped HTML string
+     */
     function escapeHtml(text) {
         const map = {
             '&': '&amp;',
@@ -672,25 +927,17 @@
         return text.replace(/[&<>"']/g, m => map[m]);
     }
 
-    // Request notification permission
-    function requestNotificationPermission() {
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-    }
+    // ============================================================================
+    // BOOTSTRAP
+    // ============================================================================
 
-    // Initialize when document is ready
+    // Initialize widget when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
         initNotificationWidget();
         requestNotificationPermission();
     });
 
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
-        if (notificationConnection && notificationConnection.state === signalR.HubConnectionState.Connected) {
-            notificationConnection.stop().catch(err => console.error('Error stopping connection:', err));
-        }
-    });
+
 </script>
 
 <style>
@@ -699,6 +946,7 @@
             transform: translateX(100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
@@ -709,6 +957,7 @@
         0%, 100% {
             opacity: 1;
         }
+
         50% {
             transform: scale(1.05);
         }
@@ -730,6 +979,7 @@
         0%, 100% {
             opacity: 1;
         }
+
         50% {
             opacity: 0.5;
         }
@@ -749,7 +999,7 @@
         border-radius: 3px;
     }
 
-    #notificationsList::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
+        #notificationsList::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
 </style>

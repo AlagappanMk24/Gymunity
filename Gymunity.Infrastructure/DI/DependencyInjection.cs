@@ -16,6 +16,8 @@ using Gymunity.Domain.Interfaces.Trainer;
 using Gymunity.Infrastructure.Data.Context;
 using Gymunity.Infrastructure.Data.Initializers;
 using Gymunity.Infrastructure.ExternalServices;
+using Gymunity.Infrastructure.ExternalServices.Email;
+using Gymunity.Infrastructure.ExternalServices.Email.Template;
 using Gymunity.Infrastructure.Repositories;
 using Gymunity.Infrastructure.Repositories.Admin;
 using Gymunity.Infrastructure.Repositories.Client;
@@ -52,7 +54,8 @@ namespace Gymunity.Infrastructure.DI
             services.AddIdentity<AppUser, IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = true;
-            }).AddEntityFrameworkStores<AppDbContext>();
+            }).AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
             return services;
         }
@@ -72,11 +75,11 @@ namespace Gymunity.Infrastructure.DI
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuer = true,
-                    ValidIssuer = _configuration["JWT:ValidIssuer"],
+                    ValidIssuer = _configuration["JWT:Issuer"],
                     ValidateAudience = true,
-                    ValidAudience = _configuration["JWT:ValidAudience"],
+                    ValidAudience = _configuration["JWT:Audience"],
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:AuthKey"] ?? string.Empty)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"] ?? string.Empty)),
                     ValidateLifetime = true,
 
                     ClockSkew = TimeSpan.Zero,
@@ -84,6 +87,45 @@ namespace Gymunity.Infrastructure.DI
                 // ADD THIS: Configure events to return 401 instead of 404
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        // StringValues can be implicitly converted to string
+                        string accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                            // Now .Length works because we've treated it as a string
+                            Console.WriteLine($"Token set from query string, length: {accessToken.Length}");
+                        }
+                        else
+                        {
+                            // Headers also return StringValues, so we get the first one
+                            string authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+
+                            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                            {
+                                var headerToken = authHeader.Substring("Bearer ".Length).Trim();
+                                context.Token = headerToken;
+                                Console.WriteLine($"Token set from Authorization header, length: {headerToken.Length}");
+                            }
+                        }
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.WriteLine($"=== JWT Token Validated ===");
+                        Console.WriteLine($"Principal: {context.Principal?.Identity?.Name}");
+                        Console.WriteLine($"AuthenticationType: {context.Principal?.Identity?.AuthenticationType}");
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine($"=== JWT Authentication Failed ===");
+                        Console.WriteLine($"Exception: {context.Exception.Message}");
+                        return Task.CompletedTask;
+                    },
                     OnChallenge = context =>
                     {
                         // Handle challenge (no token or invalid token)
@@ -115,7 +157,6 @@ namespace Gymunity.Infrastructure.DI
                     }
                 };
             });
-
             return services;
         }
 
@@ -159,6 +200,7 @@ namespace Gymunity.Infrastructure.DI
             services.AddScoped<IChatService, ChatService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+            services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
             services.AddScoped<IFileUploadService, FileUploadService>();
             services.AddScoped<IImageUrlResolver, ImageUrlResolver>();
             services.AddScoped<INotificationService, NotificationService>();
@@ -170,6 +212,8 @@ namespace Gymunity.Infrastructure.DI
 
             services.AddScoped<IWebhookService, WebhookService>();
 
+            // User Information Service
+            services.AddScoped<IUserInfoService, UserInfoService>();
             // ✅ Admin Notification Services (Event-Driven)
             services.AddScoped<IAdminNotificationPublisher, AdminNotificationPublisher>();
 

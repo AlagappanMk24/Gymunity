@@ -1,11 +1,15 @@
 ﻿using Gymunity.Application.Contracts.ExternalServices;
 using Gymunity.Application.Contracts.ExternalServices.Email;
 using Gymunity.Application.Contracts.Services.Identity;
-using Gymunity.Application.DTOs.Account;
+using Gymunity.Application.DTOs;
 using Gymunity.Application.DTOs.Account.OTP;
+using Gymunity.Application.DTOs.Auth;
 using Gymunity.Domain.Entities.Identity;
 using Gymunity.Domain.Enums;
+using Gymunity.Infrastructure.ExternalServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -20,137 +24,155 @@ namespace Gymunity.Infrastructure.Services.Identity
         SignInManager<AppUser> signInManager, 
         IFileUploadService fileUploadService,
         IEmailService emailService,
+        IEmailTemplateRenderer emailTemplateRenderer,
+        IUserInfoService userInfoService,
         IOtpService otpService,
         IConfiguration configuration,
         IImageUrlResolver imageUrlResolver,
+        IMemoryCache cache,
         ILogger<IdentityService> logger) : BaseIdentityService(emailService, imageUrlResolver, userManager), IIdentityService
     {
         private readonly UserManager<AppUser> _userManager = userManager;
         private readonly SignInManager<AppUser> _signInManager = signInManager;
         private readonly IFileUploadService _fileUploadService = fileUploadService;
+        private readonly IEmailTemplateRenderer _emailTemplateRenderer = emailTemplateRenderer;
+        private readonly IUserInfoService _userInfoService = userInfoService;
         private readonly IOtpService _otpService = otpService;
+        private readonly IMemoryCache _cache = cache;
         private readonly IConfiguration _configuration = configuration;
         private readonly ILogger<IdentityService> _logger = logger;
+
+        // Cache keys
+        private const string RegistrationCachePrefix = "registration_";
+        private const int RegistrationCacheDurationMinutes = 10; // Registration data valid for 10 minutes
 
         // ✅ Observable events for notification handlers
         public event Func<string, string, string, UserRole, Task>? NewUserRegisteredAsync;
 
         // ================= REGISTRATION FLOW =================
-        public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
+
+        /// <summary>
+        /// Step 1: Initiate registration - validate data and send OTP
+        /// </summary>
+        public async Task<InitiateRegistrationResponse> InitiateRegistrationAsync(RegisterRequest request)
         {
             try
             {
-                _logger.LogInformation("Starting registration for email: {Email}", request.Email);
+                _logger.LogInformation("Initiating registration for email: {Email}", request.Email);
 
-                // Step 1: Check if OTP is provided and verified
-                if (!string.IsNullOrEmpty(request.OtpCode))
-                {
-                    _logger.LogInformation("Verifying OTP for registration: {Email}", request.Email);
+                // Step 1: Validate basic inputs
+                if (string.IsNullOrWhiteSpace(request.Email))
+                    throw new Exception("Email is required.");
 
-                    var otpResult = _otpService.VerifyOtp(request.Email, request.OtpCode, "register");
-                    if (!otpResult.Success)
-                    {
-                        _logger.LogWarning("OTP verification failed for {Email}: {Message}",
-                            request.Email, otpResult.Message);
-                        throw new Exception($"OTP verification failed: {otpResult.Message}");
-                    }
+                if (string.IsNullOrWhiteSpace(request.UserName))
+                    throw new Exception("Username is required.");
 
-                    request.IsOtpVerified = true;
-                    _logger.LogInformation("OTP verified successfully for {Email}", request.Email);
-                }
-
-                // Step 2: If no OTP provided or not verified, send OTP
-                if (!request.IsOtpVerified)
-                {
-                    _logger.LogInformation("Sending OTP for registration to {Email}", request.Email);
-
-                    // Check if email already exists (but don't create account yet)
-                    if (await IsEmailUniqueAsync(request.Email) == false)
-                        throw new Exception("Email is already registered.");
-
-                    if (await IsUserNameUniqueAsync(request.UserName) == false)
-                        throw new Exception("Username is already taken.");
-
-                    // Send OTP
-                    var otpResult = await _otpService.GenerateAndSendOtpAsync(request.Email, "register");
-                    if (!otpResult.Success)
-                        throw new Exception("Failed to send OTP. Please try again.");
-
-                    _logger.LogInformation("OTP sent for registration to {Email}", request.Email);
-
-                    // Return response indicating OTP required
-                    return new AuthResponse
-                    {
-                        Id = string.Empty,
-                        Name = string.Empty,
-                        UserName = string.Empty,
-                        Email = request.Email,
-                        Role = (UserRole)request.Role,
-                        RequiresOtp = true,
-                        Message = "OTP sent to your email. Please verify to complete registration.",
-                        OtpExpiresAt = otpResult.ExpiresAt,
-                        IsAccountActive = false
-                    };
-                }
-
-                // Step 3: OTP verified - Create user account
-                _logger.LogInformation("Creating user account for {Email} after OTP verification", request.Email);
-
-                // Final validation checks
-                if (!await IsEmailUniqueAsync(request.Email))
+                // Step 2: Check if email/username already exists
+                if (await IsEmailUniqueAsync(request.Email) == false)
                     throw new Exception("Email is already registered.");
 
-                if (!await IsUserNameUniqueAsync(request.UserName))
+                if (await IsUserNameUniqueAsync(request.UserName) == false)
                     throw new Exception("Username is already taken.");
 
-                var user = new AppUser
+                // Step 3: Validate password strength
+                if (request.Password != request.ConfirmPassword)
+                    throw new Exception("Passwords do not match.");
+
+                // Step 4: Store registration data in cache
+                var cacheKey = GetRegistrationCacheKey(request.Email);
+
+                // Create a cache-friendly object (without IFormFile)
+                var cachedData = new CachedRegistrationData
                 {
-                    UserName = request.UserName.ToLower(),
+                    UserName = request.UserName,
                     Email = request.Email,
+                    Password = request.Password,
                     FullName = request.FullName,
-                    Role = (UserRole)request.Role,
+                    Role = request.Role,
+                    // Convert IFormFile to byte array
+                    ProfilePhotoBytes = await ConvertFormFileToByteArrayAsync(request.ProfilePhoto),
+                    ProfilePhotoFileName = request.ProfilePhoto?.FileName,
+                    ProfilePhotoContentType = request.ProfilePhoto?.ContentType
                 };
 
-                // Upload profile photo
-                if (request.ProfilePhoto != null)
-                {
-                    if (!_fileUploadService.IsValidImageFile(request.ProfilePhoto))
-                        throw new Exception("Invalid profile photo format.");
+                _cache.Set(cacheKey, cachedData, TimeSpan.FromMinutes(RegistrationCacheDurationMinutes));
 
-                    var photoPath = await _fileUploadService.UploadImageAsync(
-                        request.ProfilePhoto,
-                        IFileUploadService.UserProfilePhotosFolder);
-                    user.ProfilePhotoUrl = photoPath;
+                _logger.LogInformation("Registration data cached for {Email} with key {CacheKey}",
+                    request.Email, cacheKey);
+
+                // Step 5: Send OTP
+                var otpResult = await _otpService.GenerateAndSendOtpAsync(request.Email, "register");
+
+                if (!otpResult.Success)
+                    throw new Exception("Failed to send OTP. Please try again.");
+
+                _logger.LogInformation("OTP sent for registration to {Email}", request.Email);
+
+                return new InitiateRegistrationResponse
+                {
+                    Success = true,
+                    Message = "OTP sent to your email. Please verify to complete registration.",
+                    OtpExpiresAt = otpResult.ExpiresAt,
+                    Email = request.Email
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Registration initiation failed for {Email}", request.Email);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Step 2: Complete registration with OTP verification
+        /// </summary>
+        public async Task<AuthResponse> CompleteRegistrationAsync(string email, string otpCode)
+        {
+            try
+            {
+                _logger.LogInformation("Completing registration for {Email} with OTP", email);
+
+                // Step 1: Verify OTP
+                var otpResult = _otpService.VerifyOtp(email, otpCode, "register");
+                if (!otpResult.Success)
+                    throw new Exception($"OTP verification failed: {otpResult.Message}");
+
+                _logger.LogInformation("OTP verified successfully for {Email}", email);
+
+                // Step 2: Retrieve cached registration data
+                var cacheKey = GetRegistrationCacheKey(email);
+                if (!_cache.TryGetValue<CachedRegistrationData>(cacheKey, out var cachedData))
+                {
+                    throw new Exception("Registration session expired. Please start the registration process again.");
                 }
 
-                // Create user
-                var result = await _userManager.CreateAsync(user, request.Password);
-                if (!result.Succeeded)
-                {
-                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                // Step 3: Final validation (double-check uniqueness)
+                if (!await IsEmailUniqueAsync(email))
+                    throw new Exception("Email is already registered.");
 
-                    // Clean up uploaded photo if user creation failed
-                    if (!string.IsNullOrEmpty(user.ProfilePhotoUrl))
-                        _fileUploadService.DeleteImage(user.ProfilePhotoUrl);
+                if (!await IsUserNameUniqueAsync(cachedData.UserName))
+                    throw new Exception("Username is already taken.");
 
-                    throw new Exception($"User registration failed: {errors}");
-                }
+                // Step 4: Create user account
+                var user = await CreateUserFromCachedDataAsync(cachedData);
 
-                // Add role
-                await _userManager.AddToRoleAsync(user, user.Role.ToString());
+                // Step 5: Send welcome email
+                //await SendStatusEmailAsync(user, "Registration Success", welcomeBody);
 
-                // Send welcome email
-                string welcomeBody = GetWelcomeEmailTemplate(user.FullName ?? user.UserName);
-                await SendStatusEmailAsync(user, "Registration Success", welcomeBody);
+                await SendStatusEmailAsync(user, "🎉 Welcome to Gymunity!",
+                   _emailTemplateRenderer.GetRegistrationConfirmationEmail(user.UserName));
 
-                // Notify admin
+                // Step 6: Notify admin
                 _ = Task.Run(() => NewUserRegisteredAsync?.Invoke(
                     user.Id, user.FullName, user.Email, user.Role));
 
-                // Generate token for immediate login
+                // Step 7: Generate token for immediate login
                 var token = await CreateTokenAsync(user);
 
-                _logger.LogInformation("User registration completed successfully for {Email}", request.Email);
+                // Step 8: Clear cached data
+                _cache.Remove(cacheKey);
+
+                _logger.LogInformation("Registration completed successfully for {Email}", email);
 
                 return new AuthResponse
                 {
@@ -168,10 +190,121 @@ namespace Gymunity.Infrastructure.Services.Identity
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Registration failed for {Email}", request.Email);
+                _logger.LogError(ex, "Registration completion failed for {Email}", email);
                 throw;
             }
         }
+
+
+        /// <summary>
+        /// Resend OTP for registration
+        /// </summary>
+        public async Task<OtpResponse> ResendRegistrationOtpAsync(string email)
+        {
+            try
+            {
+                _logger.LogInformation("Resending registration OTP to {Email}", email);
+
+                // Check if registration data exists in cache
+                var cacheKey = GetRegistrationCacheKey(email);
+                if (!_cache.TryGetValue<CachedRegistrationData>(cacheKey, out var cachedData))
+                {
+                    _logger.LogWarning("Registration session expired for {Email}. Cache key: {CacheKey}", email, cacheKey);
+                    throw new Exception("Your registration session has expired. Registrations are valid for 10 minutes. Please start the registration process again.");
+                }
+
+                // Resend OTP
+                var otpResult = await _otpService.GenerateAndSendOtpAsync(email, "register");
+
+                if (!otpResult.Success)
+                    throw new Exception("Failed to resend OTP. Please try again.");
+
+                // Extend cache duration
+                _cache.Set(cacheKey, cachedData, TimeSpan.FromMinutes(RegistrationCacheDurationMinutes));
+
+                _logger.LogInformation("Registration OTP resent to {Email}", email);
+                return otpResult;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to resend registration OTP to {Email}", email);
+                throw;
+            }
+        }
+
+        // ================= HELPER METHODS =================
+
+        private static async Task<byte[]> ConvertFormFileToByteArrayAsync(IFormFile formFile)
+        {
+            if (formFile == null)
+                return null;
+
+            using var memoryStream = new MemoryStream();
+            await formFile.CopyToAsync(memoryStream);
+            return memoryStream.ToArray();
+        }
+
+        private async Task<AppUser> CreateUserFromCachedDataAsync(CachedRegistrationData cachedData)
+        {
+            var user = new AppUser
+            {
+                UserName = cachedData.UserName.ToLower(),
+                Email = cachedData.Email,
+                FullName = cachedData.FullName,
+                Role = (UserRole)cachedData.Role,
+            };
+
+            // Upload profile photo from byte array
+            if (cachedData.ProfilePhotoBytes != null && cachedData.ProfilePhotoBytes.Length > 0)
+            {
+                // Create a temporary file or stream from byte array
+                using var memoryStream = new MemoryStream(cachedData.ProfilePhotoBytes);
+
+                // Create FormFile from byte array
+                var formFile = new FormFile(
+                    memoryStream,
+                    0,
+                    cachedData.ProfilePhotoBytes.Length,
+                    "ProfilePhoto",
+                    cachedData.ProfilePhotoFileName ?? "profile.jpg")
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = cachedData.ProfilePhotoContentType ?? "image/jpeg"
+                };
+
+                if (!_fileUploadService.IsValidImageFile(formFile))
+                    throw new Exception("Invalid profile photo format.");
+
+                var photoPath = await _fileUploadService.UploadImageAsync(
+                    formFile,
+                    IFileUploadService.UserProfilePhotosFolder);
+                user.ProfilePhotoUrl = photoPath;
+            }
+
+            // Create user
+            var result = await _userManager.CreateAsync(user, cachedData.Password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+
+                // Clean up uploaded photo if user creation failed
+                if (!string.IsNullOrEmpty(user.ProfilePhotoUrl))
+                    _fileUploadService.DeleteImage(user.ProfilePhotoUrl);
+
+                throw new Exception($"User registration failed: {errors}");
+            }
+
+            // Add role
+            await _userManager.AddToRoleAsync(user, user.Role.ToString());
+
+            return user;
+        }
+
+        private static string GetRegistrationCacheKey(string email)
+        {
+            return $"{RegistrationCachePrefix}{email.ToLower()}";
+        }
+
         // ================= LOGIN FLOW =================
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
@@ -238,7 +371,17 @@ namespace Gymunity.Infrastructure.Services.Identity
                 _logger.LogInformation("Generating token for user: {Email}", user.Email);
 
                 var token = await CreateTokenAsync(user);
-                await SendStatusEmailAsync(user, "Login Success", "You successfully signed in to Gymunity!");
+
+                // Get real client info for login confirmation email
+                var userInfo = await _userInfoService.GetClientInfoAsync();
+
+                await SendStatusEmailAsync(user, "🔐 Login Confirmation",
+                    _emailTemplateRenderer.GetLoginConfirmationEmail(
+                        user.UserName,
+                        DateTime.Now.ToString("HH:mm:ss"),
+                        userInfo.Location,
+                        userInfo.Device
+                    ));
 
                 _logger.LogInformation("Login successful for user: {Email}", user.Email);
 
@@ -261,38 +404,6 @@ namespace Gymunity.Infrastructure.Services.Identity
                 throw;
             }
         }
-
-        // ================= OTP HELPER METHODS =================
-        public async Task<OtpResponse> SendRegistrationOtpAsync(string email)
-        {
-            try
-            {
-                _logger.LogInformation("Sending registration OTP to {Email}", email);
-
-                // Check if email already exists
-                if (await IsEmailUniqueAsync(email) == false)
-                    throw new Exception("Email is already registered.");
-
-                var result = await _otpService.GenerateAndSendOtpAsync(email, "register");
-
-                if (!result.Success)
-                    throw new Exception("Failed to send OTP. Please try again.");
-
-                _logger.LogInformation("Registration OTP sent to {Email}", email);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send registration OTP to {Email}", email);
-                throw;
-            }
-        }
-
-        public OtpResponse VerifyRegistrationOtp(string email, string otpCode)
-        {
-            return  _otpService.VerifyOtp(email, otpCode, "register");
-        }
-
         public async Task<OtpResponse> SendLoginOtpAsync(string email)
         {
             try
@@ -318,29 +429,9 @@ namespace Gymunity.Infrastructure.Services.Identity
             }
         }
 
-        public async Task<AuthResponse> CompleteRegistrationWithOtpAsync(CompleteRegistrationRequest request)
+        public OtpResponse VerifyRegistrationOtp(string email, string otpCode)
         {
-            try
-            {
-                _logger.LogInformation("Completing registration with OTP for {Email}", request.Email);
-
-                // Verify OTP first
-                var otpResult = _otpService.VerifyOtp(request.Email, request.OtpCode, "register");
-                if (!otpResult.Success)
-                    throw new Exception($"OTP verification failed: {otpResult.Message}");
-
-                // Set OTP as verified in registration data
-                request.RegistrationData.OtpCode = request.OtpCode;
-                request.RegistrationData.IsOtpVerified = true;
-
-                // Complete registration
-                return await RegisterAsync(request.RegistrationData);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to complete registration with OTP for {Email}", request.Email);
-                throw;
-            }
+            return  _otpService.VerifyOtp(email, otpCode, "register");
         }
 
         // ================= TOKEN GENERATION =================
@@ -365,14 +456,14 @@ namespace Gymunity.Infrastructure.Services.Identity
 
             // Set Security Key
             var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration["JWT:AuthKey"] ?? throw new Exception("JWT AuthKey not configured")));
+                _configuration["JWT:Key"] ?? throw new Exception("JWT Key not configured")));
 
             // Generate JWT token
             var token = new JwtSecurityToken
             (
                 // Registered Claims
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
+                issuer: _configuration["JWT:Issuer"],
+                audience: _configuration["JWT:Audience"],
                 expires: DateTime.Now.AddDays(double.Parse(_configuration["JWT:DurationInDays"] ?? "10")),
                 // private claims
                 claims: claims,
@@ -381,53 +472,6 @@ namespace Gymunity.Infrastructure.Services.Identity
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-        private static string GetWelcomeEmailTemplate(string userName)
-        {
-            string html = $$"""
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-                        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-                        .header { background: linear-gradient(135deg, #FF4B2B 0%, #FF416C 100%); padding: 40px 20px; text-align: center; color: white; }
-                        .header h1 { margin: 0; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; }
-                        .content { padding: 30px; text-align: center; color: #333333; line-height: 1.6; }
-                        .welcome-text { font-size: 18px; font-weight: bold; color: #FF416C; }
-                        .button { display: inline-block; padding: 15px 30px; margin-top: 25px; background-color: #FF416C; color: #ffffff !important; text-decoration: none; border-radius: 50px; font-weight: bold; }
-                        .footer { background-color: #1a1a1a; color: #888888; padding: 20px; text-align: center; font-size: 12px; }
-                        .features { display: flex; justify-content: space-around; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
-                        .feature-item { flex: 1; font-size: 13px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <div class="header">
-                            <h1>GYMUNITY</h1>
-                            <p>Where Fitness Meets Community</p>
-                        </div>
-                        <div class="content">
-                            <p class="welcome-text">Hi {{userName}},</p>
-                            <p>Welcome to the family! We are thrilled to have you join <strong>Gymunity</strong>. Your journey to a stronger, healthier version of yourself starts right here, right now.</p>
-                            <a href="https://gymunity.com/login" class="button">START YOUR WORKOUT</a>
-                            <div class="features">
-                                <div class="feature-item"><strong>💪 Train</strong><br>Expert Plans</div>
-                                <div class="feature-item"><strong>🤝 Connect</strong><br>Top Trainers</div>
-                                <div class="feature-item"><strong>📈 Track</strong><br>Real Progress</div>
-                            </div>
-                        </div>
-                        <div class="footer">
-                            <p>&copy; 2026 Gymunity Inc. All Rights Reserved.<br>
-                            You received this email because you signed up at Gymunity.com</p>
-                        </div>
-                    </div>
-                </body>
-                </html>
-                """;
-            return html;
         }
     }
 }

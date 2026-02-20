@@ -97,7 +97,10 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
                     "http://localhost:4200",    // Angular default
                     "https://localhost:4200",   // Angular with HTTPS
                     "http://localhost:3000",    // React default
-                    "https://localhost:3000"    // React with HTTPS
+                    "https://localhost:3000",   // React with HTTPS
+                    "http://localhost:5086",    // MVC APP HTTP
+                    "https://localhost:7291",    // MVC APP HTTPS
+                   "https://obligatory-velma-unimpaired.ngrok-free.dev" // Add your ngrok URL
                 )
                 .AllowAnyMethod()               // Allow all HTTP methods
                 .AllowAnyHeader()               // Allow all headers

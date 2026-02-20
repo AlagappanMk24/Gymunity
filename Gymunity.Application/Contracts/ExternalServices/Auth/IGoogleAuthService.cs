@@ -1,4 +1,4 @@
-﻿using Gymunity.Application.DTOs.Account;
+﻿using Gymunity.Application.DTOs.Auth;
 using Gymunity.Domain.Enums;
 
 namespace Gymunity.Application.Contracts.ExternalServices.Auth

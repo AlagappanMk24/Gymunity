@@ -92,7 +92,7 @@
     var bgIconClass = GetBgIconClass(colorClass);
     var badgeClass = GetBadgeClass(colorClass);
     var buttonHoverClass = GetButtonHoverClass(colorClass);
-    var opacityClass = notification.IsRead ? "opacity-60" : "";
+    var opacityClass = notification.IsRead ? "opacity-50" : "";
     var priorityBorderClass = notification.IsHighPriority ? "border-l-4 border-red-500" : "border-l-4 border-transparent";
     
     <div class="notification-item border-b border-gray-100 last:border-b-0 p-4 hover:bg-gray-50 transition @opacityClass @priorityBorderClass @bgClass cursor-pointer" 

@@ -1,4 +1,4 @@
-﻿using Gymunity.Application.DTOs.Account;
+﻿using Gymunity.Application.DTOs.Auth;
 
 namespace Gymunity.Application.Contracts.Services.Identity
 {

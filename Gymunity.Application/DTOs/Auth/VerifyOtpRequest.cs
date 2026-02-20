@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Gymunity.Application.DTOs.Account
+namespace Gymunity.Application.DTOs.Auth
 {
-    public record CompleteRegistrationRequest
+    public record VerifyOtpRequest
     {
         [Required]
+        [EmailAddress]
         public string Email { get; set; } = null!;
 
         [Required]
@@ -12,6 +13,6 @@ namespace Gymunity.Application.DTOs.Account
         public string OtpCode { get; set; } = null!;
 
         [Required]
-        public RegisterRequest RegistrationData { get; set; } = null!;
+        public string Purpose { get; set; } = null!;
     }
 }

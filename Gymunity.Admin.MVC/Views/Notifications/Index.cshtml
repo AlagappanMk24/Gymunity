@@ -251,19 +251,19 @@
         // SIGNALR NOTIFICATION HUB CONNECTION
         // ============================================
         
-        const adminNotificationConnection = new signalR.HubConnectionBuilder()
-            .withUrl("/hubs/admin-notifications", {
-                accessTokenFactory: () => localStorage.getItem('authToken') || ''
-            })
-            .withAutomaticReconnect()
-            .build();
+        // const adminNotificationConnection = new signalR.HubConnectionBuilder()
+        //     .withUrl("/hubs/admin-notifications", {
+        //         accessTokenFactory: () => localStorage.getItem('authToken') || ''
+        //     })
+        //     .withAutomaticReconnect()
+        //     .build();
 
-        adminNotificationConnection.start()
-            .then(() => {
-                console.log('✓ Admin Notification Hub connected');
-                adminNotificationConnection.invoke("GetUnreadCount").catch(err => console.error(err));
-            })
-            .catch(err => console.error('Admin Notification Hub connection error:', err));
+        // adminNotificationConnection.start()
+        //     .then(() => {
+        //         console.log('✓ Admin Notification Hub connected');
+        //         adminNotificationConnection.invoke("GetUnreadCount").catch(err => console.error(err));
+        //     })
+        //     .catch(err => console.error('Admin Notification Hub connection error:', err));
 
         // ============================================
         // NOTIFICATION HUB EVENT HANDLERS

@@ -2,18 +2,18 @@
 using Gymunity.Application.Contracts.ExternalServices.Email;
 using Gymunity.Application.Contracts.Services.Identity;
 using Gymunity.Application.DTOs.Account;
-using Gymunity.Application.DTOs.Email;
-using Gymunity.Application.Mapping;
+using Gymunity.Application.DTOs.Auth;
 using Gymunity.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Gymunity.Infrastructure.Services.Identity
 {
-    public class AccountService(UserManager<AppUser> userManager, IIdentityService identityService, IFileUploadService fileUploadService, IEmailService emailService,
+    public class AccountService(UserManager<AppUser> userManager, IIdentityService identityService, IEmailTemplateRenderer emailTemplateRenderer, IFileUploadService fileUploadService, IEmailService emailService,
         IImageUrlResolver imageUrlResolver) : BaseIdentityService(emailService, imageUrlResolver,userManager), IAccountService
     {
         private readonly UserManager<AppUser> _userManager = userManager;
         private readonly IIdentityService _identityService = identityService;
+        private readonly IEmailTemplateRenderer _emailTemplateRenderer = emailTemplateRenderer;
         private readonly IFileUploadService _fileUploadService = fileUploadService;
         public async Task<AuthResponse> UpdateProfileAsync(string? userId, UpdateProfileRequest request)
         {
@@ -73,7 +73,15 @@ namespace Gymunity.Infrastructure.Services.Identity
                 throw new Exception($"Password update failed: {errors}");
             }
             //var token = await _identityService.CreateTokenAsync(user, userManager);
-            await SendStatusEmailAsync(user, "Password Change Success", "You succesfully Changed your password in Gymunity!.");
+            //await SendStatusEmailAsync(user, "Password Change Success", "You succesfully Changed your password in Gymunity!.");
+            // Change password confirmation
+            var changeEmailBody = _emailTemplateRenderer.GetChangePasswordConfirmationEmail(
+                user.UserName,
+                DateTime.Now.ToString("MMM dd, yyyy"),
+                DateTime.Now.ToString("HH:mm:ss"),
+                "Web Browser"
+            );
+            await SendStatusEmailAsync(user, "🛡️ Password Changed Successfully", changeEmailBody);
             //return PrepareAuthResponseAsync(user, token);
             return null;
         }

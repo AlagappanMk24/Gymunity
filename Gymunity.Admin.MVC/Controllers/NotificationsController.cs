@@ -151,7 +151,7 @@ namespace Gymunity.Admin.MVC.Controllers
                 if (string.IsNullOrEmpty(userId))
                     return Unauthorized();
 
-                var notifications = await _notificationService.GetUserNotificationsAsync(userId, unreadOnly: true);
+                var notifications = await _notificationService.GetUserNotificationsAsync(userId, unreadOnly: false);
                 var viewModels = notifications.Select(n => new NotificationViewModel
                 {
                     Id = n.Id,

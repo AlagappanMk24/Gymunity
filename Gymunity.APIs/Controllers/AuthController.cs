@@ -2,8 +2,8 @@
 using Gymunity.APIs.Services;
 using Gymunity.Application.Contracts.ExternalServices.Auth;
 using Gymunity.Application.Contracts.Services.Identity;
-using Gymunity.Application.DTOs.Account;
 using Gymunity.Application.DTOs.Account.OTP;
+using Gymunity.Application.DTOs.Auth;
 using Gymunity.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,8 +40,12 @@ namespace Gymunity.APIs.Controllers
         // ================= REGISTRATION ENDPOINTS =================
 
         /// <summary>
-        /// Initiates user registration - sends OTP to email
+        /// Step 1: Initiate user registration - validates data and sends OTP
         /// </summary>
+        /// <remarks>
+        /// This endpoint validates user input, checks uniqueness, and sends OTP to email.
+        /// Registration data is stored server-side for 10 minutes.
+        /// </remarks>
         [HttpPost("register/initiate")]
         [AllowAnonymous]
         public async Task<ActionResult<AuthResponse>> InitiateRegistration([FromForm] RegisterRequest request)
@@ -50,17 +54,7 @@ namespace Gymunity.APIs.Controllers
             {
                 _logger.LogInformation("Initiating registration for {Email}", request.Email);
 
-                // This will send OTP and return requiresOtp: true
-                var response = await _identityService.RegisterAsync(request);
-
-                if (response.RequiresOtp)
-                {
-                    _logger.LogInformation("OTP sent for registration to {Email}", request.Email);
-                    return Ok(response);
-                }
-
-                // If OTP was already provided and verified, complete registration
-                await NotifyAdminOfRegistrationAsync(response);
+                var response = await _identityService.InitiateRegistrationAsync(request);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -71,11 +65,15 @@ namespace Gymunity.APIs.Controllers
         }
 
         /// <summary>
-        /// Completes registration with OTP verification
+        /// Step 2: Complete registration with OTP verification
         /// </summary>
+        /// <remarks>
+        /// This endpoint verifies OTP and creates the user account.
+        /// Registration data must be initiated within the last 10 minutes.
+        /// </remarks>
         [HttpPost("register/complete")]
         [AllowAnonymous]
-        public async Task<ActionResult<AuthResponse>> CompleteRegistration([FromForm] RegisterRequest request)
+        public async Task<ActionResult<AuthResponse>> CompleteRegistration([FromBody] CompleteRegistrationRequest request)
         {
             try
             {
@@ -84,16 +82,13 @@ namespace Gymunity.APIs.Controllers
                 if (string.IsNullOrEmpty(request.OtpCode))
                     return BadRequest(new ApiResponse(400, "OTP code is required"));
 
-                var response = await _identityService.RegisterAsync(request);
+                var response = await _identityService.CompleteRegistrationAsync(request.Email, request.OtpCode);
 
-                if (!response.RequiresOtp && !string.IsNullOrEmpty(response.Token))
-                {
-                    await NotifyAdminOfRegistrationAsync(response);
-                    _logger.LogInformation("Registration completed successfully for {Email}", request.Email);
-                    return Ok(response);
-                }
+                await NotifyAdminOfRegistrationAsync(response);
 
-                return BadRequest(new ApiResponse(400, "OTP verification failed or not provided"));
+                _logger.LogInformation("Registration completed successfully for {Email}", request.Email);
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -103,29 +98,35 @@ namespace Gymunity.APIs.Controllers
         }
 
         /// <summary>
-        /// Sends OTP for registration verification
+        /// Resend OTP for registration verification
         /// </summary>
-        [HttpPost("register/send-otp")]
+        /// <remarks>
+        /// Resends OTP and extends registration session by 10 minutes.
+        /// </remarks>
+        [HttpPost("register/resend-otp")]
         [AllowAnonymous]
-        public async Task<ActionResult<OtpResponse>> SendRegistrationOtp([FromBody] SendOtpRequest request)
+        public async Task<ActionResult<OtpResponse>> ResendRegistrationOtp([FromBody] SendOtpRequest request)
         {
             try
             {
-                _logger.LogInformation("Sending registration OTP to {Email}", request.Email);
+                _logger.LogInformation("Resending registration OTP to {Email}", request.Email);
 
-                var result = await _identityService.SendRegistrationOtpAsync(request.Email);
+                var result = await _identityService.ResendRegistrationOtpAsync(request.Email);
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send registration OTP to {Email}", request.Email);
+                _logger.LogError(ex, "Failed to resend registration OTP to {Email}", request.Email);
                 return BadRequest(new ApiResponse(400, ex.Message));
             }
         }
 
         /// <summary>
-        /// Verifies OTP for registration
+        /// Verify OTP for registration (without completing registration)
         /// </summary>
+        /// <remarks>
+        /// Useful for frontend to verify OTP before allowing user to proceed.
+        /// </remarks>
         [HttpPost("register/verify-otp")]
         [AllowAnonymous]
         public ActionResult<OtpResponse> VerifyRegistrationOtp([FromBody] VerifyOtpRequest request)

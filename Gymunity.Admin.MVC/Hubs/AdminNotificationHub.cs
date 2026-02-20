@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
 namespace Gymunity.Admin.MVC.Hubs
@@ -13,19 +13,24 @@ namespace Gymunity.Admin.MVC.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown";
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (!string.IsNullOrEmpty(userId))
             {
+                // Add to personal group
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"admin_{userId}");
-                _logger.LogInformation("Admin user {UserName} connected to notifications. ConnectionId: {ConnectionId}", userName, Context.ConnectionId);
+
+                // CRITICAL: Add to ALL ADMINS group for broadcasts
+                await Groups.AddToGroupAsync(Context.ConnectionId, "all_admins");
+
+                _logger.LogInformation("✅ Admin {UserName} connected and added to all_admins group. ConnectionId: {ConnectionId}",
+                    userName, Context.ConnectionId);
             }
             else
             {
-                _logger.LogWarning("Connection attempt without valid user context. ConnectionId: {ConnectionId}", Context.ConnectionId);
+                _logger.LogWarning("❌ Connection attempt without valid user context. ConnectionId: {ConnectionId}", Context.ConnectionId);
             }
-
             await base.OnConnectedAsync();
         }
 

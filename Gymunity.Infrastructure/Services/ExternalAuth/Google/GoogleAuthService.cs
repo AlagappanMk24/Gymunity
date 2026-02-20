@@ -3,7 +3,7 @@ using Gymunity.Application.Contracts.ExternalServices;
 using Gymunity.Application.Contracts.ExternalServices.Auth;
 using Gymunity.Application.Contracts.ExternalServices.Email;
 using Gymunity.Application.Contracts.Services.Identity;
-using Gymunity.Application.DTOs.Account;
+using Gymunity.Application.DTOs.Auth;
 using Gymunity.Application.DTOs.Email;
 using Gymunity.Application.Mapping;
 using Gymunity.Domain.Entities.Identity;

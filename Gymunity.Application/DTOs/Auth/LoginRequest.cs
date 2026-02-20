@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Gymunity.Application.DTOs.Account
+namespace Gymunity.Application.DTOs.Auth
 {
     public class LoginRequest
     {

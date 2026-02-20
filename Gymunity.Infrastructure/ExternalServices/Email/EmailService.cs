@@ -6,11 +6,12 @@ using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
 
-namespace Gymunity.Infrastructure.ExternalServices
+namespace Gymunity.Infrastructure.ExternalServices.Email
 {
-    public class EmailService(IOptions<EmailSettings> emailOptions, ILogger<EmailService> logger) : IEmailService
+    public class EmailService(IOptions<EmailSettings> emailOptions, IEmailTemplateRenderer templateService, ILogger<EmailService> logger) : IEmailService
     {
         private readonly EmailSettings _settings = emailOptions.Value;
+        private readonly IEmailTemplateRenderer _templateService = templateService;
         private readonly ILogger<EmailService> _logger = logger;
         public async Task SendEmailAsync(EmailRequest request)
         {
@@ -45,6 +46,29 @@ namespace Gymunity.Infrastructure.ExternalServices
             // Sending emails in parallel
             var tasks = requests.Select(SendEmailAsync);
             await Task.WhenAll(tasks);
+        }
+        public async Task SendTemplatedEmailAsync(string toEmail, string toName, string subject,
+           string template, Dictionary<string, string> placeholders = null)
+        {
+            // Apply placeholders if provided
+            if (placeholders != null)
+            {
+                foreach (var placeholder in placeholders)
+                {
+                    template = template.Replace($"{{{{{placeholder.Key}}}}}", placeholder.Value);
+                }
+            }
+
+            var request = new EmailRequest
+            {
+                ToEmail = toEmail,
+                ToName = toName,
+                Subject = subject,
+                Body = template,
+                IsHtml = true
+            };
+
+            await SendEmailAsync(request);
         }
         private SmtpClient CreateSmtpClient()
         {

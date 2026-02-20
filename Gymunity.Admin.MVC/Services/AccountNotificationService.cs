@@ -45,7 +45,9 @@ namespace Gymunity.Admin.MVC.Services
         {
             try
             {
+                _logger.LogInformation("🔔 EVENT FIRED: New user registered - {Email}, Role: {Role}", email, role);
                 var admin = await _adminUserResolver.GetPrimaryAdminAsync();
+                _logger.LogInformation("Admin found: {AdminId}", admin?.Id);
                 if (admin == null)
                 {
                     _logger.LogWarning("No admin user found to notify about new registration {UserId}", userId);
@@ -58,7 +60,7 @@ namespace Gymunity.Admin.MVC.Services
                     UserRole.Trainer => NotificationType.NewTrainerRegistration,
                     _ => NotificationType.SystemNotification
                 };
-
+                _logger.LogInformation("Creating notification of type: {Type}", notificationType);
                 await _notificationService.CreateAdminNotificationAsync(
                     admin.Id,
                     $"New {role} Registration",
@@ -67,7 +69,7 @@ namespace Gymunity.Admin.MVC.Services
                     userId,
                     broadcastToAll: true);
 
-                _logger.LogInformation("Admin notified of new user registration {UserId}", userId);
+                _logger.LogInformation("✅ Admin notified successfully of new user registration {UserId}", userId);
             }
             catch (Exception ex)
             {
